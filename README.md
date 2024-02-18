@@ -62,20 +62,19 @@ Event Management System provides a platform to achieve that
           * 使用Google Maps Embed API
             * 获取API密钥：访问Google Cloud Console（https://console.cloud.google.com/）。创建一个新项目或选择一个现有项目。导航到“API与服务”>“凭据”，创建一个新的API密钥。嵌入地图：
               在HTML页面中，使用<iframe>标签嵌入地图，如下所示（将YOUR_API_KEY替换为你的API密钥，将YOUR_ADDRESS替换为你想显示的地址）：
-              ```
-              <iframe
-  width="600"
-  height="450"
-  style="border:0"
-  loading="lazy"
-  allowfullscreen
-  src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=YOUR_ADDRESS">
-</iframe>
+              ```css
+              <iframe width="600"
+              height="450"
+              style="border:0"
+              loading="lazy"
+              allowfullscreen
+              src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=YOUR_ADDRESS">
+            </iframe>
               ```
           * 添加指向Google Maps的超链接
             *如果你只是想在网页上提供一个链接，点击后跳转到Google Maps上的特定地址，可以直接使用一个超链接，而无需使用API。这种方法非常简单，不需要API密钥。
             在HTML中，你可以这样做（将YOUR_ADDRESS替换为目标地址）：
-             ```
-<a href="https://www.google.com/maps/search/?api=1&query=YOUR_ADDRESS" target="_blank">查看地图</a>
+             ```html
+             <a href="https://www.google.com/maps/search/?api=1&query=YOUR_ADDRESS" target="_blank">查看地图</a>
              ```
 这里的query参数是你希望搜索的地址。如同使用Embed API一样，地址可能需要URL编码，特别是如果地址包含空格或特殊字符的时候
