@@ -69,7 +69,7 @@ Event Management System provides a platform to achieve that
               loading="lazy"
               allowfullscreen
               src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=YOUR_ADDRESS">
-            </iframe>
+              </iframe>
               ```
           * 添加指向Google Maps的超链接
             *如果你只是想在网页上提供一个链接，点击后跳转到Google Maps上的特定地址，可以直接使用一个超链接，而无需使用API。这种方法非常简单，不需要API密钥。
@@ -77,4 +77,40 @@ Event Management System provides a platform to achieve that
              ```html
              <a href="https://www.google.com/maps/search/?api=1&query=YOUR_ADDRESS" target="_blank">查看地图</a>
              ```
-这里的query参数是你希望搜索的地址。如同使用Embed API一样，地址可能需要URL编码，特别是如果地址包含空格或特殊字符的时候
+            这里的query参数是你希望搜索的地址。如同使用Embed API一样，地址可能需要URL编码，特别是如果地址包含空格或特殊字符的时候
+      * 组织方可以提供活动详情page链接
+         * 超链接到组织方的official web page
+   * 组织方可以管理自己的活动
+      * 通过设置活动开始日期和结束日期来判断
+         * 设置售票期限
+         * 是否需要在结束日期之后将该活动变为完成状态
+            * 是否需要在检索页面提供不同状态的活动查看
+   * 组织方曾经组织过的活动list
+   * 提供活动预告播放（optional）
+      * 超链接到Youtube
+      * 本地上传
+   * 是否需要嵌入instagram？
+      * 方便链接到组织方的详情页面（介于澳洲的绝大部分活动方喜欢用Instagram）
+*  Prospective customers (anyone in the public) to view a list of events coming up in the next month that have not sold out. 潜在客⼾（公众中的任何⼈）查看下个⽉即将举⾏但尚未售完的活动列表。
+   * 活动界面
+      * 数据链接至活动组织方的表单
+      * 更新售票状态
+      * 更新日期状态
+      * 增加条件检索
+         * 日期、活动状态、活动类型、售票状态
+            * 是否需要添加额外日期选择窗口方便选择？（optional）
+            * 暴力法：直接按照月份检索
+      * 活动详情
+         * 参照上一个chapter的内容增减   
+* Prospective customers to register their details, including payment details, to become customers and be able to login 潜在客⼾注册其详细信息（包括付款详细信息），以成为客⼾并能够登录。
+   * 用户信息页面
+      * 用户个人信息
+         * 付款方式
+            * 信用卡信息（？）安全隐患
+               * 第三方安全加密（optional）
+            * 嵌入第三方支付
+               * Paypal API
+               * Gpay API
+            * 核心主要是安全问题的解决和explain（可作为潜在issue进行讨论）
+               * scam 
+   
