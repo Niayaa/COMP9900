@@ -61,6 +61,21 @@ Event Management System provides a platform to achieve that
 2.	As a potential customer, I would like to search for events by title, description, and type so that I can more efficiently find events that match my interests.
 #### 2.1.5. Security and privacy
 1.	As a user, I hope that all my personal information and payment information will be strictly protected to prevent data leakage or unauthorized access.
+### Requirement
+#### Demon A
+Date: Week 5 Lab
+##### All member needs to attend otherwise 0 score
+##### Progressive Demo A (during Week 5 Lab Time) (worth 2.5%)
+Progressive Demo A provides an opportunity to showcase Sprint 1 user stories and
+how well you have developed functionality to support these.
+##### Marking Criteria
+a) Completed user stories to be demonstrated are shown in Jira and
+described, with these user stories having the correct status in Jira (that is,
+Done) (worth 1%)
+b) Demonstrates the functionality used to support each completed user
+story (worth 1%)
+c) Keep the demo between 10 and 12 minutes (worth 0.5%)
+
 ### Timeline
 * Week 4-5 Foundation of the system 
    * Back-end
