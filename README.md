@@ -1,7 +1,12 @@
 # COMP9900 P8 EVENTS MANAGEMENT SYSTEM
 ****
-|Author|Liyongshi Chen|
-|z5375235|
+Zhuoyang Li |z5391485|
+Zixiang Zhou |z5473539|
+Liyongshi Chen |z5375235|
+Shulin Li |z5345395|
+Huihua Huang |z5405386|
+Jingpeng Ni |z5435701|
+
 ****
 ## Contents
 * [Abstract](#Abstract)
