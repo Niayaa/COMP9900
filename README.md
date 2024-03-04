@@ -15,9 +15,9 @@ Jingpeng Ni |z5435701|
 ****
 ## Contents
 * [Abstract](#Abstract)
-* [Approach](#Approach)
-* [Requirememt]
 * [Timeline](#Timeline)
+* [Approach](#Approach)
+* [Requirememt](#Requirement)
 * [Protential issue]
 
 ### Abstract
