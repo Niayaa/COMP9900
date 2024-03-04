@@ -1,4 +1,4 @@
-<img width="1100" alt="image" src="https://github.com/Niayaa/COMP9900/assets/35710047/39ca3d8f-6ad5-4448-a961-b83f304b368b"><img width="392" alt="image" src="https://github.com/Niayaa/COMP9900/assets/35710047/629c88a8-04bf-4cce-8d2a-0406092d10c7"># COMP9900 P8 : Event Management System
+
 ****
 |Author|Liyongshi Chen|
 |z5375235|
