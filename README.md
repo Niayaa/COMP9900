@@ -1,4 +1,4 @@
-
+# COMP9900 P8 EVENET MANAGEMENT SYSTEM
 ****
 |Author|Liyongshi Chen|
 |z5375235|
