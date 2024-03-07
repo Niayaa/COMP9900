@@ -11,7 +11,9 @@ Shulin Li |z5345395|
 Huihua Huang |z5405386|
 
 Jingpeng Ni |z5435701|
-
+****
+## Update Contents
+2024/03/07 Navbar functionality uploaded
 ****
 ## Contents
 * [Abstract](#Abstract)
