@@ -181,6 +181,7 @@ function EventPage(props) {
 
     const location = useLocation();
     const propss = location.state
+    console.log("propss", propss)
     
     const [open, setOpen] = useState(false);
     const [seatarea, setSeatarea] = useState('');
@@ -222,7 +223,7 @@ function EventPage(props) {
         <Grid2 container spacing={2} direction={'column'} 
             sx={{
                 bgcolor: 'lightblue',
-                mx: 'auto', my: 4, width: '80%'
+                mx: 'auto', my: 4, width: '90%'
             }}
             style={{
                 backgroundImage: {Image},
@@ -259,8 +260,8 @@ function EventPage(props) {
                                     title=""
                                 />
                                 <CardHeader
-                                title={propss.ConcertTitle}
-                                subheader={propss.Date}
+                                    title={propss[0].ConcertTitle}
+                                    subheader={propss[0].Date}
                                 />
                                 <CardContent>
                                 <Typography variant="body2" color="text.secondary">
@@ -312,15 +313,8 @@ function EventPage(props) {
                             sx={{width:'100%', border: '2px solid grey' }}
                             >
                             <Stack>
-                            <iframe
-                                width="100%"
-                                height="50%" // Adjust the height as needed
-                                src="https://youtu.be/KudedLV0tP0?si=ywV_5uA3bwasbsvb"
-                                title="YouTube video player"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen
-                            ></iframe>
+                            <iframe width="auto" height="auto" src="https://www.youtube.com/embed/KudedLV0tP0?si=T-jx27C0cgOIj16C" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+
                             {/* <video src={'https://youtu.be/KudedLV0tP0?si=ywV_5uA3bwasbsvb'} width="100%" height="100%" controls="controls" autoplay="true" /> */}
                             <Card>This is a video</Card>
                             </Stack>
@@ -375,6 +369,7 @@ function EventPage(props) {
                         </Select>
                         <FormHelperText></FormHelperText>
                     </FormControl>
+                    <br></br>
                     <Button type='submit' variant='contained'>Book</Button>
                     </form>
                     </Grid2>
