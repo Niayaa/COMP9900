@@ -23,6 +23,7 @@ import CardMedia from '@mui/material/CardMedia'; // 引入CardMedia组件用于�
 import { TextField } from '@mui/material';
 
 import Image from './image/sydney-opera-house-363244_1280.jpg';
+import { useLocation } from 'react-router-dom';
 
 function EventInfoGrid() {
 
@@ -33,6 +34,7 @@ function EventInfoGrid() {
 
 
 function ShowComment() {
+
     const [comments, setComments] = useState([
         { id: 1, rating: 4, text: "This is a great event!", replies: [] }
     ]);
@@ -134,8 +136,14 @@ function ShowComment() {
                         {/* Replies section */}
                         <Box padding={2} >~~~~~~~~~~~~~Reply~~~~~~~~~~~~~</Box>
                         {comment.replies.map((reply, replyIndex) => (
-                            <Box key={replyIndex} sx={{ ml: 4, mt: 1, bgcolor: 'background.paper', p: 1, boxShadow: 5, // 应用阴影
-                                borderRadius: 1, }}>
+                            <Box key={replyIndex} 
+                                justifyContent="flex-start"
+                                sx={{ ml: 10, mr: 4, mt: 1, 
+                                    bgcolor: 'background.paper', 
+                                    p: 3, 
+                                    boxShadow: 5, // 应用阴影
+                                    borderRadius: 1, 
+                                    }}>
                                 <Typography variant="body2">{reply}</Typography>
                             </Box>
                         ))}
@@ -169,7 +177,11 @@ function ShowComment() {
     );
 }
 
-function EventPage() {
+function EventPage(props) {
+
+    const location = useLocation();
+    const propss = location.state
+    
     const [open, setOpen] = useState(false);
     const [seatarea, setSeatarea] = useState('');
     const [seatamount, setSeatamount] = useState('');
@@ -199,18 +211,24 @@ function EventPage() {
         e.preventDefault(); // 阻止表单默认的提交行为
         console.log(seatarea,seatamount);
 
-        // 发送到payment popup窗口
+
         setSeatamount('');
         setSeatarea(1);
 
     }
 
     return (
+
         <Grid2 container spacing={2} direction={'column'} 
             sx={{
-                bgcolor: 'pink',
+                bgcolor: 'lightblue',
                 mx: 'auto', my: 4, width: '80%'
             }}
+            style={{
+                backgroundImage: {Image},
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
         > 
          <Grid2 container spacing={2} sx={{padding: 4}}>
             {/* left */}
@@ -229,14 +247,20 @@ function EventPage() {
                             borderRadius: 1, // 圆角
                         }}
                     >
-                        <img width={200} src={Image} alt="picture" />
                         <Paper elevation={0} square> {/* Paper组件用于展示内容 */}
                             {/* Your content here */}
-                            <Card>
-
+                            <Card style={{ 
+                                backgroundColor: 'rgba(255, 255, 255, 0.)', 
+                                backdropFilter: 'blur(10px)' 
+                                }}>
+                                <CardMedia
+                                    sx={{ height: 200 }}
+                                    image={Image}
+                                    title=""
+                                />
                                 <CardHeader
-                                title="TAYLOR SWIFT | THE ERAS TOUR"
-                                subheader="THUR, MAR 7, 2024"
+                                title={propss.ConcertTitle}
+                                subheader={propss.Date}
                                 />
                                 <CardContent>
                                 <Typography variant="body2" color="text.secondary">
