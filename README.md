@@ -16,6 +16,8 @@ Jingpeng Ni |z5435701|
 2024/03/07 Navbar functionality uploaded
 
 2024/03/10 Customer Page uploaded
+
+2024/03/10 Organizer uploaded Customer Page updated
 ****
 ## Contents
 * [Abstract](#Abstract)
