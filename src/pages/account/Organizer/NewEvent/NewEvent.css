@@ -1,0 +1,66 @@
+#new-event-form {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  #new-event-form h1 {
+    text-align: center;
+  }
+  
+  #new-event-form label {
+    display: block;
+    margin-top: 20px;
+  }
+  
+  #new-event-form input[type="text"],
+  #new-event-form input[type="date"],
+  #new-event-form input[type="url"],
+  #new-event-form input[type="number"],
+  #new-event-form textarea,
+  #new-event-form input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+  }
+  
+  #new-event-form textarea {
+    height: 100px;
+  }
+  
+  #new-event-form button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  #new-event-form fieldset {
+    border: none;
+    padding: 0;
+  }
+  
+  #new-event-form legend {
+    padding: 0;
+    margin-bottom: 10px;
+  }
+  
+  #new-event-form .submit-document {
+    display: block;
+    margin-top: 10px;
+  }
+  
+  /* Additional styles for checkboxes and 'Other' input */
+  #new-event-form input[type="checkbox"] {
+    margin-right: 10px;
+  }
+  
+  #new-event-form input[type="text"][name="event-type-other"] {
+    width: auto;
+    display: inline-block;
+    margin-left: 10px;
+  }
+  
