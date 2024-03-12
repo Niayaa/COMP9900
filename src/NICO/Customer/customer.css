@@ -1,0 +1,52 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 20px; /* 添加内边距 */
+  }
+  
+  .header,
+  .events {
+    margin-bottom: 20px; /* 给标题和事件列表之间添加一些空间 */
+  }
+  
+  /* 标题样式，可复用 */
+  .section-title {
+    font-size: 1.5rem; /* 设置统一的标题字号 */
+    margin-bottom: 10px; /* 标题下的空间 */
+    color: #333; /* 标题颜色，可根据实际需求调整 */
+  }
+  
+  /* 用于容纳左侧账户信息和兴趣标签的容器 */
+  .left-column {
+    display: flex;
+    justify-content: space-between; /* 确保子项分散对齐 */
+    margin-bottom: 20px; /* 和下面内容的间隔 */
+  }
+  
+  /* 表单和标签的样式 */
+  .form-section,
+  .tags-section {
+    flex: 1; /* 两边栏位占据可用空间 */
+    margin-right: 10px; /* 防止内容紧贴在一起 */
+  }
+  
+  /* 最后一个元素不需要右边距 */
+  .form-section:last-child,
+  .tags-section:last-child {
+    margin-right: 0;
+  }
+  
+  .event-listing {
+    /* 事件列表样式，如果需要可添加具体样式 */
+    flex: 1; /* 两边栏位占据可用空间 */
+  }
+  
+  /* 事件卡片样式 */
+  .event-card {
+    border: 1px solid #ccc; /* 边框样式 */
+    padding: 10px; /* 内边距 */
+    margin-bottom: 10px; /* 与下一个卡片的间距 */
+  }
+  
+  
