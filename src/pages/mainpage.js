@@ -44,7 +44,51 @@ export default function MainPage() {
     // ...其他事件
   ]);
   const [filteredEvents, setFilteredEvents] = useState(events);
+  const [timeFilter, setTimeFilter] = useState("All");
+  const handleTimeFilterChange = (selectedTime) => {
+    setTimeFilter(selectedTime);
+    let newFilteredEvents;
+    const now = new Date();
 
+    switch (selectedTime) {
+      case "Today":
+        newFilteredEvents = events.filter((event) => {
+          const eventDate = new Date(event.Date);
+          return (
+            eventDate.getDate() === now.getDate() &&
+            eventDate.getMonth() === now.getMonth() &&
+            eventDate.getFullYear() === now.getFullYear()
+          );
+        });
+        break;
+      case "This month":
+        newFilteredEvents = events.filter((event) => {
+          const eventDate = new Date(event.Date);
+          return (
+            eventDate.getMonth() === now.getMonth() &&
+            eventDate.getFullYear() === now.getFullYear()
+          );
+        });
+        break;
+      case "Next month":
+        const nextMonth = now.getMonth() === 11 ? 0 : now.getMonth() + 1;
+        const year =
+          now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
+        newFilteredEvents = events.filter((event) => {
+          const eventDate = new Date(event.Date);
+          return (
+            eventDate.getMonth() === nextMonth &&
+            eventDate.getFullYear() === year
+          );
+        });
+        break;
+      case "All":
+      default:
+        newFilteredEvents = events;
+    }
+
+    setFilteredEvents(newFilteredEvents);
+  };
   const handleSearch = () => {
     const filtered = events.filter((event) =>
       event.ConcertTitle.toLowerCase().includes(searchTerm.toLowerCase())
@@ -102,6 +146,32 @@ export default function MainPage() {
         <Typography variant="h5" gutterBottom>
           Recent Events
         </Typography>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Button
+            onClick={() => handleTimeFilterChange("All")}
+            variant={timeFilter === "All" ? "contained" : "outlined"}
+          >
+            All event
+          </Button>
+          <Button
+            onClick={() => handleTimeFilterChange("Today")}
+            variant={timeFilter === "Today" ? "contained" : "outlined"}
+          >
+            Today
+          </Button>
+          <Button
+            onClick={() => handleTimeFilterChange("This month")}
+            variant={timeFilter === "This month" ? "contained" : "outlined"}
+          >
+            This month
+          </Button>
+          <Button
+            onClick={() => handleTimeFilterChange("Next month")}
+            variant={timeFilter === "Next month" ? "contained" : "outlined"}
+          >
+            Next month
+          </Button>
+        </Box>
         <Box
           sx={{
             display: "flex",
