@@ -40,9 +40,17 @@ const CustomerSignUpPage = () => {
         sx={{ mb: 2, width: "300px" }}
       />
       {/* Add more fields as necessary */}
+<<<<<<< HEAD
       <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
         Sign up as Customer
       </Button>
+=======
+      <Link to="/Cus_Acc">
+      <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
+        Sign up as Customer
+      </Button>
+      </Link>
+>>>>>>> Zzx-New
       <Link to="/login">Already have an account? Login !</Link>
     </Box>
   );

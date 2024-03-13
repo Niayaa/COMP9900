@@ -45,9 +45,17 @@ const OrganizerSignUpPage = () => {
         sx={{ mb: 2, width: "300px" }}
       />
       {/* Add more fields as necessary */}
+<<<<<<< HEAD
       <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
         Sign up as Organizer
       </Button>
+=======
+      <Link to="/Org_Acc">
+      <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
+        Sign up as Organizer
+      </Button>
+      </Link>
+>>>>>>> Zzx-New
       <Link to="/login">Already have an account? Login !</Link>
     </Box>
   );
