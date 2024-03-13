@@ -1,66 +1,135 @@
-import { Link, Route, Routes, useHistory, useNavigate } from "react-router-dom";
-import EventPage from "./EventPage";
-import { Backdrop, Button, Card, CardContent, colors } from "@mui/material";
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Button,
+  TextField,
+  Box,
+  Card,
+  CardContent,
+  Typography,
+} from "@mui/material";
 
+export default function MainPage() {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
 
-export default function UseEventPage(){
-    const navigate = useNavigate();
+  const eventTypes = ["All", "Concert", "Live", "Opear", "Comedy"];
+  const [events, setEvents] = useState([
+    // 假设这里是你所有的事件数据
+    {
+      ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR",
+      Date: "THUR, MAR 7, 2024",
+      type: "Concert",
+      id: 1,
+    },
+    // 添加更多的事件
+    {
+      ConcertTitle: "ED SHEERAN | + - = ÷ x TOUR",
+      Date: "SAT, APR 10, 2024",
+      type: "Live",
+      id: 2,
+    },
+    {
+      ConcertTitle: "BILLIE EILISH | HAPPIER THAN EVER TOUR",
+      Date: "FRI, MAY 15, 2024",
+      type: "Concert",
+      id: 3,
+    },
+    {
+      ConcertTitle: "OPERA EVENT",
+      Date: "WED, MAY 20, 2024",
+      type: "Concert",
+      id: 4,
+    },
+    // ...其他事件
+  ]);
+  const [filteredEvents, setFilteredEvents] = useState(events);
 
-    const concertInfoArray=[];
-
-
-    concertInfoArray[0] = {ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR", Date: "THUR, MAR 7, 2024"}
-    
-    // useEffect(()=>{
-        
-        // }, [concertInfoArray])
-        
-    async function handleEventPage() { 
-        //对于每个event标签卡 button或者card 点击跳转 会传concert信息给eventpage
-        //（应该是每个event标签卡的json数组里也会存着id和Info，然后读取对应的信息传递）
-        
-        console.log(concertInfoArray)
-        navigate('/eventpage', {state:  concertInfoArray })
-        
-    }
-
-    return(
-        <>
-        <div>This is a test for call EventPage</div>
-        <Button
-            variant="outlined"
-            
-            sx ={{height: 150, width: 200}} 
-            onClick={()=>{handleEventPage();}}>
-
-            <Card sx={{width: '100%', height:'100%'}}>
-                <CardContent>This is an event</CardContent>
-            </Card>
-        </Button>
-        <Button
-            variant="outlined"
-            
-            sx ={{height: 150, width: 200}} 
-            onClick={()=>{handleEventPage();}}>
-
-            <Card sx={{width: '100%', height:'100%'}}>
-                <CardContent>This is an event</CardContent>
-            </Card>
-        </Button>
-
-        <Button
-            variant="outlined"
-            
-            sx ={{height: 150, width: 200}} 
-            onClick={()=>{handleEventPage();}}>
-
-            <Card sx={{width: '100%', height:'100%'}}>
-                <CardContent>This is an event</CardContent>
-            </Card>
-        </Button>
-
-            
-        </>
+  const handleSearch = () => {
+    const filtered = events.filter((event) =>
+      event.ConcertTitle.toLowerCase().includes(searchTerm.toLowerCase())
     );
-};
+    setFilteredEvents(filtered);
+  };
+
+  const handleEventTypeClick = (type) => {
+    if (type === "All") {
+      setFilteredEvents(events);
+    } else {
+      const filtered = events.filter((event) => event.type === type);
+      setFilteredEvents(filtered);
+    }
+  };
+
+  const handleEventClick = (event) => {
+    navigate("/eventpage", { state: [event] }); // 将对象包装在数组中
+  };
+
+  return (
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          mt: 4,
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          Event slogan sentence
+        </Typography>
+        <TextField
+          label="Search area"
+          variant="outlined"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        <Button onClick={handleSearch} variant="contained" sx={{ mb: 2 }}>
+          Search button
+        </Button>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          {eventTypes.map((type) => (
+            <Button
+              key={type}
+              onClick={() => handleEventTypeClick(type)}
+              sx={{ m: 1 }}
+            >
+              {type}
+            </Button>
+          ))}
+        </Box>
+        <Typography variant="h5" gutterBottom>
+          Recent Events
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          {filteredEvents.map(
+            (
+              event // 遍历filteredEvents来渲染每个事件的按钮
+            ) => (
+              <Button
+                key={event.id}
+                variant="outlined"
+                sx={{ height: 150, width: 200 }}
+                onClick={() => handleEventClick(event)} // 传递当前事件对象给handleEventClick
+              >
+                <Card sx={{ width: "100%", height: "100%" }}>
+                  <CardContent>{event.ConcertTitle}</CardContent>
+                  <CardContent>{event.Date}</CardContent>
+                  {/* 使用事件标题 */}
+                </Card>
+              </Button>
+            )
+          )}
+        </Box>
+      </Box>
+    </>
+  );
+}

@@ -11,7 +11,7 @@ import UseEventPage from "./pages/FakeCallEventPage";
 import MyAccount from "./pages/LoginPage";
 import Organizer_Acc from "./pages/account/Organizer";
 import Customer_Acc from "./pages/account/Customer";
-
+import EventSearchPage from "./pages/mainpage";
 
 function App() {
   return (
