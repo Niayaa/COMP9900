@@ -14,22 +14,14 @@ const Navbar = () => {
     <>
       <Nav>
         <Bars />
-<<<<<<< HEAD
-        <NavLogo to="/">
-=======
         <NavLogo to="/MainPage">
->>>>>>> Zzx-New
           <h1>Event Management</h1> {/* 你可以用图片或SVG代替 */}
         </NavLogo>
         <NavMenu>
           <NavLink to="/events" activeStyle>
             Events
           </NavLink>
-<<<<<<< HEAD
-          <NavLink to="/account" activeStyle>
-=======
           <NavLink to="/MyAccount" activeStyle>
->>>>>>> Zzx-New
             My account
           </NavLink>
           {/* Second Nav */}
