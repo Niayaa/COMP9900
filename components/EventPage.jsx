@@ -379,7 +379,7 @@ function EventPage(props) {
             </Grid2>
         {/* <Button onClick={handleClickOpen}>Click to Comment</Button> *点击然后弹出评论窗口 */}
         {/* <CommentPopUp open={open} handleClose={handleClose}/> */}
-        <ShowComment/>
+        <ScrollableFrame children={<ShowComment/>}></ScrollableFrame>
         </Grid2>
 
     );
