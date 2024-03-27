@@ -10,7 +10,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 import Rating from '@mui/material/Rating';
-import CommentPopUp from './PopUpPages/Comment';
+import CommentPopUp from '../../myapp/src/Components/PopUpPages/Comment.jsx';
 
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -25,9 +25,9 @@ import { TextField } from '@mui/material';
 import Image from './image/sydney-opera-house-363244_1280.jpg';
 import { useLocation } from 'react-router-dom';
 
-import MyComponent from './EmbeddedGoogleMap.jsx';
-import PaymentPopUp from './PopUpPages/Payment.jsx';
-import ScrollableFrame from './PopUpPages/ForScroll.jsx';
+import MyComponent from '../../myapp/src/Components/EmbeddedGoogleMap.jsx';
+import PaymentPopUp from '../../myapp/src/Components/PopUpPages/Payment.jsx';
+import ScrollableFrame from '../../myapp/src/Components/PopUpPages/ForScroll.jsx';
 
 function EventInfoGrid() {
 
