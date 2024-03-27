@@ -38,6 +38,7 @@ function ShowComment() {
     const [comments, setComments] = useState([
         { id: 1, rating: 4, text: "This is a great event!", replies: [] }
     ]);
+
     const [newComment, setNewComment] = useState('');
     const [newReply, setNewReply] = useState({});
 
@@ -46,6 +47,9 @@ function ShowComment() {
     const [imageFile, setImageFile] = useState(null);
 
     const averageRating = ratings.reduce((acc, rating) => acc + rating, 0) / ratings.length;
+
+    // 加了new comment之后要把new commment发送到后端
+    // 再下一次更新的时候，再重新刷新
 
     const addComment = () => {
         if (newComment === '') return;

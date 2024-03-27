@@ -1,4 +1,5 @@
 import { IconButton } from '@mui/material';
+import UpIcon from '@mui/icons-material/KeyboardArrowUp';
 import React, { useEffect, useRef, useState } from 'react';
 
 const ScrollableFrame = ({ children }) => {
@@ -40,17 +41,30 @@ const ScrollableFrame = ({ children }) => {
     <div style={frameStyle} ref={ref}>
       <div style={contentStyle}>
         {children}
-        <IconButton
+        <UpIcon
+            sx={{
+              position: 'absolute',
+              bottom: '50%', 
+              right: '50%', 
+              transform: 'translate(-100%, -30%)', // 使用transform属性将图标水平和垂直居中
+              color: 'common.white',
+              bgcolor: 'green',
+              width: 40, // 设置图标的宽度
+              height: 40, // 设置图标的高度
+              borderRadius: '50%',
+              '&:hover': {
+                bgcolor: 'darkgreen',
+              },
+            }}
             style={{
             position: "fixed",
-            bottom: 10,
+            margin: 'auto',
+            bottom: 20,
             right: 10,
             display: pos ? "block" : "none"
             }}
             onClick={handleTop}
-        >
-            Up
-        </IconButton>
+       />
       </div>
     </div>
   );
