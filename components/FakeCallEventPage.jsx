@@ -6,22 +6,12 @@ import { useEffect, useState } from "react";
 
 export default function UseEventPage(){
     const navigate = useNavigate();
-
-    const concertInfoArray=[];
-
-
-    concertInfoArray[0] = {ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR", Date: "THUR, MAR 7, 2024"}
-    
-    // useEffect(()=>{
-        
-        // }, [concertInfoArray])
         
     async function handleEventPage() { 
-        //对于每个event标签卡 button或者card 点击跳转 会传concert信息给eventpage
-        //（应该是每个event标签卡的json数组里也会存着id和Info，然后读取对应的信息传递）
         
         console.log(concertInfoArray)
-        navigate('/eventpage', {state:  concertInfoArray })
+        //只传递ID~
+        navigate('/eventpage', {state:  {ID: "1"} })
         
     }
 
