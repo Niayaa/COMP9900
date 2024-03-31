@@ -1,166 +1,146 @@
- 
-import React, { useState,useEffect  } from "react";
-import { Container, 
-    Grid, 
-    TextField, 
-    Button, 
-    Typography, 
-    Paper, 
-    Box, 
-    Card, 
-    CardContent, 
-    Stack, 
-    InputLabel, 
-    Select, 
-    MenuItem,
-    FormControl,
-    Toolbar,
-    IconButton,
-    Chip } from '@mui/material';
-import { Link } from "react-router-dom";
-import MuiAppBar from '@mui/material/AppBar';
-import {useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  CssBaseline,
+  Drawer,
+  List,
+  Divider,
+  IconButton,
+  ListItemButton,
+  ListItemText,
+  AppBar,
+  Toolbar,
+  Button,
+  Paper,
+  Grid,
+} from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import MuiDrawer from '@mui/material/Drawer';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import {DrawerListItems} from "./listItems";
-import { UpcomingEvents,PastEvents} from './Cus_EventList/EventLists';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
-import HistoryIcon from '@mui/icons-material/History'; 
 
-const allEvents = [
-    { id: 1, name: 'Event 1', address: '123 Main St', date: '2024-07-21' },
-    { id: 2, name: 'Event 2', address: '456 Broadway', date: '2023-12-15' },
-    { id: 3, name: 'Event 3', address: '789 Elm St', date: '2024-03-10' },
-
+const fetchInterests = () => {
+  return [
+    { id: 1, title: "Interest 1", description: "Description for Interest 1" },
+    { id: 2, title: "Interest 2", description: "Description for Interest 2" },
   ];
+};
+
+const fetchCollections = () => {
+  return [
+    {
+      id: 1,
+      interestType: "Music",
+      events: [
+        { eventId: 1, title: "Concert A", description: "A great concert" },
+        { eventId: 2, title: "Concert B", description: "Another great concert" },
+      ],
+    },
+    {
+      id: 2,
+      interestType: "Art",
+      events: [
+        { eventId: 3, title: "Exhibition A", description: "A great exhibition" },
+      ],
+    },
+  ];
+};
+
+const fetchAllEvents = () => {
+  return [
+    { eventId: 1, title: "Concert A", description: "A great concert" },
+    { eventId: 2, title: "Concert B", description: "Another great concert" },
+    { eventId: 3, title: "Exhibition A", description: "A great exhibition" },
+  ];
+};
+
 
 const CustomerEventPage = () => {
-    const [drawerOpen, setDrawerOpen] = useState(true);
-    const concertInfoArray=[];
-    const navigate = useNavigate();
+  const [currentView, setCurrentView] = useState("interests");
+  const [interests, setInterests] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
+  const [drawerOpen, setDrawerOpen] = useState(true);
+
+  useEffect(() => {
+    setInterests(fetchInterests());
+    setCollections(fetchCollections());
+    setAllEvents(fetchAllEvents());
+  }, []);
+
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
   
-    concertInfoArray[0] = {ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR", Date: "THUR, MAR 7, 2024"}
-      
-    async function handleEventPage() { 
-          //对于每个event标签卡 button或者card 点击跳转 会传concert信息给eventpage
-          //（应该是每个event标签卡的json数组里也会存着id和Info，然后读取对应的信息传递）
-          
-          console.log(concertInfoArray)
-          navigate('/eventpage', {state:  concertInfoArray })
-          
-      }
-    const handleDelete = () => {
-          console.info('You clicked the delete icon.');
-        };
-  
-    const [selectedCategory, setSelectedCategory] = React.useState('booked');
-  
-    // Function to handle category change
-      const handleCategoryChange = (category) => {
-      setSelectedCategory(category);
-      }; 
-      
-      const drawerWidth = 240;
-      
-      //for drawer
-      const AppBar = styled(MuiAppBar, {
-        shouldForwardProp: (prop) => prop !== 'open',
-      })(({ theme, open }) => ({
-        zIndex: theme.zIndex.drawer + 1,
-        transition: theme.transitions.create(['width', 'margin'], {
+  const handleEventSelection = (eventType) => {
+    setCurrentView(eventType);
+  };
+
+  const drawerWidth = 150;
+  const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+    ({ theme, open }) => ({
+      '& .MuiDrawer-paper': {
+        position: 'relative',
+        whiteSpace: 'nowrap',
+        width: drawerWidth,
+        transition: theme.transitions.create('width', {
           easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
+          duration: theme.transitions.duration.enteringScreen,
         }),
-        ...(open && {
-          marginLeft: drawerWidth,
-          width: `calc(100% - ${drawerWidth}px)`,
-          transition: theme.transitions.create(['width', 'margin'], {
+        boxSizing: 'border-box',
+        ...(!open && {
+          overflowX: 'hidden',
+          transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
+            duration: theme.transitions.duration.leavingScreen,
           }),
-        }),
-      }));
-  
-      const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-        ({ theme, open }) => ({
-          '& .MuiDrawer-paper': {
-            position: 'relative',
-            whiteSpace: 'nowrap',
-            width: drawerWidth,
-            transition: theme.transitions.create('width', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
-            boxSizing: 'border-box',
-            ...(!open && {
-              overflowX: 'hidden',
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-              width: theme.spacing(7),
-              [theme.breakpoints.up('sm')]: {
-                width: theme.spacing(9),
-              },
-            }),
+          width: theme.spacing(7),
+          [theme.breakpoints.up('sm')]: {
+            width: theme.spacing(9),
           },
         }),
-      );
-      
-      const handleDrawerToggle = () => {
-        setDrawerOpen(!drawerOpen);
-      };
-    
-      const handleEventSelection = (eventType) => {
-        setSelectedEventType(eventType);
-      };
+      },
+    }),
+  );
 
-    const [selectedEventType, setSelectedEventType] = useState('upcoming');
-    const [upcomingEvents, setUpcomingEvents] = useState([]);
-    const [pastEvents, setPastEvents] = useState([]);
-
-    useEffect(() => {
-        const today = new Date();
-        const upcoming = allEvents.filter(event => new Date(event.date) >= today);
-        const past = allEvents.filter(event => new Date(event.date) < today);
-        setUpcomingEvents(upcoming);
-        setPastEvents(past);
-      }, []);   
-
-    return (
-        <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <Drawer variant="permanent" open={drawerOpen}>
-        <Toolbar
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            px: [1],
-          }}
-        >
-          <IconButton onClick={handleDrawerToggle}>
-            <ChevronLeftIcon />
-          </IconButton>
-        </Toolbar>
-        <Divider />
-        <List component="nav">
-          <DrawerListItems onItemSelected={handleEventSelection} />
+  return (
+    <Box sx={{ display: 'flex' }}>
+    <CssBaseline />
+    <Drawer variant="permanent" open={drawerOpen}>
+    <Divider />
+        <List>
+          {['interests', 'collections', 'all Events'].map((text) => (
+            <ListItemButton key={text} onClick={() => handleEventSelection(text)}>
+              <ListItemText primary={text.charAt(0).toUpperCase() + text.slice(1)} />
+            </ListItemButton>
+          ))}
         </List>
       </Drawer>
-      <main style={{ flexGrow: 1, padding: '20px' }}>
-        {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} />}
-        {selectedEventType === 'past' && <PastEvents events={pastEvents} />}
-      </main>
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+      >
+        <Toolbar />
+        <Grid container spacing={2}>
+          {currentView === 'interests' && interests.map((interest) => (
+            <Grid item xs={12} key={interest.id}>
+              <Paper>{interest.title}: {interest.description}</Paper>
+            </Grid>
+          ))}
+          {currentView === 'collections' && collections.map((collection) => (
+            <Grid item xs={12} key={collection.id}>
+              <Paper>{collection.interestType}: {collection.events.map(event => `${event.title}: ${event.description}`).join(', ')}</Paper>
+            </Grid>
+          ))}
+          {currentView === 'all Events' && allEvents.map((event) => (
+            <Grid item xs={12} key={event.eventId}>
+              <Paper>{event.title}: {event.description}</Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
     </Box>
-    );
-};
- 
+  );
+}
+
 export default CustomerEventPage;
+

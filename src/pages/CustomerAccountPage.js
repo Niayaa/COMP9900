@@ -15,8 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from './AuthContext';
 
 const CustomerAccountPage = ({ existingData = {
-    firstName: 'John',
-    lastName: 'Doe',
+    name: 'John',
     email: 'john.doe@example.com',
     password: 'password123', // Reminder: Handle passwords securely
     phoneNumber:'+61 0428742462',
@@ -53,18 +52,8 @@ const CustomerAccountPage = ({ existingData = {
           <Grid container spacing={3} marginTop={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="h6">Account Information</Typography>
-              <TextField
-                    label="First Name*"
-                    variant="outlined"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    margin="normal"
-                    fullWidth
-                    disabled={!isEditing}
-                />
                 <TextField
-                    label="Last Name*"
+                    label="Name*"
                     variant="outlined"
                     name="lastName"
                     value={formData.lastName}
