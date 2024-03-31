@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -14,19 +14,34 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../AuthContext';
 
-const CustomerAccountPage = ({ existingData = {
-    name: 'John',
-    email: 'john.doe@example.com',
-    password: 'password123', // Reminder: Handle passwords securely
-    phoneNumber:'+61 0428742462',
-    billAddress:'114 Andrew St.',
-    preferType: 'live', // Default value set to 'live'
-    ageArea:'19-40',
-    gendar:'Female'
-  }}) => {
+const CustomerAccountPage = () => {
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({...existingData});
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '', // Reminder: Handle passwords securely
+        phoneNumber:'',
+        billAddress:'',
+    });
     const navigate = useNavigate();
+    
+    useEffect(() => {
+        const fetchOrganizerData = async () => {
+        // 示例URL - 你需要将其替换为你的实际API端点
+        const response = await fetch('/api/organizer/data');
+        const data = await response.json();
+        setFormData({
+            name: data.company_name || '',
+            email: data.org_email || '',
+            password: '', // 密码通常不通过API传输
+            phoneNumber: data.org_phone || '',
+            billAddress: data.company_address || '',
+        });
+        };
+        
+        fetchOrganizerData().catch(console.error);
+    }, []);
+  
   
     const handleChange = (e) => {
       const { name, value } = e.target;
@@ -48,7 +63,7 @@ const CustomerAccountPage = ({ existingData = {
     return (
         <Box sx={{ display: 'flex' }}>
         <Container maxWidth="lg">
-          <Typography variant="h4" gutterBottom>Welcome Back, {existingData.name}</Typography>
+          <Typography variant="h4" gutterBottom>Welcome Back, {formData.name}</Typography>
           <Grid container spacing={3} marginTop={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="h6">Account Information</Typography>
