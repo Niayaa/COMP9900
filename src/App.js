@@ -8,11 +8,16 @@ import EventPage from "./pages/EventPage";
 import UseEventPage from "./pages/FakeCallEventPage";
 import MyAccount from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
-import CustomerEventPage from "./pages/CustomerEventPage";
-import CustomerAccountPage from "./pages/CustomerAccountPage";
-import CustomerOrderPage from "./pages/CustomerOrder";
 import ContactPage from "./pages/ContactPage";
 import { AuthProvider } from './pages/AuthContext';
+//Customer Page Part
+import CustomerEventPage from "./pages/Customer/CustomerEventPage";
+import CustomerAccountPage from "./pages/Customer/CustomerAccountPage";
+import CustomerOrderPage from "./pages/Customer/CustomerOrder";
+//Organizer Page Part
+import OrganzierAccountPage from "./pages/Organizer/OrganizerAccountPage";
+import OrganizerEventPage from "./pages/Organizer/OrganizerEventPage";
+import CreateNewEventPage from "./pages/Organizer/CreateNewEventPage";
 
 function App() {
   return (
@@ -28,9 +33,15 @@ function App() {
         <Route path="/events" element={<UseEventPage></UseEventPage>} />
         <Route path="/eventpage" element={<EventPage></EventPage>} />
         <Route path="/SignUpPage" element={<SignUpPage />} />
+         {/*Customer Page*/}
         <Route path="/Cus_Event" element={<CustomerEventPage/>}/>
         <Route path="/Cus_Order" element={<CustomerOrderPage/>}/>
         <Route path="/Cus_Account" element={<CustomerAccountPage/>}/>
+        {/*Organizer Page*/}
+        <Route path="/Org_Event" element={<OrganizerEventPage/>}/>
+        <Route path="/Org_Account" element={<OrganzierAccountPage/>}/>
+        <Route path="/CreateNew" element={<CreateNewEventPage/>}/>
+
         <Route path="/Contact" element={<ContactPage/>}/>
         {/* 默认重定向到登录页 */}
         <Route path="/" element={<LoginPage />} />

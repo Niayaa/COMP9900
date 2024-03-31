@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 // AuthProvider组件管理认证状态，并将其传递给子组件
 export const AuthProvider = ({ children }) => {
   // 假设用户已经登录的状态
-  const [user, setUser] = useState({ name: 'ABC', email: 'abc@gmail.com' });
+  const [user, setUser] = useState({ name: 'ABC', email: 'abc@gmail.com' ,role:'organizer'});
 
   // 登录函数，设置用户状态
   const login = (userCredentials) => {
