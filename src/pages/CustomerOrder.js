@@ -1,3 +1,4 @@
+ 
 import React, { useState,useEffect  } from "react";
 import { Container, 
     Grid, 
@@ -25,7 +26,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { DrawerEventLists } from "./listItems";
+import {DrawerListItems} from "./listItems";
 import { UpcomingEvents,PastEvents} from './Cus_EventList/EventLists';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -39,7 +40,7 @@ const allEvents = [
     { id: 3, name: 'Event 3', address: '789 Elm St', date: '2024-03-10' },
 
   ];
- 
+
 const CustomerOrderPage = () => {
     const [drawerOpen, setDrawerOpen] = useState(true);
     const concertInfoArray=[];
@@ -121,7 +122,7 @@ const CustomerOrderPage = () => {
         setSelectedEventType(eventType);
       };
 
-    const [selectedEventType, setSelectedEventType] = useState('interest');
+    const [selectedEventType, setSelectedEventType] = useState('upcoming');
     const [upcomingEvents, setUpcomingEvents] = useState([]);
     const [pastEvents, setPastEvents] = useState([]);
 
@@ -151,7 +152,7 @@ const CustomerOrderPage = () => {
         </Toolbar>
         <Divider />
         <List component="nav">
-          <DrawerEventLists onItemSelected={handleEventSelection} />
+          <DrawerListItems onItemSelected={handleEventSelection} />
         </List>
       </Drawer>
       <main style={{ flexGrow: 1, padding: '20px' }}>
