@@ -1,27 +1,29 @@
-import React,{ useState } from 'react';
-import { Container, 
-    Grid, 
-    TextField, 
-    Button, 
-    Typography, 
-    Box, 
-    InputLabel, 
-    Select, 
-    MenuItem,
-    FormControl,
-    Chip } from '@mui/material';
-import {useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import {
+  Container,
+  Grid,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControl
+} from '@mui/material';
+import { useNavigate } from "react-router-dom";
 import { useAuth } from './AuthContext';
 
 const CustomerAccountPage = ({ existingData = {
-    Name: 'John',
+    firstName: 'John',
+    lastName: 'Doe',
     email: 'john.doe@example.com',
     password: 'password123', // Reminder: Handle passwords securely
-    age: '',
-    gender: 'female',
     phoneNumber:'+61 0428742462',
     billAddress:'114 Andrew St.',
-    userType: 'Customer'
+    preferType: 'live', // Default value set to 'live'
+    ageArea:'19-40',
+    gendar:'Female'
   }}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({...existingData});
@@ -35,84 +37,37 @@ const CustomerAccountPage = ({ existingData = {
     const toggleEdit = () => {
       setIsEditing(!isEditing);
       if (isEditing) {
-        // When toggling from editing to not editing, save the data
         saveUpdatedData();
       }
     };
   
-    // Function to send updated data to the Django backend
+    // Function to send updated data to the Django backend (same as before)
     const saveUpdatedData = async () => {
-      const url = '/api/customer/update/'; // Adjust this to your API endpoint
-      // For CSRF token, you might need to adjust based on how your Django app is set up
-      // This is just one common approach
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  
-      try {
-        const response = await fetch(url, {
-          method: 'PUT', // Use PUT for updating existing resource
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-          },
-          body: JSON.stringify(formData),
-        });
-  
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-  
-        const data = await response.json();
-        console.log('Success:', data);
-        // Optionally navigate to another page or show success message
-      } catch (error) {
-        console.error('Error:', error);
-        // Optionally show error message to user
-      }
+      // Your existing saveUpdatedData function logic
     };
   
-      const concertInfoArray=[];
-  
-  
-      concertInfoArray[0] = {ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR", Date: "THUR, MAR 7, 2024"}
-      
-      async function handleEventPage() { 
-          //对于每个event标签卡 button或者card 点击跳转 会传concert信息给eventpage
-          //（应该是每个event标签卡的json数组里也会存着id和Info，然后读取对应的信息传递）
-          
-          console.log(concertInfoArray)
-          navigate('/eventpage', {state:  concertInfoArray })
-          
-      }
-      const handleDelete = () => {
-          console.info('You clicked the delete icon.');
-        };
-  
-      const [selectedCategory, setSelectedCategory] = React.useState('booked');
-  
-    // Function to handle category change
-      const handleCategoryChange = (category) => {
-      setSelectedCategory(category);
-      }; 
-      
-      
-      const [open, setOpen] = React.useState(true);
-      const toggleDrawer = () => {
-        setOpen(!open);
-      };
-    
-      const { user } = useAuth();
-      return (
+    return (
         <Box sx={{ display: 'flex' }}>
         <Container maxWidth="lg">
-          <Typography variant="h4" gutterBottom>Welcome Back {user.name}</Typography>
+          <Typography variant="h4" gutterBottom>Welcome Back {existingData.firstName}</Typography>
           <Grid container spacing={3} marginTop={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="h6">Account Information</Typography>
               <TextField
-                    label="Name*"
+                    label="First Name*"
                     variant="outlined"
                     name="firstName"
                     value={formData.firstName}
+                    onChange={handleChange}
+                    margin="normal"
+                    fullWidth
+                    disabled={!isEditing}
+                />
+                <TextField
+                    label="Last Name*"
+                    variant="outlined"
+                    name="lastName"
+                    value={formData.lastName}
                     onChange={handleChange}
                     margin="normal"
                     fullWidth
@@ -139,80 +94,79 @@ const CustomerAccountPage = ({ existingData = {
                     fullWidth
                     disabled={!isEditing}
                 />
-                <InputLabel>Age area</InputLabel>
-                <Select
-                name="age"
-                value={formData.age}
-                label="Age area"
-                onChange={handleChange}
-                margin="normal"
-                disabled={!isEditing}
-                >
-                {/* Replace these with your actual age ranges */}
-                <MenuItem value={10}>10-20</MenuItem>
-                <MenuItem value={20}>21-30</MenuItem>
-                <MenuItem value={30}>31-40</MenuItem>
-                <MenuItem value={40}>41-50</MenuItem>
-                </Select>
+                <TextField 
+                    label="Phone Number" 
+                    variant="outlined"
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    margin="normal"
+                    fullWidth
+                    disabled={!isEditing}
+                />
+                <TextField
+                    label="Billing Address"
+                    variant="outlined"
+                    type="text"
+                    name="billAddress"
+                    value={formData.billAddress}
+                    onChange={handleChange}
+                    margin="normal"
+                    fullWidth
+                    disabled={!isEditing}
+                />
                 <FormControl fullWidth margin="normal">
-                <InputLabel>Gender</InputLabel>
+                <InputLabel>Preferred Event Type</InputLabel>
                     <Select
-                    name="gender"
-                    value={formData.gender}
-                    label="Gender"
+                    name="preferType"
+                    value={formData.preferType}
                     onChange={handleChange}
                     disabled={!isEditing}
                     >
-                    {/* Replace these with your actual gender options */}
-                    <MenuItem value="male">Male</MenuItem>
-                    <MenuItem value="female">Female</MenuItem>
-                    <MenuItem value="other">Other</MenuItem>
+                    <MenuItem value="live">Live</MenuItem>
+                    <MenuItem value="concert">Concert</MenuItem>
+                    <MenuItem value="opera">Opera</MenuItem>
+                    <MenuItem value="show">Show</MenuItem>
                     </Select>
                 </FormControl>
+                <FormControl fullWidth margin="normal">
+                <InputLabel>Age Area</InputLabel>
+                    <Select
+                    name="ageArea"
+                    value={formData.ageArea}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    >
+                    <MenuItem value="0-18">0-18</MenuItem>
+                    <MenuItem value="19-40">19-40</MenuItem>
+                    <MenuItem value="40-60">40-60</MenuItem>
+                    <MenuItem value="60+">60+</MenuItem>
+                    </Select>
+                </FormControl>
+                <FormControl fullWidth margin="normal">
+                <InputLabel>Gendar</InputLabel>
+                    <Select
+                    name="gendar"
+                    value={formData.gendar}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    >
+                    <MenuItem value="Female">Female</MenuItem>
+                    <MenuItem value="Male">Male</MenuItem>
+                    <MenuItem value="PreferNotoSay">Prefer no to say</MenuItem>
+                    </Select>
+                </FormControl>
+                
+
                 <Button variant="contained" color="primary" onClick={toggleEdit}>
                     {isEditing ? 'SAVE' : 'EDIT'}
                 </Button>
-            </Grid>
-  
-            <Grid item xs={12} md={6}>
-            <Typography variant="h6">Interest tags</Typography>
-            <Grid container spacing={1}>
-                {/* Loop through your event types and render chips */}
-                {['Event type 1', 'Event type 2', 'Event type 3', 'Event type 4', 'Event type 5', 'Event type 6'].map((type, index) => (
-                <Grid item key={index}>
-                    <Chip label={type} onDelete={handleDelete} />
-                </Grid>
-                ))}
-            </Grid>
-            <TextField 
-                label="Phone number" 
-                type="tel"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                margin="normal"
-                fullWidth
-                disabled={!isEditing}
-            />
-            <TextField
-                label="Payment bill address"
-                type="text"
-                name="billAddress"
-                value={formData.billAddress}
-                onChange={handleChange}
-                margin="normal"
-                disabled={!isEditing}
-                multiline
-                fullWidth
-                rows={4}
-            />
             </Grid>
           </Grid>
         </Container>
         </Box>
     );
-  };
+};
   
-  // Example of how to use the component with existing data
-  
-  export default CustomerAccountPage;
+export default CustomerAccountPage; 
