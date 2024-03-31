@@ -22,6 +22,8 @@ const CustomerAccountPage = () => {
         phoneNumber:'',
         billAddress:'',
         preferType:'',
+        ageArea:'',
+        gendar:'',
     });
     const navigate = useNavigate();
     
