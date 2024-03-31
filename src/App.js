@@ -7,8 +7,6 @@ import MainPage from "./pages/mainpage";
 import EventPage from "./pages/EventPage";
 import UseEventPage from "./pages/FakeCallEventPage";
 import MyAccount from "./pages/LoginPage";
-import Organizer_Acc from "./pages/account/Organizer";
-import Customer_Acc from "./pages/account/Customer";
 import SignUpPage from "./pages/SignUpPage";
 import CustomerEventPage from "./pages/CustomerEventPage";
 import CustomerAccountPage from "./pages/CustomerAccountPage";
@@ -29,8 +27,6 @@ function App() {
         <Route path="/MyAccount" element={<MyAccount />} />
         <Route path="/events" element={<UseEventPage></UseEventPage>} />
         <Route path="/eventpage" element={<EventPage></EventPage>} />
-        <Route path="/Org_Acc" element={<Organizer_Acc />} />
-        <Route path="/Cus_Acc" element={<Customer_Acc />} />
         <Route path="/SignUpPage" element={<SignUpPage />} />
         <Route path="/Cus_Event" element={<CustomerEventPage/>}/>
         <Route path="/Cus_Order" element={<CustomerOrderPage/>}/>

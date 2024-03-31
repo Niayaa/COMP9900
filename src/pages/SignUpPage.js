@@ -226,7 +226,7 @@ const SignUpPage = () => {
             {phoneError}
           </Typography>
         )}
-        <Link to={isOrganizer ? "/Org_Acc" : "/Cus_Acc"}>
+        <Link to={isOrganizer ? "/MainPage" : "/MainPage"}>
           <Button variant="contained" sx={{ mb: 2 }}>
             Sign Up
           </Button>
