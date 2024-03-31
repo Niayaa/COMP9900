@@ -53,4 +53,26 @@ export const DrawerEventLists = ({ onItemSelected }) => (
   </React.Fragment>
 );
 
+export const DrawerOrganzierLists = ({ onItemSelected }) => (
+  <React.Fragment>
+    <ListItemButton onClick={() => onItemSelected('upcoming')}>
+      <ListItemIcon>
+        <DashboardIcon />
+      </ListItemIcon>
+      <ListItemText primary="Upcoming Event" />
+    </ListItemButton>
+    <ListItemButton onClick={() => onItemSelected('past')}>
+      <ListItemIcon>
+        <DashboardIcon />
+      </ListItemIcon>
+      <ListItemText primary="Past Event" />
+    </ListItemButton>
+    <ListItemButton onClick={() => onItemSelected('report')}>
+      <ListItemIcon>
+        <DashboardIcon />
+      </ListItemIcon>
+      <ListItemText primary="Reports" />
+    </ListItemButton>
+  </React.Fragment>
+);
 
