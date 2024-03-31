@@ -25,6 +25,7 @@ function Navbar() {
           <MenuItem onClick={handleClose} component={Link} to="/Org_Event">Manage events</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/CreateNew">Create New Event</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/Org_Account">Account Information</MenuItem>
+          <MenuItem onClick={handleClose} component={Link} to="/password-reset">Reset Password</MenuItem>
           <MenuItem onClick={() => {
             handleClose();
             logout();
@@ -37,6 +38,7 @@ function Navbar() {
           <MenuItem onClick={handleClose} component={Link} to="/Cus_Order">My Tickets</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/Cus_Event">Manage Events</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/Cus_Account">Account Information</MenuItem>
+          <MenuItem onClick={handleClose} component={Link} to="/password-reset">Reset Password</MenuItem>
           <MenuItem onClick={() => {
             handleClose();
             logout();
