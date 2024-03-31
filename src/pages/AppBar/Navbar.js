@@ -19,7 +19,7 @@ function Navbar() {
   // ... 其他代码
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#226b80' }}>  
+    <AppBar position="static" sx={{ backgroundColor: '#16A085' }}>  
       <Toolbar>
         {/* ... Logo图像和链接 ... */}
          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>

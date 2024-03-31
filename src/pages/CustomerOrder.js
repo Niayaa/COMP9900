@@ -146,6 +146,7 @@ const CustomerOrderPage = () => {
             px: [1],
           }}
         >
+         
           <IconButton onClick={handleDrawerToggle}>
             <ChevronLeftIcon />
           </IconButton>
@@ -155,7 +156,18 @@ const CustomerOrderPage = () => {
           <DrawerListItems onItemSelected={handleEventSelection} />
         </List>
       </Drawer>
+
+     
       <main style={{ flexGrow: 1, padding: '20px' }}>
+      <Box sx={{
+      backgroundImage: 'linear-gradient(45deg, #16A085 30%, #D4EFDF 90%)',
+      borderRadius: 1,
+      p: 1,
+    }}>
+      <Typography variant="h4" component="h1" sx={{ color: 'white' }}>
+        My order
+      </Typography>
+      </Box>
         {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} />}
         {selectedEventType === 'past' && <PastEvents events={pastEvents} />}
       </main>
