@@ -13,6 +13,7 @@ import {
   Button,
   Paper,
   Grid,
+  Typography
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import MuiDrawer from '@mui/material/Drawer';
@@ -119,24 +120,35 @@ const CustomerEventPage = () => {
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
-        <Toolbar />
-        <Grid container spacing={2}>
-          {currentView === 'interests' && interests.map((interest) => (
-            <Grid item xs={12} key={interest.id}>
-              <Paper>{interest.title}: {interest.description}</Paper>
-            </Grid>
-          ))}
-          {currentView === 'collections' && collections.map((collection) => (
-            <Grid item xs={12} key={collection.id}>
-              <Paper>{collection.interestType}: {collection.events.map(event => `${event.title}: ${event.description}`).join(', ')}</Paper>
-            </Grid>
-          ))}
-          {currentView === 'all Events' && allEvents.map((event) => (
-            <Grid item xs={12} key={event.eventId}>
-              <Paper>{event.title}: {event.description}</Paper>
-            </Grid>
-          ))}
-        </Grid>
+          <Box sx={{
+          backgroundImage: 'linear-gradient(45deg, #16A085 30%, #D4EFDF 90%)',
+          borderRadius: 1,
+          p: 1,
+        }}>
+          <Typography variant="h4" component="h1" sx={{ color: 'white' }}>
+            Events
+          </Typography>
+        </Box>
+        <main style={{ flexGrow: 1, padding: '20px'}}>
+          
+          <Grid container spacing={2}>
+            {currentView === 'interests' && interests.map((interest) => (
+              <Grid item xs={12} key={interest.id}>
+                <Paper>{interest.title}: {interest.description}</Paper>
+              </Grid>
+            ))}
+            {currentView === 'collections' && collections.map((collection) => (
+              <Grid item xs={12} key={collection.id}>
+                <Paper>{collection.interestType}: {collection.events.map(event => `${event.title}: ${event.description}`).join(', ')}</Paper>
+              </Grid>
+            ))}
+            {currentView === 'all Events' && allEvents.map((event) => (
+              <Grid item xs={12} key={event.eventId}>
+                <Paper>{event.title}: {event.description}</Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </main>
       </Box>
     </Box>
   );

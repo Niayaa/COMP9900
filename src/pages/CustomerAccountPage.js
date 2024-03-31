@@ -55,8 +55,8 @@ const CustomerAccountPage = ({ existingData = {
                 <TextField
                     label="Name*"
                     variant="outlined"
-                    name="lastName"
-                    value={formData.lastName}
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     margin="normal"
                     fullWidth
