@@ -2,10 +2,20 @@
 import React from 'react';
 import { AppBar, Toolbar, Button, Box, MenuItem, Menu } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../AuthContext';
 
 function Navbar() {
   const { user, logout } = useAuth();
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   // ... 其他代码
 
   return (
@@ -24,7 +34,6 @@ function Navbar() {
           </Button>
             </Box>
 
-          // 用户已经登录，显示用户菜单和登出选项
           <div>
             <Button color="inherit" onClick={handleMenu}>
               {user.name}
@@ -53,7 +62,7 @@ function Navbar() {
               }}>Logout</MenuItem>
             </Menu>
           </div>
-          // 用户未登录，显示登录和注册按钮
+
           <>
             <Button color="inherit" component={Link} to="/login">
               Login
