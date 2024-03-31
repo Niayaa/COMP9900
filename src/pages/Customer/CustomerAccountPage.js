@@ -23,7 +23,7 @@ const CustomerAccountPage = () => {
         billAddress:'',
         preferType:'',
         ageArea:'',
-        gendar:'',
+        gender:'',
     });
     const navigate = useNavigate();
     
@@ -163,10 +163,10 @@ const CustomerAccountPage = () => {
                     </Select>
                 </FormControl>
                 <FormControl fullWidth margin="normal">
-                <InputLabel>Gendar</InputLabel>
+                <InputLabel>Gender</InputLabel>
                     <Select
-                    name="gendar"
-                    value={formData.gendar}
+                    name="gender"
+                    value={formData.gender}
                     onChange={handleChange}
                     disabled={!isEditing}
                     >
