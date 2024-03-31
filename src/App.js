@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "./components/Navibar";
+import Navbar from './pages/AppBar/Navbar';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import PasswordResetPage from "./pages/PasswordResetPage";
@@ -10,8 +10,15 @@ import MyAccount from "./pages/LoginPage";
 import Organizer_Acc from "./pages/account/Organizer";
 import Customer_Acc from "./pages/account/Customer";
 import SignUpPage from "./pages/SignUpPage";
+import CustomerEventPage from "./pages/CustomerEventPage";
+import CustomerAccountPage from "./pages/CustomerAccountPage";
+import CustomerOrderPage from "./pages/CustomerOrder";
+import ContactPage from "./pages/ContactPage";
+import { AuthProvider } from './pages/AuthContext';
+
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Navbar />
       <Routes>
@@ -25,10 +32,15 @@ function App() {
         <Route path="/Org_Acc" element={<Organizer_Acc />} />
         <Route path="/Cus_Acc" element={<Customer_Acc />} />
         <Route path="/SignUpPage" element={<SignUpPage />} />
+        <Route path="/Cus_Event" element={<CustomerEventPage/>}/>
+        <Route path="/Cus_Order" element={<CustomerOrderPage/>}/>
+        <Route path="/Cus_Account" element={<CustomerAccountPage/>}/>
+        <Route path="/Contact" element={<ContactPage/>}/>
         {/* 默认重定向到登录页 */}
         <Route path="/" element={<LoginPage />} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 
