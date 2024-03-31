@@ -19,7 +19,6 @@ const CustomerAccountPage = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: '', // Reminder: Handle passwords securely
         phoneNumber:'',
         billAddress:'',
     });
@@ -33,7 +32,6 @@ const CustomerAccountPage = () => {
         setFormData({
             name: data.company_name || '',
             email: data.org_email || '',
-            password: '', // 密码通常不通过API传输
             phoneNumber: data.org_phone || '',
             billAddress: data.company_address || '',
         });
@@ -105,17 +103,6 @@ const CustomerAccountPage = () => {
                     variant="outlined"
                     name="email"
                     value={formData.email}
-                    onChange={handleChange}
-                    margin="normal"
-                    fullWidth
-                    disabled={!isEditing}
-                />
-                <TextField
-                    label="Password"
-                    variant="outlined"
-                    type="password"
-                    name="password"
-                    value={formData.password}
                     onChange={handleChange}
                     margin="normal"
                     fullWidth
