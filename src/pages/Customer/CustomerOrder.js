@@ -1,30 +1,23 @@
  
 import React, { useState,useEffect  } from "react";
 import { Container, 
-    Grid, 
-    TextField, 
-    Button, 
-    Typography, 
-    Paper, 
-    Box, 
-    Card, 
-    CardContent, 
-    Stack, 
-    InputLabel, 
-    Select, 
-    MenuItem,
-    FormControl,
-    Toolbar,
-    IconButton,
-    Chip } from '@mui/material';
+  Grid, 
+  Typography, 
+  Paper, 
+  Box, 
+  Button, 
+  AppBar, 
+  Toolbar, 
+  IconButton, 
+  CssBaseline, 
+  Drawer, 
+  List, 
+  Divider  } from '@mui/material';
 import { Link } from "react-router-dom";
 import MuiAppBar from '@mui/material/AppBar';
 import {useNavigate } from "react-router-dom";
 import MuiDrawer from '@mui/material/Drawer';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {DrawerListItems} from "../listItems";
 import { UpcomingEvents,PastEvents} from '../Cus_EventList/EventLists';
@@ -33,6 +26,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import HistoryIcon from '@mui/icons-material/History'; 
+import { useAuth } from "../AuthContext";
+
 
 const allEvents = [
     { id: 1, name: 'Event 1', address: '123 Main St', date: '2024-07-21' },
@@ -41,78 +36,62 @@ const allEvents = [
 
   ];
 
-const CustomerOrderPage = () => {
-    const [drawerOpen, setDrawerOpen] = useState(true);
-    const concertInfoArray=[];
-    const navigate = useNavigate();
-  
-    concertInfoArray[0] = {ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR", Date: "THUR, MAR 7, 2024"}
-      
-    async function handleEventPage() { 
-          //对于每个event标签卡 button或者card 点击跳转 会传concert信息给eventpage
-          //（应该是每个event标签卡的json数组里也会存着id和Info，然后读取对应的信息传递）
-          
-          console.log(concertInfoArray)
-          navigate('/eventpage', {state:  concertInfoArray })
-          
-      }
-    const handleDelete = () => {
-          console.info('You clicked the delete icon.');
-        };
-  
-    const [selectedCategory, setSelectedCategory] = React.useState('booked');
-  
-    // Function to handle category change
-      const handleCategoryChange = (category) => {
-      setSelectedCategory(category);
-      }; 
-      
-      const drawerWidth = 240;
-      
-      //for drawer
-      const AppBar = styled(MuiAppBar, {
-        shouldForwardProp: (prop) => prop !== 'open',
-      })(({ theme, open }) => ({
-        zIndex: theme.zIndex.drawer + 1,
-        transition: theme.transitions.create(['width', 'margin'], {
+const DrawerWidth = 240;
+
+const StyledDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+    '& .MuiDrawer-paper': {
+      position: 'relative',
+      whiteSpace: 'nowrap',
+      width: DrawerWidth,
+      transition: theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      boxSizing: 'border-box',
+      ...(!open && {
+        overflowX: 'hidden',
+        transition: theme.transitions.create('width', {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,
         }),
-        ...(open && {
-          marginLeft: drawerWidth,
-          width: `calc(100% - ${drawerWidth}px)`,
-          transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-        }),
-      }));
-  
-      const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-        ({ theme, open }) => ({
-          '& .MuiDrawer-paper': {
-            position: 'relative',
-            whiteSpace: 'nowrap',
-            width: drawerWidth,
-            transition: theme.transitions.create('width', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
-            boxSizing: 'border-box',
-            ...(!open && {
-              overflowX: 'hidden',
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-              width: theme.spacing(7),
-              [theme.breakpoints.up('sm')]: {
-                width: theme.spacing(9),
-              },
-            }),
-          },
-        }),
-      );
+        width: theme.spacing(7),
+        [theme.breakpoints.up('sm')]: {
+          width: theme.spacing(9),
+        },
+      }),
+    },
+  }));
+
+const CustomerOrderPage = () => {
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const { user } = useAuth(); // 使用useAuth获取当前用户信息
+  const [tickets, setTickets] = useState([]);
+  const [selectedEventType, setSelectedEventType] = useState('upcoming');
+
+  const fetchUserTicketsAndEvents = async () => {
+    // 假设 "/api/user-tickets" 返回当前用户的所有票据及其对应的事件信息
+    const response = await fetch(`/api/user-tickets?userId=${user.id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch user tickets and event details');
+    }
+    return await response.json();
+  };
+
+  useEffect(() => {
+    if (user && user.id) {
+      fetchUserTicketsAndEvents()
+        .then(setTickets)
+        .catch(error => console.error("Error fetching tickets or event details:", error));
+    }
+  }, [user]);
+
+  const filterEventsByType = (type) => {
+    const today = new Date();
+    return tickets.filter(({ event }) => {
+      const eventDate = new Date(event.date);
+      return type === 'upcoming' ? eventDate >= today : eventDate < today;
+    });
+  };
       
       const handleDrawerToggle = () => {
         setDrawerOpen(!drawerOpen);
@@ -120,24 +99,12 @@ const CustomerOrderPage = () => {
     
       const handleEventSelection = (eventType) => {
         setSelectedEventType(eventType);
-      };
-
-    const [selectedEventType, setSelectedEventType] = useState('upcoming');
-    const [upcomingEvents, setUpcomingEvents] = useState([]);
-    const [pastEvents, setPastEvents] = useState([]);
-
-    useEffect(() => {
-        const today = new Date();
-        const upcoming = allEvents.filter(event => new Date(event.date) >= today);
-        const past = allEvents.filter(event => new Date(event.date) < today);
-        setUpcomingEvents(upcoming);
-        setPastEvents(past);
-      }, []);   
+      };  
 
     return (
-        <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <Drawer variant="permanent" open={drawerOpen}>
+      <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+      <StyledDrawer variant="permanent" open={drawerOpen}>
         <Toolbar
           sx={{
             display: 'flex',
@@ -146,8 +113,7 @@ const CustomerOrderPage = () => {
             px: [1],
           }}
         >
-         
-          <IconButton onClick={handleDrawerToggle}>
+          <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
             <ChevronLeftIcon />
           </IconButton>
         </Toolbar>
@@ -155,7 +121,7 @@ const CustomerOrderPage = () => {
         <List component="nav">
           <DrawerListItems onItemSelected={handleEventSelection} />
         </List>
-      </Drawer>
+      </StyledDrawer>
 
      
       <main style={{ flexGrow: 1, padding: '20px' }}>
@@ -168,8 +134,17 @@ const CustomerOrderPage = () => {
         Tickets
       </Typography>
       </Box>
-        {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} />}
-        {selectedEventType === 'past' && <PastEvents events={pastEvents} />}
+      <Grid container spacing={2}>
+          {filterEventsByType(selectedEventType).map(({ event, id, type, amount, price }) => (
+            <Grid item xs={12} md={6} key={id}>
+              <Paper elevation={3} sx={{ padding: 2 }}>
+                <Typography variant="h6">{event.name}</Typography>
+                <Typography color="textSecondary">{event.date} at {event.address}</Typography>
+                <Typography>Ticket ID: {id}, Type: {type}, Amount: {amount}, Price: ${price}</Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
       </main>
     </Box>
     );

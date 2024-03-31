@@ -18,6 +18,8 @@ import {
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import MuiDrawer from '@mui/material/Drawer';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+import { useAuth } from "../AuthContext";
+
 
 const fetchInterests = () => {
   return [
@@ -61,13 +63,67 @@ const CustomerEventPage = () => {
   const [collections, setCollections] = useState([]);
   const [allEvents, setAllEvents] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(true);
+  const { user } = useAuth(); // 使用useAuth获取当前用户信息
+
+  const fetchPreferredEvents = async (userId) => {
+    try {
+      const response = await fetch(`/api/preferred-events/${userId}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const preferredEvents = await response.json();
+      return preferredEvents;
+    } catch (error) {
+      console.error("Failed to fetch preferred events:", error);
+      return [];
+    }
+  };  
+
+  const fetchAllEvents = async () => {
+    try {
+      const response = await fetch('/api/events'); // 你的后端API端点
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data; // 返回解析后的JSON数据
+    } catch (error) {
+      console.error('There has been a problem with your fetch operation:', error);
+      throw error; // 将错误向上抛，以便可以在调用时捕获
+    }
+  };
+  
 
   useEffect(() => {
-    setInterests(fetchInterests());
-    setCollections(fetchCollections());
-    setAllEvents(fetchAllEvents());
-  }, []);
+  // 假设 fetchInterests 返回用户偏好的事件
+  if (user && user.id) { 
+    fetchPreferredEvents(user.id).then(data => {
+      setInterests(data);
+    });
+  }
 
+  // 假设 fetchAllEvents 返回所有事件
+  fetchAllEvents().then(data => {
+    setAllEvents(data); // 设置所有事件的状态
+
+    // 动态创建 collections
+    const eventsByType = data.reduce((acc, event) => {
+      const { type } = event;
+      acc[type] = acc[type] ? [...acc[type], event] : [event];
+      return acc;
+    }, {});
+
+    const newCollections = Object.entries(eventsByType).map(([type, events]) => ({
+      interestType: type,
+      events,
+    }));
+
+    setCollections(newCollections); // 设置根据类型分类的事件集状态
+  }).catch(error => {
+    console.error('Failed to fetch events:', error);
+    // 在这里处理错误，例如设置一个错误状态来在UI中显示
+  });
+}, [user]); // 依赖于 user 状态，确保在用户信息变化时重新获取数据
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
   };
@@ -75,6 +131,8 @@ const CustomerEventPage = () => {
   const handleEventSelection = (eventType) => {
     setCurrentView(eventType);
   };
+
+
 
   const drawerWidth = 150;
   const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
@@ -132,14 +190,34 @@ const CustomerEventPage = () => {
         <main style={{ flexGrow: 1, padding: '20px'}}>
           
           <Grid container spacing={2}>
-            {currentView === 'interests' && interests.map((interest) => (
-              <Grid item xs={12} key={interest.id}>
-                <Paper>{interest.title}: {interest.description}</Paper>
+          {currentView === 'interests' && interests.map((interest) => (
+              <Grid item xs={12} md={6} lg={4} key={interest.id}>
+                <Paper elevation={3} sx={{ padding: 2, margin: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <Typography variant="h6" component="h2" sx={{ marginBottom: 1 }}>
+                    {interest.title}
+                  </Typography>
+                  <Typography variant="body1" sx={{ marginBottom: 1 }}>
+                    {interest.description}
+                  </Typography>
+                  {/* 假设interest对象包含date和location属性 */}
+                  <Typography variant="body2" color="text.secondary">
+                    Date: {interest.date}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Location: {interest.location}
+                  </Typography>
+                </Paper>
               </Grid>
             ))}
+
             {currentView === 'collections' && collections.map((collection) => (
-              <Grid item xs={12} key={collection.id}>
-                <Paper>{collection.interestType}: {collection.events.map(event => `${event.title}: ${event.description}`).join(', ')}</Paper>
+                <Grid item xs={12} key={collection.interestType}>
+                  <Paper>
+                    <Typography variant="h6">{collection.interestType} Events</Typography>
+                    {collection.events.map(event => (
+                      <div key={event.eventId}>{event.title}: {event.description}</div>
+                    ))}
+                </Paper>
               </Grid>
             ))}
             {currentView === 'all Events' && allEvents.map((event) => (

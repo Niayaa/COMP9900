@@ -19,9 +19,9 @@ const CustomerAccountPage = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: '', // Reminder: Handle passwords securely
         phoneNumber:'',
         billAddress:'',
+        preferType:'',
     });
     const navigate = useNavigate();
     
@@ -31,11 +31,11 @@ const CustomerAccountPage = () => {
         const response = await fetch('/api/organizer/data');
         const data = await response.json();
         setFormData({
-            name: data.company_name || '',
-            email: data.org_email || '',
-            password: '', // 密码通常不通过API传输
-            phoneNumber: data.org_phone || '',
-            billAddress: data.company_address || '',
+            name: data.cus_name || '',
+            email: data.cus_email || '',
+            phoneNumber: data.cus_phone || '',
+            billAddress: data.bill_address|| '',
+            preferType: data.preferType || '',
         });
         };
         
@@ -105,17 +105,6 @@ const CustomerAccountPage = () => {
                     variant="outlined"
                     name="email"
                     value={formData.email}
-                    onChange={handleChange}
-                    margin="normal"
-                    fullWidth
-                    disabled={!isEditing}
-                />
-                <TextField
-                    label="Password"
-                    variant="outlined"
-                    type="password"
-                    name="password"
-                    value={formData.password}
                     onChange={handleChange}
                     margin="normal"
                     fullWidth
