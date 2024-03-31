@@ -26,8 +26,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import {DrawerListItems} from "./listItems";
-import { UpcomingEvents,PastEvents} from './Cus_EventList/EventLists';
+import {DrawerListItems} from "../listItems";
+import { UpcomingEvents,PastEvents} from '../Cus_EventList/EventLists';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -165,7 +165,7 @@ const CustomerOrderPage = () => {
       p: 1,
     }}>
       <Typography variant="h4" component="h1" sx={{ color: 'white' }}>
-        My order
+        Tickets
       </Typography>
       </Box>
         {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} />}

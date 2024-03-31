@@ -12,7 +12,7 @@ import {
   FormControl
 } from '@mui/material';
 import { useNavigate } from "react-router-dom";
-import { useAuth } from './AuthContext';
+import { useAuth } from '../AuthContext';
 
 const CustomerAccountPage = ({ existingData = {
     name: 'John',
@@ -48,7 +48,7 @@ const CustomerAccountPage = ({ existingData = {
     return (
         <Box sx={{ display: 'flex' }}>
         <Container maxWidth="lg">
-          <Typography variant="h4" gutterBottom>Welcome Back {existingData.firstName}</Typography>
+          <Typography variant="h4" gutterBottom>Welcome Back, {existingData.name}</Typography>
           <Grid container spacing={3} marginTop={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="h6">Account Information</Typography>
