@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 const PasswordResetPage = () => {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -16,6 +16,7 @@ const PasswordResetPage = () => {
   const [codeError, setCodeError] = useState("");
   // 控制发送code按钮60s内不能按
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const navigate = useNavigate();
   const handleCodeChange = (event) => {
     setCode(event.target.value);
     if (!event.target.value.trim()) {
@@ -33,15 +34,7 @@ const PasswordResetPage = () => {
     }
     return () => clearTimeout(timer);
   }, [buttonDisabled]);
-  const getCode = () => {
-    // 只对符合格式要求的发
-    if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address");
-      return;
-    } else {
-      setEmailError("");
-    }
-  };
+
   const handlePasswordChange = (event) => {
     setPassword(event.target.value);
     if (!event.target.value.trim()) {
@@ -79,6 +72,58 @@ const PasswordResetPage = () => {
       setPwdConError("Confirm Password must be the same as password");
     } else {
       setPwdConError("");
+    }
+  };
+  // 假设后端提供了一个用于发送验证码的API
+  const sendCodeApi = " https://66065321d92166b2e3c3968a.mockapi.io/users";
+  // 假设后端提供了一个用于验证和重置密码的API
+  const resetPasswordApi = "https://66065321d92166b2e3c3968a.mockapi.io/users";
+  const getCode = async () => {
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    // 发送验证码请求到后端
+    try {
+      const response = await fetch(sendCodeApi, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) throw new Error("Error sending code.");
+
+      setButtonDisabled(true); // 禁用获取验证码按钮
+      // 可以设置状态显示验证码已发送的提示信息
+    } catch (error) {
+      setEmailError(error.message);
+    }
+  };
+
+  const handlePasswordReset = async (event) => {
+    event.preventDefault();
+    if (password !== pwdCon) {
+      setPwdConError("Confirm Password must be the same as password");
+      return;
+    }
+    // 发送密码重置请求到后端
+    try {
+      const response = await fetch(resetPasswordApi, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, code, password }),
+      });
+
+      if (!response.ok) throw new Error("Error resetting password.");
+
+      // 密码重置成功，跳转到登录页面
+      navigate("/login");
+    } catch (error) {
+      setPasswordError(error.message);
     }
   };
   return (
@@ -179,7 +224,11 @@ const PasswordResetPage = () => {
         </Typography>
       )}
       <Link to="/login">
-        <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
+        <Button
+          variant="contained"
+          sx={{ mb: 2, width: "300px" }}
+          onClick={handlePasswordReset}
+        >
           Reset
         </Button>
       </Link>

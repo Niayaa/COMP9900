@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 const SignUpPage = () => {
+  const navigate = useNavigate();
   const [isOrganizer, setIsOrganizer] = useState(true);
   const [username, setUsername] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
+  const [organizationAddress, setOrganizationAddress] = useState("");
   // 用于检测username是否为空
   const [usernameError, setUsernameError] = useState("");
   // email
   const [email, setEmail] = useState("");
   // 用于检测email是否符合格式
   const [emailError, setEmailError] = useState("");
-
+  const [userAddress, setUserAddress] = useState("");
   // password
   const [password, setPassword] = useState("");
   //phone number
-  const [phone, setphone] = useState("");
+  const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
   // 用于检测password是否为空
   const [passwordError, setPasswordError] = useState("");
@@ -51,7 +54,17 @@ const SignUpPage = () => {
       setEmailError("");
     }
   };
+  const handleOrganizationNameChange = (event) => {
+    setOrganizationName(event.target.value);
+  };
 
+  const handleOrganizationAddressChange = (event) => {
+    setOrganizationAddress(event.target.value);
+  };
+
+  const handleUserAddressChange = (event) => {
+    setUserAddress(event.target.value);
+  };
   const handlePasswordChange = (event) => {
     setPassword(event.target.value);
     if (!event.target.value.trim()) {
@@ -62,7 +75,7 @@ const SignUpPage = () => {
     }
   };
   const handlePhoneChange = (event) => {
-    setphone(event.target.value);
+    setPhone(event.target.value);
     if (!event.target.value.trim()) {
       setPhoneError("phone number cannot be empty");
     } else {
@@ -86,6 +99,93 @@ const SignUpPage = () => {
     }
   };
 
+  const handleRegisterAsOrganizer = () => {
+    setIsOrganizer(true);
+    // 重置表单字段
+    resetFormFields();
+  };
+
+  // 当点击注册为顾客时
+  const handleRegisterAsCustomer = () => {
+    setIsOrganizer(false);
+    // 重置表单字段
+    resetFormFields();
+  };
+
+  // 重置表单字段的函数
+  const resetFormFields = () => {
+    setUsername("");
+    setUserAddress("");
+    setOrganizationName("");
+    setOrganizationAddress("");
+    setEmail("");
+    setPassword("");
+    setPhone("");
+    setpwdCon("");
+    // 重置所有的错误信息
+    setUsernameError("");
+    setEmailError("");
+    setPasswordError("");
+    setPhoneError("");
+    setPwdConError("");
+  };
+
+  // 假设注册API的URL如下
+  const registerApiUrl = " https://66065321d92166b2e3c3968a.mockapi.io/users";
+  const [signUpError, setSignUpError] = useState("");
+  const handleSignUp = async () => {
+    // 构建请求体数据
+    setSignUpError("");
+    const signUpData = {
+      username: username,
+      email: email,
+      password: password,
+      phone: phone,
+      // 如果是组织者，还需要包含以下信息
+      ...(isOrganizer && {
+        organizationName: organizationName,
+        organizationAddress: organizationAddress,
+      }),
+      // 如果是客户，可能需要包含支付账单地址
+      ...(!isOrganizer && {
+        userAddress: userAddress,
+      }),
+    };
+
+    try {
+      const response = await fetch(registerApiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signUpData),
+      });
+
+      if (!response.ok) {
+        // 如果HTTP响应码不是2xx, 抛出异常
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to register.");
+      }
+
+      if (response.ok) {
+        if (isOrganizer) {
+          navigate("/Org_Acc"); // 如果是组织者，跳转到组织者账户页面
+        } else {
+          navigate("/Cus_Acc"); // 如果是客户，跳转到客户账户页面
+        }
+      } else {
+        // 如果注册不成功，获取错误信息
+        const errorData = await response.json();
+        setSignUpError(
+          errorData.message || "Registration failed. Please try again."
+        );
+      }
+    } catch (error) {
+      // 如果请求失败，设置错误信息
+      setSignUpError("An unexpected error occurred. Please try again.");
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", justifyContent: "center", mt: 4, gap: 4 }}>
       <Box
@@ -99,13 +199,13 @@ const SignUpPage = () => {
       >
         <Button
           variant={isOrganizer ? "contained" : "outlined"}
-          onClick={() => setIsOrganizer(true)}
+          onClick={handleRegisterAsOrganizer}
         >
           Register as Organizer
         </Button>
         <Button
           variant={!isOrganizer ? "contained" : "outlined"}
-          onClick={() => setIsOrganizer(false)}
+          onClick={handleRegisterAsCustomer}
         >
           Register as Customer
         </Button>
@@ -125,11 +225,15 @@ const SignUpPage = () => {
           <>
             <TextField
               label="Organization Name"
+              value={organizationName}
+              onChange={handleOrganizationNameChange}
               variant="outlined"
               sx={{ mb: 2 }}
             />
             <TextField
               label="Organization Address"
+              value={organizationAddress}
+              onChange={handleOrganizationAddressChange}
               variant="outlined"
               sx={{ mb: 2 }}
             />
@@ -137,13 +241,16 @@ const SignUpPage = () => {
         ) : (
           <>
             <TextField
-              label="Payment Bill Address"
+              label="Name"
+              onChange={handleUsernameChange}
+              value={username}
               variant="outlined"
               sx={{ mb: 2 }}
             />
             <TextField
-              label="Name"
-              onChange={handleUsernameChange}
+              label="Payment Bill Address"
+              value={userAddress}
+              onChange={handleUserAddressChange}
               variant="outlined"
               sx={{ mb: 2 }}
             />
@@ -163,6 +270,7 @@ const SignUpPage = () => {
         <TextField
           label="Email Address"
           onChange={handleEmailChange}
+          value={email}
           variant="outlined"
           sx={{ mb: 2 }}
         />
@@ -178,6 +286,7 @@ const SignUpPage = () => {
         )}
         <TextField
           label="Password"
+          value={password}
           onChange={handlePasswordChange}
           variant="outlined"
           type="password"
@@ -195,6 +304,7 @@ const SignUpPage = () => {
         )}
         <TextField
           label="Password confirmation"
+          value={pwdCon}
           onChange={handlePwdConChange}
           variant="outlined"
           type="password"
@@ -212,6 +322,7 @@ const SignUpPage = () => {
         )}
         <TextField
           label="Phone Number"
+          value={phone}
           onChange={handlePhoneChange}
           variant="outlined"
           sx={{ mb: 2 }}
@@ -226,11 +337,10 @@ const SignUpPage = () => {
             {phoneError}
           </Typography>
         )}
-        <Link to={isOrganizer ? "/Org_Acc" : "/Cus_Acc"}>
-          <Button variant="contained" sx={{ mb: 2 }}>
-            Sign Up
-          </Button>
-        </Link>
+        {signUpError && <Typography color="error">{signUpError}</Typography>}
+        <Button variant="contained" onClick={handleSignUp} sx={{ mb: 2 }}>
+          Sign Up
+        </Button>
 
         <Link to="/login">Already have an account? Login!</Link>
       </Box>

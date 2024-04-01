@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -14,37 +14,33 @@ export default function MainPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const eventTypes = ["All", "Concert", "Live", "Opear", "Comedy"];
-  const [events, setEvents] = useState([
-    // 假设这里是你所有的事件数据
-    {
-      ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR",
-      Date: "THUR, MAR 7, 2024",
-      type: "Concert",
-      id: 1,
-    },
-    // 添加更多的事件
-    {
-      ConcertTitle: "ED SHEERAN | + - = ÷ x TOUR",
-      Date: "SAT, APR 10, 2024",
-      type: "Live",
-      id: 2,
-    },
-    {
-      ConcertTitle: "BILLIE EILISH | HAPPIER THAN EVER TOUR",
-      Date: "FRI, MAY 15, 2024",
-      type: "Concert",
-      id: 3,
-    },
-    {
-      ConcertTitle: "OPERA EVENT",
-      Date: "WED, MAY 20, 2024",
-      type: "Concert",
-      id: 4,
-    },
-    // ...其他事件
-  ]);
+  const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [timeFilter, setTimeFilter] = useState("All");
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(
+          "https://66065321d92166b2e3c3968a.mockapi.io/events"
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        console.log(data);
+        setEvents(data);
+        setFilteredEvents(data); // 初始时显示所有事件
+      } catch (error) {
+        console.error(
+          "There has been a problem with your fetch operation:",
+          error
+        );
+      }
+    };
+    fetchEvents();
+  }, []);
+
   const handleTimeFilterChange = (selectedTime) => {
     setTimeFilter(selectedTime);
     let newFilteredEvents;
@@ -106,7 +102,7 @@ export default function MainPage() {
   };
 
   const handleEventClick = (event) => {
-    navigate("/eventpage", { state: [event] }); // 将对象包装在数组中
+    navigate("/eventpage", { state: [event] });
   };
 
   return (
