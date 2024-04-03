@@ -1,11 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
+import Sun from '@mui/icons-material/LightMode';
 import { styled } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
-import { Avatar, Box, Button, CardHeader, Container, ImageList, ListItem, Stack } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardHeader, Chip, Container, ImageList, ListItem, Stack, TablePagination } from '@mui/material';
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -65,6 +66,7 @@ function EventPage(props) {
     const [seatarea, setSeatarea] = useState('');
     const [seatamount, setSeatamount] = useState('');
     const [tags, setTags] = useState(['#TaylorSwiftLive, #SwiftieNation, #FolkloreOnStage, #EvermoreExperience, #SwiftieMeetup']);
+    const [ticketType, setTicketType] = useState([]);
     const [openC, setOpenC] = useState(false);
     const [openP, setOpenP] = useState(false);
     // const [totalRating, setTotalRating] = useState([2,3,4,5]);
@@ -120,9 +122,13 @@ function EventPage(props) {
     }
 
     async function fetchEventInfo(eventID){
-        await fetch("https://660265249d7276a75553232d.mockapi.io/event/"+`${eventID}`,{
+        // await fetch("https://660265249d7276a75553232d.mockapi.io/event/"+`${eventID}`,{
+            await fetch("http://demo5359668.mockable.io/events/"+`${eventID}`,{
             method: 'GET',
-            headers: {'content-type':'application/json'},
+            headers: {
+                'content-type':'application/json',
+                
+            },
         }).then(res => {
             if (res.ok) {
                 return res.json();
@@ -134,6 +140,10 @@ function EventPage(props) {
             
             console.log("fetchEventInfo", event)
             setEventInfo(event)
+            setTags(event.tags)
+            setTicketType(event.seat_area)
+            console.log("Hei hei", tags)
+            console.log("Hei hei", event.seat_areas)
 
           }).catch(error => {
             // handle error
@@ -267,7 +277,15 @@ function EventPage(props) {
             <Grid  item xs={12} md={2}>
             <Box sx={{ width: '100%' }}>
             <Stack spacing={2} >
-                <Box sx={{ m: 1, minWidth: 250 }} elevation={0} style={{ padding: 2 }}>{tags}</Box>
+                <Grid sx={{ m: 1, minWidth: 250 }} elevation={0} style={{ padding: 2 }}>
+                    {/* {tags} */}
+                    {tags.map((tag, index)=>(
+                        // <Chip>
+                        <Button>{tag}</Button>
+                            
+                    //   {/* </Chip> */}
+                    ))}
+                </Grid>
                     <Grid container direction={'column'}>
                     <div>Tickets</div>
                     <form onSubmit={handleSeatFormSubmit}>
@@ -283,9 +301,12 @@ function EventPage(props) {
                         <MenuItem value="">
                             <em>None</em>
                         </MenuItem>
-                        <MenuItem value={'A'}>A</MenuItem>
+                        {ticketType.map((area,index)=>(
+                            <MenuItem value={area}>{area}</MenuItem>
+                        ))}
+                        {/* <MenuItem value={'A'}>A</MenuItem>
                         <MenuItem value={'B'}>B</MenuItem>
-                        <MenuItem value={'C'}>C</MenuItem>
+                        <MenuItem value={'C'}>C</MenuItem> */}
                         </Select>
                         <FormHelperText>Select Seat Area</FormHelperText>
                     </FormControl>
@@ -303,10 +324,10 @@ function EventPage(props) {
                         </MenuItem>
                         <MenuItem value={1}>1</MenuItem>
                         <MenuItem value={2}>2</MenuItem>
-                        <MenuItem value={3}>3</MenuItem>
+                        {/* <MenuItem value={3}>3</MenuItem>
                         <MenuItem value={4}>4</MenuItem>
                         <MenuItem value={5}>5</MenuItem>
-                        <MenuItem value={6}>6</MenuItem>
+                        <MenuItem value={6}>6</MenuItem> */}
                         </Select>
                         <FormHelperText>Select Seat Amount</FormHelperText>
                     </FormControl>
