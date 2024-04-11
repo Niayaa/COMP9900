@@ -11,8 +11,20 @@ from django.http import JsonResponse, HttpResponse
 def create_test_data(request):
     # 创建两个 Customer 用户
     # print("come here 1")
+<<<<<<< HEAD
     if not Organizer.objects.exists():
         Organizer.objects.create(
+=======
+    live_tags = ['rock', 'pop', 'electronic', 'jazz', 'acoustic', 'indie', 'folk', 'blues', 'country', 'reggae']
+    concert_tags = ['magic', 'dance', 'circus', 'drama', 'puppetry', 'illusion', 'mime', 'ballet', 'greatest', 'theater']
+    comedy_tags = ['standup', 'improv', 'satire', 'sketch', 'dark', 'parody', 'slapstick', 'absurdist', 'observational', 'situational']
+    opera_tags = ['classic', 'modern', 'experimental', 'baroque', 'romantic', 'masterpiece', 'astonishing', 'modern', 'dreamlistic', 'english']
+
+    all_tags = live_tags + concert_tags + comedy_tags + opera_tags
+
+    if not Organizer.objects.exists():
+        Organizer.objects.create( #第一个org账户
+>>>>>>> origin/LZY——New
             org_email="org@qq.com",
             org_password=make_password("p123"),
             company_name="cc",
@@ -20,7 +32,11 @@ def create_test_data(request):
             org_phone="111"
         ).save()
         # print("come here 2")
+<<<<<<< HEAD
         Organizer.objects.create(
+=======
+        Organizer.objects.create( #第二个org账户
+>>>>>>> origin/LZY——New
             org_email="org@bbb.com",
             org_password=make_password("p123"),
             company_name="cc",
@@ -33,7 +49,11 @@ def create_test_data(request):
 
     # 创建 Customer 样例数据
     if not Customer.objects.exists():
+<<<<<<< HEAD
         Customer.objects.create(
+=======
+        Customer.objects.create( #第一个cus账户，设置随机tag为6个, 设置喜欢演出类型
+>>>>>>> origin/LZY——New
             cus_name="11",
             cus_email="lzy2545322339@gmail.com",
             gender="Male",
@@ -41,10 +61,18 @@ def create_test_data(request):
             cus_password=make_password("p123"),
             bill_address="cc",
             cus_phone="111",
+<<<<<<< HEAD
             account_balance = 0
         ).save()
         # print("come here 4")
         Customer.objects.create(
+=======
+            account_balance = 0,
+            prefer_tags = set(random.sample(all_tags, 6))
+        ).save()
+        # print("come here 4")
+        Customer.objects.create( #第一个cus账户，设置随机tag为6个，不设置喜欢演出类型
+>>>>>>> origin/LZY——New
             cus_name="11",
             cus_email="2545322339@qq.com",
             gender="Male",
@@ -52,10 +80,18 @@ def create_test_data(request):
             cus_password=make_password("p123"),
             bill_address="cc",
             cus_phone="111",
+<<<<<<< HEAD
             account_balance = 0
         ).save()
         # print("come here 5")
         Customer.objects.create(
+=======
+            account_balance = 0,
+            prefer_tags = set(random.sample(all_tags, 6))
+        ).save()
+        # print("come here 5")
+        Customer.objects.create( #第3个cus账户，不设置tag，不设置喜欢演出类型
+>>>>>>> origin/LZY——New
             cus_name="11",
             cus_email="11@qq.com",
             gender="Male",
@@ -63,11 +99,17 @@ def create_test_data(request):
             cus_password=make_password("p123"),
             bill_address="cc",
             cus_phone="111",
+<<<<<<< HEAD
             account_balance = 0
         ).save()
         # print("come here 6")
     # else:
     #     return HttpResponse("customer is already exist")
+=======
+            account_balance = 0,
+            prefer_tags = set(random.sample(all_tags, 6))
+        ).save()
+>>>>>>> origin/LZY——New
 
     # 创建事件
     if not Event_info.objects.exists():
@@ -108,6 +150,10 @@ def create_test_data(request):
                 event_type=event["event_type"],
                 event_last_selling_date=timezone.datetime.strptime(event["event_date"], "%Y-%m-%d") - timezone.timedelta(
                     days=1),  # 售票截止日期假设为活动前1天
+<<<<<<< HEAD
+=======
+                event_tags = random.sample(all_tags, 5),
+>>>>>>> origin/LZY——New
                 organization=organizer[i % 2],  # 假设的组织者ID
             )
             event_instance.save()
@@ -125,8 +171,11 @@ def create_test_data(request):
         # print("come here 10")
         # print(ticket)
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> origin/LZY——New
         event_type = ['concert', 'live', 'comedy', 'opera']
         event_date = [-7, 0, 6, 25, 45]
         event_details = []
@@ -152,9 +201,30 @@ def create_test_data(request):
                 event_image_url="static/default.jpg",  # 确保这个路径下有一个名为 default.jpg 的图片
                 event_type=event_detail['type'],
                 event_last_selling_date=last_selling_date,
+<<<<<<< HEAD
                 organization=organizer[i % 2]
             )
             created_event.save()
+=======
+                event_tags = random.sample(all_tags, 5),
+                organization=organizer[i % 2]
+            )
+            created_event.save()
+
+            no_tag_event = Event_info( #这个设置为没有tag的演出
+                event_name ="No tag Event",
+                event_date = (timezone.now() + timedelta(days=13)).replace(second=0,microsecond=0),                                                                             
+                event_description=f"This is a great event.",
+                event_address="1234 Event St.",
+                event_image_url="static/default.jpg",  # 确保这个路径下有一个名为 default.jpg 的图片
+                event_type='concert',
+                event_last_selling_date = event_date - timedelta(days=1),
+                event_tags = None,
+                organization=organizer[i % 2]
+            )
+
+            no_tag_event.save()
+>>>>>>> origin/LZY——New
             i += 1
             # print(event)
             for ticket_type in ["A", "B", "C"]:
@@ -179,6 +249,7 @@ def create_test_data(request):
     # print(events)
     customers = Customer.objects.all()
     # # print(customers)
+<<<<<<< HEAD
     # # 两个customer都订购了每场演出的A类票一张
     for event in events:
         # print(event)
@@ -203,6 +274,33 @@ def create_test_data(request):
             if a_type_ticket.ticket_remain > 0:
                 a_type_ticket.ticket_remain -= 1
                 a_type_ticket.save()
+=======
+    # # 两个customer都订购了每场演出的各类票各张
+    for event in events:
+        # print(event)
+        tickets = Ticket_info.objects.filter(event=event).all()
+        # print(a_type_ticket)
+        for customer in customers:
+            for ticket in tickets:
+            # booking_amount = 
+                total_booked_tickets = Reservation.objects.filter(event=event, ticket=ticket).count()
+                row_number = total_booked_tickets // 20 + 1  # 确定排数，每排20个座位
+                seat_number = total_booked_tickets % 20 + 1  # 确定在当前排的座位号
+                seat_assignment = f"A-{row_number}-{seat_number}"
+                reserve = Reservation(
+                    customer=customer,
+                    event=event,
+                    ticket=ticket,
+                    amount=random.randint(1, 5),
+                    reservation_time = event.event_date - timezone.timedelta(days = 8),
+                    reserve_seat = seat_assignment
+                )
+                reserve.save()
+
+                if ticket.ticket_remain - reserve.amount > 0 :
+                    ticket.ticket_remain -= reserve.amount
+                    ticket.save()
+>>>>>>> origin/LZY——New
     
     # 两个customer都在订购并且已结束超过一天的活动中，留下了评论，并给出了5分的评分，评论内容不能相同
     i = 0
@@ -226,5 +324,9 @@ def create_test_data(request):
                     reply_time=(timezone.now() + timedelta(minutes=1)).replace(second=0, microsecond=0)
                 ).save()
         i += 1
+<<<<<<< HEAD
     return HttpResponse("Sample events and reservations created successfully.", status = 200)
 
+=======
+    return HttpResponse("Sample events and reservations created successfully.", status = 200)
+>>>>>>> origin/LZY——New
