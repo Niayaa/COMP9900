@@ -29,6 +29,7 @@ export default function MainPage() {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
+        console.log('Event',data);
         setEvents(data);
         setFilteredEvents(data); // 初始时显示所有事件，后续可以根据前端逻辑进行筛选
       } catch (error) {

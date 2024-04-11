@@ -1,64 +1,101 @@
-"""
-URL configuration for myproj project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import TemplateView
 from rest_framework import routers
 
 from event_system_app import views
-from event_system_app import view_test
+from event_system_app import view_test, view_test2
 
 router = routers.DefaultRouter()
 
 urlpatterns = [
+    # 进入主界面自动运行功能
+    #
+
     # #创建测试数据
-    path('create_sample_data/', view_test.create_sample_data, name = 'create_sample_data'),
-
-    path('mainpage/events/filter', views.mainpage_filter_events, name='mainpage_filter_events'),
-    # 测试端口
-    path('tesing_code/', views.testing_port, name='testing_port'),
-
-    # #给用户推荐活动
-    path('api/events_grouped/', views.get_events_grouped_by_type, name = 'events_grouped_by_type'),
-    path('api/user/<int:user_id>/preferred-events/', views.get_user_preferred_events, name='user_preferred_events'),
-    path('api/events/', views.get_all_events, name='all_events'),
-
-    # #用户订购过的演出查看功能
-    #订购了即将开始的活动
-    path('api/upcoming_events/<int:user_id>/', views.get_upcoming_reservations, name='upcoming_events'),
-    path('api/past_events/<int:user_id>/', views.get_past_reservations, name='past_events'),
-
-    #注册和登录功能
-    path("register/", views.register, name="register"),  # 注册功能
-    path("login/", views.user_login, name="user_login"),  # 登录功能
-
-    # 展示所有演出的功能
-    path('events/', views.EventListView.as_view(), name='event_list'),  # 展示所有演出的功能
-
-    # 找回密码的功能
-    path('send_reset_code/', views.send_reset_code, name='send_reset_code'),
-    path('reset_password/', views.reset_password, name='reset_password'),
+    path('create_sample_data/', view_test2.create_test_data, name = 'create_sample_data'),#1
 
 
-    # 当进入登录后进入用户界面
-    path('cus/<int:user_id>', views.cus_info_show, name='cus_info_show'),  # 进入用户界面
-    path('org/<int:user_id>', views.org_info_show, name='org_info_show'),  # 进入组织者界面
 
-    # 个人界面上的信息修改功能
-    path('edit/cus/', views.edit_cus_info, name='edit_cus_info'),
-    path('edit/org/', views.edit_org_info, name='edit_org_info'),
+    # Mainpage的功能
+    # '''测试通过，搜索框功能还没编写''',
+    #       1)按照演出种类和时间来进行筛选                
+    #       2)搜索框搜索功能
+    path('mainpage/events/filter', views.MainPage.mainpage_filter_events, name='mainpage_filter_events'),#2
+
+
+    # customer_order_page 给用户推荐活动的界面
+    #   测试完成
+    #       1)upcoming and past
+    #       2)用户取消过的演出
+    #       3)用户查看演出票详细信息
+    path('cus/all/events/', views.CusAccountFunction.upcoming_and_past, name = 'upcoming_and_past'),#3
+    # url的设计方式为 http://127.0.0.1:8000/cus/all/events/?user_id=1
+    path('cus/all_canceled/', views.CusAccountFunction.canceled_events, name = 'canceled_events'),#4
+    # url的设计方式为 http://127.0.0.1:8000/cus/all_canceled/?user_id=1
+    path('cus/event/ticket/', views.CusAccountFunction.event_ticket, name = 'canceled_events'),#5
+    # url的设计方式为 http://127.0.0.1:8000/cus/event/ticket/?user_id=1&event_id=3
+
+
+
+    # loginpage 和 signUppage 的功能:
+    #   测试完成
+    #       1)注册功能
+    #       2)登录功能
+    #       3)发送验证码功能
+    #       4)提交保存修改密码
+    path('send_reset_code/', views.LoginPage.send_reset_code, name='send_reset_code'), #6
+    path('reset_password/', views.LoginPage.reset_password, name='reset_password'), #7
+    path("register/", views.LoginPage.register, name="register"), #8
+    path("login/", views.LoginPage.user_login, name="user_login"), #9
+
+
+    # CustomerAccountPage.js 和 OrganizerAccountPage.js
+    # 测试完成
+    #       1)向页面反馈当前登录的消费者的个人信息
+    #       2)向页面反馈当前登录的组织者的个人信息
+    #       3)消费者修改并保存个人信息
+    #       4)组织者修改并保存个人信息
+    path('cus/<int:user_id>', views.AccountInfoPage.cus_info_show, name='cus_info_show'), #10
+    path('org/<int:user_id>', views.AccountInfoPage.org_info_show, name='org_info_show'), #11
+    path('edit/cus/', views.AccountInfoPage.edit_cus_info, name='edit_cus_info'), #12
+    path('edit/org/', views.AccountInfoPage.edit_org_info, name='edit_org_info'), #13
+
+
+    # Create Event And Cancel Page
+    #     测试完成
+    #       1)创建演出
+    #       2)修改演出
+    #       3)删除演出
+    path('event_create/', views.OrganizerFunctionPage.event_create, name='event_create'), #14
+    path('edit_event/', views.OrganizerFunctionPage.edit_event, name = 'edit_event'), #15
+    path('delete_event/', views.OrganizerFunctionPage.delete_event, name='delete_event'),#16
+
+
+    # PayAndCancel（针对用户来说）
+    #   测试完成
+    #       1)订票功能
+    #       2)取消预订功能
+    path('booking/', views.PayAndCancel.payment, name = 'payment'), #17
+    #     传入url的时候要按照这样传入 http://127.0.0.1:8000/booking/?email=2545322339@qq.com&event_id=1
+    path('customer_cancel/', views.PayAndCancel.cancel_ticket, name = 'cancel_ticket'), #18
+    #     传入url的时候要按照这样传入 http://127.0.0.1:8000/customer_cancel/?amount=1&reservation_id=1
+
+
+    # Event Info page
+    #   测试完成
+    #   1)展示演出的详细信息
+    #   2)展示评论信息和回复信息
+    #   3)评论功能
+    #   4)组织者回复功能
+    path('event_page_detail/', views.EventDetailPage.get_event_detail, name = 'get_event_detail'), #19
+    path('event_page_comment/', views.EventDetailPage.get_comment, name = 'get_comment'), #20
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/event_page_comment/?event_id=1
+    path('submit_cus_comment/', views.EventDetailPage.cus_make_comment, name = 'cus_make _comment'), #21
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/submit_cus_comment/?event_id=1&cus_id=1
+    path('org_reply/', views.EventDetailPage.org_make_reply, name = 'org_make_reply'), #22
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/submit_cus_comment/?user_id=1&comment_id=1
+
+    # Organzier function
+    #   测试完成
+    #   1)获取所有创建过的演出
+    path('created_events/', views.OrganizerFunctionPage.created_events, name = 'created_events'), #223
 ]

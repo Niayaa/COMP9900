@@ -34,8 +34,8 @@ export const AuthProvider = ({ children }) => {
       
       // 根据返回的code判断是否登录成功，这里以code: 1作为登录成功的标识
       if (data.code == 1) {
-        setUser({ name: data.name, email: data.email, role: data.user_type }); 
-        console.log(data)// 根据后端返回的数据设置用户状态
+        setUser({ name: data.name, email: data.email, role: data.user_type, id:data.token }); 
+        console.log('the auth',data)// 根据后端返回的数据设置用户状态
       } else {
         console.error('登录失败:', data.message);
       }

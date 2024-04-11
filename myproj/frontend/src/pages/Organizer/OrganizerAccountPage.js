@@ -24,46 +24,44 @@ const OrganizerAccountPage = () => {
         billAddress:'',
     });
     const navigate = useNavigate();
-    
-    let userId = 1
-    
+    const { user,isAuthenticated} = useAuth();
     useEffect(() => {
-      // const user_id = 1 // user_id 需要从环境当中获取
-      const fetchOrganizerData = async () => {
-          // 示例URL - 你需要将其替换为你的实际API端点
-          const url = `http://127.0.0.1:8000/cus/${userId}`;
+      // Ensure there's a user and the user has an ID before attempting to fetch data
+      if (user && user.id) {
+        const fetchUserData = async () => {
+          const url = `http://127.0.0.1:8000/org/${user.id}`;
           
           try {
-              const response = await fetch(url, {
-                  method: 'GET',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-              });
-              
-              if (!response.ok) {
-                  throw new Error(`HTTP error! status: ${response.status}`);
-              }
-  
-              const data = await response.json();
-              setFormData({
-                  name: data.cus_name || '',
-                  email: data.cus_email || '',
-                  phoneNumber: data.cus_phone || '',
-                  billAddress: data.bill_address || '',
-                  preferType: data.prefer_type || '',
-              });
-              
+            const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            const newData = data.token;
+           // console.log('organizer',data);
+            setFormData({
+              name: newData.company_name || '',
+              email: newData.org_email || '',
+              phoneNumber: newData.org_phone || '',
+              billAddress: newData.company_address || '',
+              // Add other fields as necessary
+            });
+           // console.log('formdata',formData)
           } catch (error) {
-              console.error('Error:', error);
+            console.error('Error fetching user data:', error);
           }
-      };
-      
-      if (userId) {
-          fetchOrganizerData();
+        };
+        
+        fetchUserData();
       }
-  
-  }, [userId]);
+    }, [user]);
 
     const handleChange = (e) => {
       const { name, value } = e.target;
@@ -79,7 +77,7 @@ const OrganizerAccountPage = () => {
   
     // Function to send updated data to the Django backend (same as before)
     const saveUpdatedData = async () => {
-        const url = 'http://127.0.0.1:8000/edit/cus/'; // 示例API端点，根据你的后端API调整
+        const url = 'http://127.0.0.1:8000/edit/org/'; // 示例API端点，根据你的后端API调整
         try {
           const response = await fetch(url, {
             method: 'POST', // 或者'POST', 根据后端API的要求

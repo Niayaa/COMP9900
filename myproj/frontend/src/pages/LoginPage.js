@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect} from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Box, Typography } from "@mui/material";
@@ -11,46 +11,27 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const { login } = useAuth(); // 正确调用 useAuth 作为函数
+  const { user, login } = useAuth(); // Get the user object as well to check the login status
+
+  useEffect(() => {
+    // Once the user is logged in, check the user's role to decide where to redirect
+    if (user && user.role) {
+      navigate(user.role === "customer" ? "/Cus_Account" : "/Org_Account");
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!email.trim()) {
-      setError("Email cannot be empty");
+
+    if (!email.trim() || !password.trim()) {
+      setError("Email and Password cannot be empty");
       return;
     }
-    if (!password.trim()) {
-      setError("Password cannot be empty");
-      return;
-    }
-    
-    // 替换为你的后端登录API URL
-    const loginUrl = "http://127.0.0.1:8000/login/";
 
     try {
-      const response = await fetch(loginUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // 登录成功
-        localStorage.setItem("userToken", data.token); 
-        // 调用 login 方法更新全局用户状态
-        console.log("Before login call", { name: data.name, email: data.email, role: data.user_type });
-        login({ email:email,password:password});
-        console.log("After login call");
-        // 根据用户类型导航到不同页面
-        navigate(data.user_type === "customer" ? "/Cus_Account" : "/Org_Account");
-      } else {
-        // 登录失败，特定的错误信息处理
-        setError("Account or password wrong, please try again");
-      }
+      // Use the login function from your AuthContext
+      await login({ email, password });
+      // No need to handle navigation here, useEffect will take care of it based on user state change
     } catch (error) {
       setError(error.message || "An error occurred during login.");
     }

@@ -30,12 +30,6 @@ import {DrawerListItems} from "../listItems";
 import { UpcomingEvents,PastEvents} from '../Cus_EventList/EventLists';
 import { useAuth } from "../AuthContext";
 
-const allEvents = [
-  { id: 1, name: 'Event 1', address: '123 Main St', date: '2024-07-21' },
-  { id: 2, name: 'Event 2', address: '456 Broadway', date: '2023-12-15' },
-  { id: 3, name: 'Event 3', address: '789 Elm St', date: '2024-03-10' },
-
-];
 
 const CustomerOrderPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(true);
@@ -100,28 +94,46 @@ const CustomerOrderPage = () => {
   const [selectedEventType, setSelectedEventType] = useState('upcoming');
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
-
+  const {user} = useAuth();
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://127.0.0.1:8000/mainpage/events/filter");
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const events = await response.json();
-        const today = new Date();
-        const upcoming = events.filter(event => new Date(event.event_date) >= today);
-        const past = events.filter(event => new Date(event.event_date) < today);
-        setUpcomingEvents(upcoming);
-        setPastEvents(past);
-        console.log(events);
-      } catch (error) {
-        console.error("Failed to fetch events:", error.message);
-      }
-    };
+    if (user && user.id) {
+      const fetchUserData = async () => {
+        const url = `http://127.0.0.1:8000/cus/all/events/?user_id=1`;
+        
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseData = await response.json();
   
-    fetchEvents();
-    }, []);   
+          if (responseData.code === '1') {
+            const events = responseData.token; // Access the actual events array
+            console.log('Order',responseData);
+            const today = new Date();
+            const upcoming = events.filter(event => new Date(event.event_date) >= today);
+            const past = events.filter(event => new Date(event.event_date) < today);
+            setUpcomingEvents(upcoming);
+            setPastEvents(past);
+          } else {
+            console.error('Failed to fetch events:', responseData.message);
+          }
+        } catch (error) {
+          console.error("Failed to fetch events:", error.message);
+        }
+      };
+      
+      fetchUserData();
+    }
+  }, [user]);
+  
+  
 
   return (
       <Box sx={{ display: 'flex' }}>
@@ -154,7 +166,7 @@ const CustomerOrderPage = () => {
     p: 1,
   }}>
     <Typography variant="h4" component="h1" sx={{ color: 'white' }}>
-      Events
+      Orders
     </Typography>
     </Box>
       {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} />}

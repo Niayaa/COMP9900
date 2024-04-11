@@ -34,6 +34,7 @@ import ListItemText from '@mui/material/ListItemText';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import HistoryIcon from '@mui/icons-material/History'; 
 import OrganizerAccountPage from "./OrganizerAccountPage";
+import { useAuth } from "../AuthContext";
 
 const allEvents = [
     { id: 1, name: 'Event 1', address: '123 Main St', date: '2024-07-21' },
@@ -126,29 +127,72 @@ const OrganizerEventPage = () => {
     const [selectedEventType, setSelectedEventType] = useState('upcoming');
     const [upcomingEvents, setUpcomingEvents] = useState([]);
     const [pastEvents, setPastEvents] = useState([]);
-
+    const {user} = useAuth();
     useEffect(() => {
-      const fetchEvents = async () => {
-        try {
-          const response = await fetch("http://127.0.0.1:8000/mainpage/events/filter");
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const events = await response.json();
-          const today = new Date();
-          const upcoming = events.filter(event => new Date(event.event_date) >= today);
-          const past = events.filter(event => new Date(event.event_date) < today);
-          setUpcomingEvents(upcoming);
-          setPastEvents(past);
-          console.log(events);
-        } catch (error) {
-          console.error("Failed to fetch events:", error.message);
-        }
-      };
+      if (user && user.id) {
+        const fetchUserData = async () => {
+          const url = `http://127.0.0.1:8000/created_events/?user_id=1`;
+          
+          try {
+            const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const responseData = await response.json();
     
-      fetchEvents();
-      }, []);   
+            if (responseData.code === '1') {
+              const events = responseData.token; // Access the actual events array
+              const today = new Date();
+              const upcoming = events.filter(event => new Date(event.event_date) >= today);
+              const past = events.filter(event => new Date(event.event_date) < today);
+              console.log(events.token);
+              setUpcomingEvents(upcoming);
+              setPastEvents(past);
+              
+            } else {
+              console.error('Failed to fetch events:', responseData.message);
+            }
+          } catch (error) {
+            console.error("Failed to fetch events:", error.message);
+          }
+        };
+        
+        fetchUserData();
+      }
+    }, [user]);
+    
+      /*
+      Organizer Created Event:
+      all of created event: send to back-end: user.id
+      response:
+      event.name,event.date,event.address
+      ticket.id, ticket.seat, ticket.price, ticket.amount, ticket.remain
 
+      Event: TS Era 
+      date: 2024/03
+      address: olypimic park
+
+      ticket.id:001
+      ticket.seat:Reserve A
+      ticket.price:278
+      ticket.amount:200
+      ticket.remain:70
+
+      ticket.id:002
+      ticket.seat:Reserve B
+      ticket.price:128
+      ticket.amount:300
+      ticket.remain:120
+      
+      ticket.id:003
+      ...
+      */
     return (
         <Box sx={{ display: 'flex' }}>
         <CssBaseline />

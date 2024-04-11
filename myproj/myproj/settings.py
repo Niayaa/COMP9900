@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "event_system_app",
+    "event_system_app.apps.EventSystemApp",
     'corsheaders',
     'rest_framework',
     'django_extensions',
@@ -148,7 +148,7 @@ STATIC_BASIC_path = r'F:\\jupyter\\24_T1\\COMP9900'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'myproj')
+    os.path.join(BASE_DIR, 'statics')
 ]
 
 # if DEBUG:
@@ -168,8 +168,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 使用SMTP后端
-EMAIL_HOST = 'smtp.gamil.com'  # SMTP服务器地址
+EMAIL_HOST = 'smtp.gmail.com'  # SMTP服务器地址
 EMAIL_PORT = 587  # SMTP服务器端口
 EMAIL_USE_TLS = True  # 是否使用TLS安全连接
-EMAIL_HOST_USER = 'lzy254322339@gmail.com'  # 记得替换邮箱
-EMAIL_HOST_PASSWORD = 'LZY512she'  # 记得替换邮箱密码
+EMAIL_HOST_USER = 'lzy2545322339@gmail.com'  # 记得替换邮箱
+EMAIL_HOST_PASSWORD = 'kqhcuvzidmwivpsj'  # 记得替换邮箱密码
