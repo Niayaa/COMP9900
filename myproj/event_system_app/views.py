@@ -325,8 +325,7 @@ class CusAccountFunction:
                     special_type_events = Event_info.objects.filter(event_type = customer.prefer_type).all()
                     not_special_type_events = Event_info.objects.exclude(event_type=customer.prefer_type).all()
                     for single in special_type_events: #先招呼上
-                        event_dict.append(
-                            {
+                        event_dict[single.event_id] = {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
@@ -334,10 +333,9 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
-                        )
+                        
                     for single in not_special_type_events:
-                        event_dict.append(
-                            {
+                        event_dict[single.event_id] = {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
@@ -345,11 +343,9 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
-                        )
                 else: # 如果这个人也没有写自己喜欢什么类型的演出，那直接把数据库的演出直接招呼上去
                     for single in all_events:
-                        event_dict.append(
-                            {
+                        event_dict[single.event_id] = {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
@@ -357,7 +353,6 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
-                        )    
             else: # 如果这个人写了tag，那就能去做推荐
                 event_tags_dict = {}
                 empty_list = []
