@@ -27,17 +27,12 @@ const LoginPage = () => {
         sx={{ mb: 2, width: "300px" }}
       />
       <Link to="/MainPage">
-      <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
-        Log in
-      </Button>
+        <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
+          Log in
+        </Button>
       </Link>
       <Link to="/password-reset">Forget your password?</Link>
-      <Link to="/signup-organizer">
-        Don't have account? Register as organizer!
-      </Link>
-      <Link to="/signup-customer">
-        Don't have account? Register as customer!
-      </Link>
+      <Link to="/SignUpPage">Don't have account? Register!</Link>
     </Box>
   );
 };
