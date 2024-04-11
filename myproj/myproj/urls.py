@@ -34,10 +34,16 @@ urlpatterns = [
     path('cus/all_canceled/', views.CusAccountFunction.canceled_events, name = 'canceled_events'),#4
     # url的设计方式为 http://127.0.0.1:8000/cus/all_canceled/?user_id=1
 
-    path('cus/event/ticket/', views.CusAccountFunction.event_ticket, name = 'canceled_events'),#5
+
+    # '''
+    # Nicole 需要的第二个功能，下面的这个event_ticket
+    # '''
+
+
+    path('cus/event/ticket/', views.CusAccountFunction.event_ticket, name = 'event_ticket'),#5
     # url的设计方式为 http://127.0.0.1:8000/cus/event/ticket/?user_id=1&event_id=3
 
-    path('cus/event_recommend/', views.CusAccountFunction.event_recommend, name = 'canceled_events'),#6
+    path('cus/event_recommend/', views.CusAccountFunction.event_recommend, name = 'event_recommend'),#6
     # url的设计方式为 http://127.0.0.1:8000/cusevent_recommend/?user_id=1
 
 
@@ -82,7 +88,7 @@ urlpatterns = [
     #       2)取消预订功能
     path('booking/', views.PayAndCancel.payment, name = 'payment'), #18
     #     传入url的时候要按照这样传入 http://127.0.0.1:8000/booking/?email=2545322339@qq.com&event_id=1
-    path('customer_cancel/', views.PayAndCancel.cancel_ticket, name = 'cancel_ticket'), #19
+    path('cus/cancel/event/', views.PayAndCancel.cancel_ticket, name = 'cancel_ticket'), #19
     #     传入url的时候要按照这样传入 http://127.0.0.1:8000/customer_cancel/?amount=1&reservation_id=1
 
 
@@ -105,4 +111,6 @@ urlpatterns = [
     #   1)获取所有创建过的演出
     #   2)获取报告功能
     path('created_events/', views.OrganizerFunctionPage.created_events, name = 'created_events'), #24
+    path('org/event/ticket/', views.OrganizerFunctionPage.data_showing_check, name = 'data_showing_check'), #25
+    
 ]
