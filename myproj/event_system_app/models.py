@@ -16,11 +16,7 @@ class Organizer(models.Model):
     def __str__(self):
         return str(self.org_id)
 
-<<<<<<< HEAD
-
-=======
 4
->>>>>>> origin/LZY——New
 class Customer(models.Model):
     # 修改成设计为 firstname 和 lastname 两种
     cus_id = models.AutoField(primary_key = True)
@@ -31,11 +27,7 @@ class Customer(models.Model):
                                    choices = [('live', 'live'),('concert', 'concert'),
                                               ('opera','opera'), ('show', 'show')], null = True)
 
-<<<<<<< HEAD
-
-=======
     prefer_tags = models.TextField(blank=True, null = True)
->>>>>>> origin/LZY——New
     cus_password = models.TextField(null = False)
     bill_address = models.TextField(max_length = 255, null = False)
     cus_phone = models.TextField(null = False)
@@ -54,12 +46,8 @@ class Event_info(models.Model):
     event_date = models.DateTimeField(blank = False, null = False)
     event_description = models.TextField(max_length = 5000, null = False)
     event_address = models.TextField(max_length = 50, null = False)
-<<<<<<< HEAD
-    
-=======
     event_tags = models.TextField(blank=True, null=True)
 
->>>>>>> origin/LZY——New
     event_image_url = models.TextField(null = True)
     # 注意一下，static文件夹好像还没有设置过
     event_type = models.CharField(max_length = 20, choices = [('Concert', 'Concert'), ('live','live'), ('opera', 'opera')])

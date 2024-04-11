@@ -13,22 +13,11 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Prefetch
 from .models import *
 from django.db import transaction
-<<<<<<< HEAD
-from rest_framework.permissions import IsAuthenticated
-from django.core.exceptions import PermissionDenied
-import json
-
-from django.conf import settings
-
-from django.contrib.auth.hashers import make_password, check_password
-
-=======
 import json
 import numpy as np
 from sklearn.metrics import jaccard_score
 from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
->>>>>>> origin/LZY——New
 import requests
 
 organizer_list = ['org_id', 'org_email', 'org_password', 'company_name', 'company_address', 'org_phone']
@@ -37,20 +26,12 @@ customer_list = ['cus_id', 'cus_name', 'cus_email', 'gender', 'prefer_type', 'cu
 
 event_info_list = ['event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type']
 
-<<<<<<< HEAD
-def data_match(fields_list, input_data): #这个用于将从数据库查询到的数据，和模型匹配成字典
-    return {field: getattr(input_data, field, None) for field in fields_list if hasattr(input_data, field)}
-
-# 演出方修改了关键演出信息后，发送邮件的功能
-def event_update_email(event_id, fields):
-=======
 
 def data_match(fields_list, input_data): #这个用于将从数据库查询到的数据，和模型匹配成字典
     return {field: getattr(input_data, field, None) for field in fields_list if hasattr(input_data, field)}
 
 
 def event_update_email(event_id, fields): # 演出方修改了关键演出信息后，发送邮件的功能
->>>>>>> origin/LZY——New
     event = get_object_or_404(Event_info, pk = event_id)
     reservations = Reservation.objects.filter(event = event)
     customer_emails = [reservation.customer.cus_email for reservation in reservations]
@@ -67,8 +48,6 @@ def event_update_email(event_id, fields): # 演出方修改了关键演出信息
     return
 
 
-<<<<<<< HEAD
-=======
 # 将标签集合转换为向量
 def tags_to_vector(tags, all_tags):
     return np.array([int(tag in tags) for tag in all_tags])
@@ -102,7 +81,6 @@ def jaccard_sim(customer_tags, event_tags):
     # sorted_dict = dict(sorted(jaccard_scores.items(), key=lambda item: item[1], reverse=True))
     return jaccard_scores
 
->>>>>>> origin/LZY——New
 '''
 200: 数据返回成功
 400:数据错误或返回的数据格式错误
@@ -120,64 +98,6 @@ class MainPage:
         '''
         mainpage界面, 用户要选择两种类型，第一种是演出类型，第二种时间类型。该函数根据用户的选择，返回筛选后的演出
         :param request: 无
-<<<<<<< HEAD
-        :return: 'event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type'
-        '''
-
-        # 获取查询参数
-        # event_type = request.GET.get('event_type', None)  # 演出类型，如'opera', 'concert'等
-        # time_filter = request.GET.get('time_filter', None)  # 时间过滤条件，如'today', 'this_month', 'next_month'
-
-        event_type_list = ['concert', 'live', 'comedy', 'opera']
-
-        # print(event_type)
-        # print(time_filter)
-        # 获取当前时间
-        now = timezone.now()
-
-        # 基础查询集
-        queryset = Event_info.objects.filter(event_date__gt=now)
-        # print("first")
-        # print(queryset)
-        # print()
-
-        # 根据演出类型过滤(一期代码)
-        # if event_type in event_type_list:
-        #     queryset = queryset.filter(event_type = event_type)
-        # else:
-        #     queryset = queryset.filter(event_type__in = event_type_list)
-
-        queryset = queryset.filter(event_type__in=event_type_list)
-
-        # 根据时间过滤条件进一步过滤(一期代码)
-        # if time_filter == 'today':
-        #     queryset = queryset.filter(event_date__year=now.year, event_date__month=now.month, event_date__day=now.day)
-        #     # print("third")
-        #     # print(queryset)
-        #     # print()
-        # elif time_filter == 'this_month':
-        #     # print("fourth")
-        #     # print(queryset)
-        #     # print()
-        #     queryset = queryset.filter(event_date__year=now.year, event_date__month=now.month)
-        # elif time_filter == 'next_month':
-        #     # print("fifth")
-        #     # print(queryset)
-        #     # print()
-        #     next_month = now.month + 1 if now.month < 12 else 1
-        #     year = now.year if now.month < 12 else now.year + 1
-        #     queryset = queryset.filter(event_date__year=year, event_date__month=next_month)
-        # else:
-        #     queryset = queryset
-        #
-        # queryset = queryset
-
-        # 将查询结果序列化为JSON
-        events = list(
-            queryset.values('event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type'))
-
-        # print(events)
-=======
         :return: 列表类型，列表元素为字典，字典内包含
                     {
                     'event_id',
@@ -198,19 +118,12 @@ class MainPage:
         events = list(
             queryset.values('event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type'))
 
->>>>>>> origin/LZY——New
         events = list(Event_info.objects.all().values('event_id', 'event_name', 'event_date', 'event_type'))
         empty_dict = []
         for i in events:
             filtered_event_data = {key: i[key] for key in ["event_name", "event_type", 'event_id', 'event_date']}
             empty_dict.append(filtered_event_data)
 
-<<<<<<< HEAD
-
-        # print(events)
-        # return Response({"message":"000"})
-=======
->>>>>>> origin/LZY——New
         return JsonResponse(empty_dict, safe = False, status = 200)
 
     '''
@@ -221,19 +134,6 @@ class MainPage:
         pass
 
 
-<<<<<<< HEAD
-# Customer Account Order()
-#    1)获取该消费者订购的演出当中，还未开始的演出信息
-#    2)获取该消费者订购的演出当中，已经结束的演出信息
-#    3)获取消费者订购的演出当中，被消费者取消的演出
-
-
-
-class CusAccountFunction:
-    @api_view(['GET']) #测试完成
-    def upcoming_and_past(request):
-        if request.method == 'GET':
-=======
 # CustomerFunction
 #   1)用户订购了票的演出
 #   2)用户取消了票的演出
@@ -255,7 +155,6 @@ class CusAccountFunction:
         '''
         if request.method == 'GET':
 
->>>>>>> origin/LZY——New
             cus_id = request.query_params.get('user_id', None)
             if cus_id is None:
                 return Response({'code':'3','message':'there is something wrong with the input data'}, status = 404)
@@ -277,13 +176,6 @@ class CusAccountFunction:
                 'event_address': event.event_address,
             })
         
-<<<<<<< HEAD
-        return Response({'code':'1','message':'successful from getting values', 'token':events_info}, status = 200)
-    
-    
-    @api_view(['GET'])
-    def canceled_events(request): #测试完成
-=======
         return Response({
             'code':'1',
             'message':'successful from getting values',
@@ -302,7 +194,6 @@ class CusAccountFunction:
             'event_address':
                         }
         '''
->>>>>>> origin/LZY——New
         if request.method == 'GET':
         # 从请求体中提取数据
             user_id = request.query_params.get('user_id', None)  # 使用get避免KeyError异常
@@ -336,12 +227,6 @@ class CusAccountFunction:
                 'message':'successfully find',
                 'data': cancellations_info
             }, status = 200)
-<<<<<<< HEAD
-        return Response({'code': '4', 'message': 'You have to use GET method'}, status = 405)
-
-    @api_view(['GET'])
-    def event_ticket(request):
-=======
 
         return Response({
             'code': '4',
@@ -367,7 +252,6 @@ class CusAccountFunction:
             }
         '''
 
->>>>>>> origin/LZY——New
         if request.method == 'GET':
             user_id = request.query_params.get('user_id', None)  # 使用get避免KeyError异常
             event_id = request.query_params.get('event_id', None)  # 使用get避免KeyError异常
@@ -375,18 +259,6 @@ class CusAccountFunction:
             # print("come here 1")
             customer = Customer.objects.filter(cus_id = user_id).first()
             event = Event_info.objects.filter(event_id = event_id).first()
-<<<<<<< HEAD
-
-            # print(customer)
-            # print(event)
-
-            # print("come here 2")
-
-            reservations = Reservation.objects.filter(customer=customer, event=event).all()
-            # print("come here 3")
-
-            print(reservations)
-=======
             # print("come here 2")
 
             reservations = Reservation.objects.filter(customer=customer, event=event).all()
@@ -396,22 +268,12 @@ class CusAccountFunction:
                     'code': '2',
                     'message': 'No data here',
                 }, status=404)
->>>>>>> origin/LZY——New
 
             # reservations_info = {}
             reservations_info = []
 
             for reservation in reservations:
                 ticket = reservation.ticket
-<<<<<<< HEAD
-                # reservations_info['reservation_id']({
-                #     'ticket_name': ticket.ticket_name,
-                #     'ticket_type': ticket.ticket_type,
-                #     'amount': reservation.amount,
-                #     'ticket_price': ticket.ticket_price,
-                # })
-=======
->>>>>>> origin/LZY——New
                 reservations_info.append({
                 'reservation_id': reservation.reservation_id,  # 假设预订模型的主键是id
                 'ticket_name': ticket.ticket_name,
@@ -420,13 +282,6 @@ class CusAccountFunction:
                 'amount': reservation.amount,
                 'ticket_price': ticket.ticket_price,
             })
-<<<<<<< HEAD
-            return Response({'code':'1','message':'successfully finding the data', 'token':reservations_info}, status = 200)
-
-        return Response({'code': '4', 'message': 'You have to use GET method'}, status = 405)
-
-
-=======
             return Response({
                 'code':'1',
                 'message':'successfully finding the data',
@@ -530,7 +385,6 @@ class CusAccountFunction:
             'message':'The function is not right', 
             }, status = 400)
     
->>>>>>> origin/LZY——New
 
 # LoginPage
 #   1)发送验证码功能
@@ -540,15 +394,6 @@ class CusAccountFunction:
 class LoginPage:
     @api_view(['POST']) # 测试完成
     def send_reset_code(request):
-<<<<<<< HEAD
-        email = request.data.get('email')
-        if not email:
-            return JsonResponse({'error': 'Email is required'}, status = 400)
-        customer = Customer.objects.filter(cus_email = email).first()
-        organizer = Organizer.objects.filter(org_email = email).first()
-        if customer is None and organizer is None:
-            return JsonResponse({'error': 'Email does not exist'}, status = 400)
-=======
         '''
         发送验证码功能，
         接收参数：email，从发送表单当中获取
@@ -567,7 +412,6 @@ class LoginPage:
                 'code':'2',
                 'error': 'Email does not exist'
             }, status = 400)
->>>>>>> origin/LZY——New
         code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
         cache.set(f'password_reset_code_{email}', code, timeout = 60)
         
@@ -578,12 +422,6 @@ class LoginPage:
             [email],  # 收件人列表
             fail_silently=False,
         )
-<<<<<<< HEAD
-        return JsonResponse({'message': 'Verification code sent successfully'})
-
-    @api_view(['POST']) # 测试完成
-    def reset_password(request):
-=======
         return Response({
             'code':'1',
             'message': 'Verification code sent successfully'
@@ -600,18 +438,11 @@ class LoginPage:
             全部从提交的表单当中获取
         :return:
         '''
->>>>>>> origin/LZY——New
         email = request.data.get('email')
         code = request.data.get('code')
         new_password = request.data.get('newPassword')
 
         if not all([email, code, new_password]):
-<<<<<<< HEAD
-            return JsonResponse({'error': 'Missing parameters'}, status = 400)
-        
-        cached_code = cache.get(f'password_reset_code_{email}')
-        # print(cached_code)
-=======
             return Response({
                 'code':'3',
                 'error': 'Missing parameters'
@@ -619,7 +450,6 @@ class LoginPage:
         
         cached_code = cache.get(f'password_reset_code_{email}')
 
->>>>>>> origin/LZY——New
         if cached_code is None or cached_code != code:
             return JsonResponse({'error': 'Invalid or expired code'}, status = 400)
         customer = Customer.objects.filter(cus_email = email).first()
@@ -633,38 +463,25 @@ class LoginPage:
             organizer['org_password'] = make_password(new_password)
             Organizer(**organizer).save()
         cache.delete(f'password_reset_code_{email}')
-<<<<<<< HEAD
-        return JsonResponse({'message': 'Password has been reset successfully'})
-=======
         return Response({
             'code':'1',
             'message': 'Password has been reset successfully'
         },status = 200)
->>>>>>> origin/LZY——New
 
     @csrf_exempt
     @api_view(['POST']) # 测试完成
     def user_login(request):
         '''
-<<<<<<< HEAD
-        前端的登录页面，从前端获取数据，并判断是否正确
-=======
         前端的登录页面，从前端表单获取数据，并判断是否正确
         接收参数：
             email:
             password:
->>>>>>> origin/LZY——New
 
         返回类型：
         message：登录成功或登录失败的字符串
         code:1代表成功, 2代表失败, 3代表非法数据, 4代表调用失败
         user_id:只有在登录成功的时候才有，失败的时候没有。成功的时候返回的事这个人在数据库的id
         '''
-<<<<<<< HEAD
-        # print("aaaaaa")
-        # print(request.method)
-=======
->>>>>>> origin/LZY——New
         print(request.method == 'POST')
         if request.method == 'POST':
             # print("ggggg")
@@ -719,12 +536,7 @@ class LoginPage:
     @api_view(['POST']) # 测试完成
     def register(request):
         """
-<<<<<<< HEAD
-        前端的这侧页面，从前端获取数据，并判断是否正确
-
-=======
         从前端获取表单数据
->>>>>>> origin/LZY——New
         返回类型：
         message：登录成功或登录失败的字符串
         code:1代表成功, 2代表失败, 3代表非法数据, 4代表调用失败
@@ -734,14 +546,6 @@ class LoginPage:
             # 这个是人为创造的数据，cus数据和org数据，后面得删了
             try:
                 data = json.loads(request.body)
-<<<<<<< HEAD
-                # print(data)
-                # print(data['role'])
-                # print(data)
-                # return Response("successful")
-=======
-
->>>>>>> origin/LZY——New
                 if data['role'] == 'organizer':
                     organization_name = data['organization_name']
                     organization_address = data['organization_address']
@@ -755,19 +559,9 @@ class LoginPage:
                 existing_customer = Customer.objects.filter(cus_email=email).first()
 
                 if data['role'] == 'organizer':
-<<<<<<< HEAD
-                    # print("heyheyhey")
-
-                    # print("suprise")
                     if existing_organizer or existing_customer:  # 检查数据库内是否存在相同的人
                         return Response({'message': 'email already registered'}, status=400)
                     else:
-                        # encrypted_password = make_password(password)
-=======
-                    if existing_organizer or existing_customer:  # 检查数据库内是否存在相同的人
-                        return Response({'message': 'email already registered'}, status=400)
-                    else:
->>>>>>> origin/LZY——New
                         new_organizer = Organizer(
                             org_id = Organizer.objects.count() + 1,
                             company_name = organization_name,
@@ -779,14 +573,6 @@ class LoginPage:
                         )
                         new_organizer.save()
                         # response的内容都要修改一下，这个函数内的所有response
-<<<<<<< HEAD
-                    return Response({'code': '1', 'message': 'JSON data received and processed successfully',"token":new_organizer.org_id}, status = 200)
-                    # return Response({'code': '0', 'message': 'JSON data received and processed successfully'})
-
-                elif data['role'] == 'customer':
-                    if existing_customer or existing_organizer:  # 检查数据库内是否存在相同的人
-                        return Response({'code': '2', 'message': 'email already registered'}, status = 400)
-=======
                     return Response({
                         'code': '1',
                         'message': 'JSON data received and processed successfully',
@@ -799,7 +585,6 @@ class LoginPage:
                             'code': '2', 
                             'message': 'email already registered'}, 
                         status = 400)
->>>>>>> origin/LZY——New
                     else:
                         # encrypted_password = make_password(password)
                         new_customer = Customer(
@@ -808,31 +593,13 @@ class LoginPage:
                             cus_email = email,
                             cus_password = make_password(password),
                             cus_phone = phone,
-<<<<<<< HEAD
-                            gender = None,
-                            prefer_type = None
-=======
                             gender = data['gender'] if data['gender'] else None,
                             prefer_type = data['prefer_type'] if data['prefer_type'] else None,
                             prefer_tags = data['prefer_tags'] if data['prefer_tags'] else None
->>>>>>> origin/LZY——New
                         )
                         new_customer.save()
 
                     # 第一种方式
-<<<<<<< HEAD
-                    return Response({'code': '1', 'message': 'JSON data received and processed successfully', 'token':new_customer.cus_id}, status = 200)
-
-                    # 第二种方式
-                        # 我估计会产生报错
-                        # token, created = Token.objects.get_or_create(user = new_customer)
-                        # return Response({'message': 'Customer registered successfully', 'token': token.key}, status = status.HTTP_201_CREATED)
-
-                    # "token": new_customer.token})
-                # return Response({"jjjjj"})
-            except   json.JSONDecodeError:
-                return Response({'code': '3', 'message': 'Invalid JSON data'}, status = 400)
-=======
                     return Response({
                         'code': '1', 
                         'message': 'JSON data received and processed successfully', 
@@ -843,7 +610,6 @@ class LoginPage:
                     'code': '3',
                     'message': 'Invalid JSON data'}, 
                 status = 400)
->>>>>>> origin/LZY——New
         else:
             return Response({'code': '4', 'message': 'This view only accepts POST requests'}, status = 405)
 
@@ -856,9 +622,6 @@ class LoginPage:
 class AccountInfoPage:
     @api_view(['GET']) # 测验完成
     def cus_info_show(request, user_id):
-<<<<<<< HEAD
-        user_id = 1
-=======
         '''
         展示这个人的个人信息，
 
@@ -866,7 +629,6 @@ class AccountInfoPage:
         :return:
         '''
 
->>>>>>> origin/LZY——New
         if request.method == 'GET':
             customer = Customer.objects.filter(cus_id = user_id).first()
             if customer:
@@ -876,11 +638,6 @@ class AccountInfoPage:
                 # 找到数据了，成功返回
             else:
                 # account页面发来请求消费者个人信息，但是查无此人，基本不太可能，但还是写上这个功能
-<<<<<<< HEAD
-                return Response({'code': '4', 'message': 'This customer is not exist, you can not enter in account page'}, status = 404)
-        else:
-            return Response({'code': '4', 'message': 'This function only accepts GET data'}, status = 405)
-=======
                 return Response({
                     'code': '4',
                     'message': 'This customer is not exist, you can not enter in account page'
@@ -890,33 +647,11 @@ class AccountInfoPage:
                 'code': '4',
                 'message': 'This function only accepts GET data'
             }, status = 405)
->>>>>>> origin/LZY——New
 
 
     @api_view(['GET']) # 测验完成
     def org_info_show(request, user_id):
         '''
-<<<<<<< HEAD
-        这个函数是用来导航到account页面, 返回 customer 的个人用户信息的
-        '''
-        if request.method == 'GET':
-            # print(user_id)
-            organizer = Organizer.objects.filter(org_id = user_id).first()
-            if organizer:
-                organizer = data_match(organizer_list, organizer)
-                organizer['age_area'] = None        
-                return JsonResponse({'code': 1, 'message': 'login success',"user_type": "organizer", "token": organizer}, status = 200)
-                # 找到数据了，成功返回
-            else:
-                # account页面发来请求消费者个人信息，但是查无此人，基本不太可能，但还是写上这个功能
-                return Response({'code': '4', 'message': 'This organizer is not exist, you can not enter in account page'}, status = 404)
-        else:
-            return Response({'code': '4', 'message': 'This function only accepts GET data'}, status = 405)
-
-
-    @api_view(['POST']) # 测验完成
-    def edit_cus_info(request):
-=======
         这个函数是用来导航到account页面, 返回 organizer 的个人用户信息的
         接收参数 user_id 从url当中获取
         返回：organizer整个类型
@@ -961,47 +696,29 @@ class AccountInfoPage:
             customer['prefer_tags'] = data['prefer_tags']
         :return: code 和 message
         '''
->>>>>>> origin/LZY——New
         if request.method == 'POST':
             try:
                 data = json.loads(request.body)
             except Exception as e:
-<<<<<<< HEAD
-                return Response({'code': '3', 'message': 'Invalid json data'}, status = 200)
-=======
                 return Response({
                     'code': '3', 'message': 'Invalid json data'
                 }, status = 200)
->>>>>>> origin/LZY——New
             customer = Customer.objects.filter(cus_id = data['id']).first()
             customer = data_match(customer_list, customer)
             if customer['cus_email'] != data['email']:
                 organizer = Organizer.objects.filter(org_email = data['email']).first()
                 new_customer = Customer.objects.filter(cus_email = data['email']).first()
                 if new_customer or organizer:
-<<<<<<< HEAD
-                    return Response({'code':'2', "message":'The email is already exist'}, status = 200)
-=======
                     return Response({
                         'code':'2',
                         "message":'The email is already exist'
                     }, status = 200)
->>>>>>> origin/LZY——New
 
             customer['cus_name'] = data['name']
             customer['cus_email'] = data['email']
             customer['gender'] = data['gender']
             customer['bill_address'] = data['bill_address']
             customer['cus_phone'] = data['phone']
-<<<<<<< HEAD
-            Customer(**customer).save()
-            return Response({'code': '1','message':'Successful from saving data'}, status = 200)
-        return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
-
-
-    @api_view(['POST']) # 测验完成
-    def edit_org_info(request):
-=======
             # customer['age_area'] = data['age_area']
             customer['prefer_tags'] = data['prefer_tags']
             Customer(**customer).save()
@@ -1029,20 +746,15 @@ class AccountInfoPage:
 
         :return:
         '''
->>>>>>> origin/LZY——New
         if request.method == 'POST':
             try:
                 data = json.loads(request.body)
             except Exception as e:
-<<<<<<< HEAD
-                return Response({'code': '3', 'message': 'Invalid json data'}, status = 400)
-=======
                 return Response({
                     'code': '3',
                     'message': 'Invalid json data'
                 }, status = 400)
 
->>>>>>> origin/LZY——New
             organizer = Organizer.objects.filter(org_id = data['id']).first()
             organizer = data_match(organizer_list, organizer)
 
@@ -1050,44 +762,16 @@ class AccountInfoPage:
                 customer = Customer.objects.filter(cus_email = data['email']).first()
                 new_organizer = Organizer.objects.filter(org_email = data['email']).first()
                 if new_organizer or customer:
-<<<<<<< HEAD
-                    return Response({'code':'2', "message":'The email is already exist'}, status = 200)
-                
-=======
                     return Response({
                         'code':'2',
                         "message":'The email is already exist'
                     }, status = 200)
 
->>>>>>> origin/LZY——New
             organizer['company_name'] = data['name']
             organizer['org_email'] = data['email']
             organizer['company_address'] = data['address']
             organizer['org_phone'] = data['phone']
             Organizer(**organizer).save()
-<<<<<<< HEAD
-            return Response({'code': '1','message':'Successful from saving data'}, status = 200)
-        return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
-
-
-# 创建演出的功能
-class OrganizerFunctionPage:
-    @api_view(['POST'])
-    def event_create(request): # 测试完成
-        if request.method == 'POST':
-            # event_data = json.loads(request.body)
-
-            try:
-                # print(request.body)
-                event_data = json.loads(request.body.decode('utf-8'))
-                # print(event_data)
-            except json.JSONDecodeError:
-            #     # print("event_data)
-            #     # print(type(event_data))
-            #     # print(event_data)
-                return Response({'code': '3', 'message': 'Invalid json data'}, status = 400)
-            organizer = Organizer.objects.filter(org_id = event_data['org_id']).first()
-=======
             return Response({
                 'code': '1',
                 'message':'Successful from saving data'
@@ -1129,21 +813,15 @@ class OrganizerFunctionPage:
 
             organizer = Organizer.objects.filter(org_id = event_data['org_id']).first()
 
->>>>>>> origin/LZY——New
             event = Event_info(
                 event_name = event_data['event_name'],
                 event_date = event_data['event_date'],
                 event_description = event_data['event_description'],
                 event_address = event_data['event_address'],
                 event_image_url = event_data['event_image_url'],  # 确保这里处理了图片的上传
-<<<<<<< HEAD
-                event_type = event_data['event_type'],
-                event_last_selling_date = event_data['event_last_selling_date'],
-=======
                 event_type = event_data['event_type'] , #event_type 必须要有类型，不能为空
                 event_last_selling_date = event_data['event_last_selling_date'],
                 event_tags = event_data['event_tags'] if event_data['event_tags'] else None,
->>>>>>> origin/LZY——New
                 organization = organizer,  # 假设前端发送的是组织ID
             )
             event.save()  # 保存事件对象，这样它就有了一个ID
@@ -1157,14 +835,6 @@ class OrganizerFunctionPage:
                     event = event  # 这里直接将前面创建的event对象作为外键
                 )
                 ticket.save()  # 保存票务对象
-<<<<<<< HEAD
-                return Response({"code":"1", "message":"Event successfully created"}, status = 200)
-
-        return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
-
-    @api_view(['PUT'])
-    def edit_event(request): #测试完成
-=======
                 return Response({
                     "code":"1",
                     "message":"Event successfully created"
@@ -1182,7 +852,6 @@ class OrganizerFunctionPage:
 
         :return: code 和 message
         '''
->>>>>>> origin/LZY——New
         if request.method == "PUT":
             try:
                 updated_data = json.loads(request.body.decode('utf-8'))
@@ -1215,16 +884,6 @@ class OrganizerFunctionPage:
                 if fields_changed:
                     event_update_email(event.event_id, fields_changed)
                 event.save()
-<<<<<<< HEAD
-                return JsonResponse({'code':'1', 'message': 'Event updated and email sent'}, status = 200)
-            else:
-                return JsonResponse({'message': 'No changes detected'}, status = 200)
-
-        return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
-    
-    @api_view(['DELETE'])
-    def delete_event(request):
-=======
                 return JsonResponse({
                     'code':'1',
                     'message': 'Event updated and email sent'
@@ -1241,7 +900,6 @@ class OrganizerFunctionPage:
     
     @api_view(['DELETE'])
     def delete_event(request): 
->>>>>>> origin/LZY——New
         '''
         接受的数据格式为int
         是事件的event_id，foxapi的情况在body中定义
@@ -1273,17 +931,6 @@ class OrganizerFunctionPage:
                             fail_silently=False,
                         )
                     
-<<<<<<< HEAD
-                    return Response({"code":"1", 'message': 'Event deleted successfully and email sent'}, status = 200)
-                except Event_info.DoesNotExist:
-                    return Response({"code":"4", 'error': 'Event not found'}, status=404)
-            else:
-                return Response({"code":"3", 'error': 'Event ID is required'}, status=403)
-
-    @api_view(['GET'])
-    def created_events(request):
-        '''
-=======
                     return Response({
                         "code":"1",
                         'message': 'Event deleted successfully and email sent'
@@ -1311,7 +958,6 @@ class OrganizerFunctionPage:
             'event_date',
             'event_address'
             }
->>>>>>> origin/LZY——New
         这里可能存在着一个隐患，即当异常演出是没有tickets信息是，可能会出现报错
         '''
         if request.method == 'GET':
@@ -1320,28 +966,20 @@ class OrganizerFunctionPage:
 
             organizer = Organizer.objects.get(org_id=org_id)
             if organizer is None:
-<<<<<<< HEAD
-                return Response({'code':'2','message':'failed from finding this organizer'}, status = 404)
-=======
                 return Response({
                     'code':'2',
                     'message':'failed from finding this organizer'
                 }, status = 404)
->>>>>>> origin/LZY——New
             
             # 获取这个 Organizer 创建的所有 Event_info
             events = Event_info.objects.filter(organization=organizer).values(
                 'event_id', 'event_name', 'event_date', 'event_address'
             )
             if events is None:
-<<<<<<< HEAD
-                return Response({'code':'2','message':'There  is no recorded data for this organizer'}, status = 404)
-=======
                 return Response({
                     'code':'2',
                     'message':'There is no recorded data for this organizer'
                 }, status = 404)
->>>>>>> origin/LZY——New
             empty_list = []
 
             for event in events:
@@ -1353,11 +991,6 @@ class OrganizerFunctionPage:
                 event['tickets'] = tickets
                 empty_list.append(event)
 
-<<<<<<< HEAD
-            return Response({'code':'1','message':'success get the past data', 'token':empty_list}, status = 200)
-    
-        return Response({'code':'4', 'message':'The method is not allowed'}, status = 405)
-=======
             return Response({
                 'code':'1',
                 'message':'success get the past data',
@@ -1368,7 +1001,6 @@ class OrganizerFunctionPage:
             'code':'4',
             'message':'The method is not allowed'
         }, status = 405)
->>>>>>> origin/LZY——New
 
 
 # Event detail page
@@ -1401,11 +1033,7 @@ class EventDetailPage:
                 ticket_set = Ticket_info.objects.filter(event = event).all() #查询这个演出的票的种类
                 ticket_dict = {}
                 for ticket in ticket_set:
-<<<<<<< HEAD
-                    ticket_dict[ticket.ticket_type] = ticket.ticket_remain
-=======
                     ticket_dict[ticket.ticket_type] = [ticket.ticket_remain, ticket.ticket_price]
->>>>>>> origin/LZY——New
                 cus_comments = Comment_cus.objects.filter(event = event).all()
                 rate_num = 0
                 total_rate = 0
@@ -1423,20 +1051,6 @@ class EventDetailPage:
                         'location':event.event_address,
                         'description':event.event_description,
                         'last_selling_date':event.event_last_selling_date,
-<<<<<<< HEAD
-                        'image':event.event_image_url,
-                        'type':event.event_type,
-                        'total_rating':ave_rate,
-                        'tickets':ticket_dict
-                    }
-                    return Response({'code':'1', 'message':'Successfuly fingding', "token":frontend_data}, status = 200)
-            else:
-                return Response({'code': '3', 'message': 'There is no event id in it'}, status = 400)
-        return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
-
-    @api_view(['GET'])
-    def get_comment(request): #测试完成
-=======
                         'event_tags':event.event_tags,
                         'image':event.event_image_url,
                         'type':event.event_type,
@@ -1478,7 +1092,6 @@ class EventDetailPage:
             }
         }
         '''
->>>>>>> origin/LZY——New
         if request.method =='GET':
             event_id = request.query_params.get('event_id', None)
             # print("come here 1")
@@ -1526,28 +1139,20 @@ class EventDetailPage:
 
                     comments_with_replies.append(comment_data)
                     # print("come here 8")
-<<<<<<< HEAD
-            return Response({"token":comments_with_replies}, status = 200)
-=======
             return Response({
                 "token":comments_with_replies
             }, status = 200)
->>>>>>> origin/LZY——New
 
         return Response({'code': '4', 'message': 'This function only accepts GET data'}, status = 405)
 
     @api_view(['POST'])
     def cus_make_comment(request): #测试完成
-<<<<<<< HEAD
-        print(request.method)
-=======
         '''
         消费者做出评价
         从url内接收参数，event_id和cus_id。同时接收表单
         :return: code和message
         '''
         # print(request.method)
->>>>>>> origin/LZY——New
         if request.method == 'POST':
             # print("success")
             
@@ -1559,22 +1164,6 @@ class EventDetailPage:
 
             event = Event_info.objects.filter(event_id = event_id).first()
             customer = Customer.objects.filter(cus_id = cus_id).first()
-<<<<<<< HEAD
-
-            # print(event_id)
-            # print(cus_id)
-            # print("come here 2")
-            if event and customer:
-                # print("come here 3")
-                
-                comment = Comment_cus.objects.filter(event = event, customer = customer).first()
-                # print("come here 3")
-                # if comment:
-                #     print(comment.comment_cus)
-                # print("come here 4")
-                if comment:
-                    return Response({'code':'2', 'message':'You have leave a comment before'}, status = 200)
-=======
             # print("come here 2")
             if event and customer:
                 # print("come here 3")
@@ -1585,7 +1174,6 @@ class EventDetailPage:
                         'code':'2',
                         'message':'You have leave a comment before'
                     }, status = 200)
->>>>>>> origin/LZY——New
                 if data:
                     # print("come here 7")
                     comment = Comment_cus(
@@ -1598,18 +1186,6 @@ class EventDetailPage:
                     )
                     comment.save()
                     # print("come here 8")
-<<<<<<< HEAD
-                    return Response({'code':'1', 'message':'successfuly submit the comment'}, status = 200)
-                
-                return Response({'code':'3', 'message':'The input data is not json form'}, status = 400)
-            
-            return Response({'code':'2', 'message':'We did not find the appropriate data'}, status = 404)
-
-        return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
-
-    @api_view(['POST'])
-    def org_make_reply(request):
-=======
                     return Response({
                         'code':'1',
                         'message':'successfuly submit the comment'
@@ -1637,7 +1213,6 @@ class EventDetailPage:
         接收参数：user_id 和 comment_id。从url当中获取
         :return: code 和 message
         '''
->>>>>>> origin/LZY——New
         if request.method == 'POST':
             data = request.data
             user_id = request.query_params.get('user_id', None)
@@ -1650,17 +1225,6 @@ class EventDetailPage:
                 comment = Comment_cus.objects.filter(comment_id = comment_id).first()
 
                 if comment is None:
-<<<<<<< HEAD
-                    return Response({'code':'2', 'message':'There is no comment data'}, status = 404) # 找不到这个comment
-                
-                real_organizer = comment.event.organization
-                if organizer != real_organizer:
-                    return Response({'code':'2', 'message':'Sorry, you are not the organizer of this event'}, status = 404) # 当前组织方不是这个活动组织方
-                past_reply = Reply_org.objects.filter(comment = comment).first()
-
-                if past_reply is not None: # 如果曾经这个org在本评论下发表过回复，那就不能再回复了
-                    return Response({"code":'2', "message":"You have already give the reply"}, status = 400)
-=======
                     return Response({
                         'code':'2',
                         'message':'There is no comment data'
@@ -1679,7 +1243,6 @@ class EventDetailPage:
                         "code":'2',
                         "message":"You have already give the reply"
                     }, status = 400)
->>>>>>> origin/LZY——New
                 
                 reply = Reply_org(
                     reply_org = data['reply_org'],
@@ -1690,11 +1253,6 @@ class EventDetailPage:
                 )
                 reply.save()      
 
-<<<<<<< HEAD
-            return Response({'code':'2', 'message':'Not a valid organizer for this event'}, status = 400)
-
-        return Response({'code': '4', 'message': 'This function only accepts GET data'}, status = 405)
-=======
             return Response({
                 'code':'2',
                 'message':'Not a valid organizer for this event'
@@ -1704,7 +1262,6 @@ class EventDetailPage:
             'code': '4',
             'message': 'This function only accepts GET data'
         }, status = 405)
->>>>>>> origin/LZY——New
 
 
 # 订购和取消功能
@@ -1716,11 +1273,6 @@ class PayAndCancel:
 
         url格式：传入url的时候要按照这样传入 http://127.0.0.1:8000/booking/?email=2545322339@qq.com&event_id=1
 
-<<<<<<< HEAD
-        :param user_id: 用户的id
-        :param event_id: 订购演出的id
-=======
->>>>>>> origin/LZY——New
         :return: code = [1, 2, 3, 4]
         '''
         email = request.query_params.get('email', None)
@@ -1729,44 +1281,29 @@ class PayAndCancel:
 
         if not email or not event_id:
             # print("come here 2")
-<<<<<<< HEAD
-            return Response({'code': '3', 'message': 'Missing email or event_id'}, status = 400)
-        # print(email) 
-        # print(event_id)
-        # return Response({'code': '3', 'message': 'Missing email or event_id'}, status=400)
-=======
             return Response({
                 'code': '3',
                 'message': 'Missing email or event_id'
             }, status = 400)
 
->>>>>>> origin/LZY——New
         if request.method == 'POST':
             try:
                 data = json.loads(request.body.decode('utf-8'))
                 # print("come here 3")
             except json.JSONDecodeError:
                 # print("come here 4")
-<<<<<<< HEAD
-                return Response({'code': '3', 'message': 'Invalid json data'}, status = 400)
-=======
                 return Response({
                     'code': '3',
                     'message': 'Invalid json data'
                 }, status = 400)
->>>>>>> origin/LZY——New
             # print("come here 5")
             organizer = Organizer.objects.filter(org_email = email).first()
             if organizer:
                 # print("come here 6")
-<<<<<<< HEAD
-                return Response({'code':'2', "message": "Only customer can book the event."}, status = 200)
-=======
                 return Response({
                     'code':'2',
                     "message": "Only customer can book the event."
                 }, status = 200)
->>>>>>> origin/LZY——New
 
             # print("come here 7")
             ticket_type = data['ticket_type']
@@ -1807,23 +1344,6 @@ class PayAndCancel:
                     # print("come here 12")
                     ticket.save()
                     # print("come here 13")
-<<<<<<< HEAD
-                    return Response({'code': '1', 'message': 'Successfully booking.'}, status = 200)
-                else:
-                    return Response({'code':'2', 'message': 'There is no remain tickect for this type for this event.'}, status = 200)
-            else:
-                # print("come here 14")
-                return Response({'code':'2', 'message':'something wrong with the data'}, status = 400)
-        else:
-            Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
-
-    @api_view(['POST'])
-    def cancel_ticket(request): #测试完成
-        # print("come here 0")
-        # print()
-        if request.method == 'POST':
-            # print("come here 1")
-=======
                     return Response({
                         'code': '1',
                         'message': 'Successfully booking.'
@@ -1854,7 +1374,6 @@ class PayAndCancel:
         '''
 
         if request.method == 'POST':
->>>>>>> origin/LZY——New
 
             reservation_id = request.query_params.get('reservation_id', None)
             amount = int(request.query_params.get('amount', 0))
@@ -1862,14 +1381,10 @@ class PayAndCancel:
             reservation = Reservation.objects.filter(reservation_id = reservation_id).first()
             # print("come here 3")
             if reservation is None or reservation.amount < amount: 
-<<<<<<< HEAD
-                return Response({"code":"2", "message":"There is something wrong with the input data"}, status = 404) # 找不到这个订票信息
-=======
                 return Response({
                     "code":"2", 
                     "message":"There is something wrong with the input data"
                 }, status = 404) # 找不到这个订票信息
->>>>>>> origin/LZY——New
             # print("come here 4")
             customer = reservation.customer
             ticket = reservation.ticket
@@ -1900,11 +1415,6 @@ class PayAndCancel:
             cancel.save()
             # print("come here 10")
 
-<<<<<<< HEAD
-            return Response({'code':'1', 'message': 'Refund processed successfully'}, status = 200)
-        
-        return Response({'code':'4','message':'Please use the POST method'}, status = 405)
-=======
             return Response({
                 'code':'1', 
                 'message': 'Refund processed successfully'
@@ -1914,4 +1424,3 @@ class PayAndCancel:
             'code':'4',
             'message':'Please use the POST method'
         }, status = 405)
->>>>>>> origin/LZY——New

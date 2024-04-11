@@ -98,7 +98,7 @@ const CustomerOrderPage = () => {
   useEffect(() => {
     if (user && user.id) {
       const fetchUserData = async () => {
-        const url = `http://127.0.0.1:8000/cus/all/events/?user_id=1`;
+        const url = `http://127.0.0.1:8000/cus/all/events/?user_id=${user.id}$`;
         
         try {
           const response = await fetch(url, {
@@ -169,8 +169,8 @@ const CustomerOrderPage = () => {
       Orders
     </Typography>
     </Box>
-      {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} />}
-      {selectedEventType === 'past' && <PastEvents events={pastEvents} />}
+      {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} userId={user.id}/>}
+      {selectedEventType === 'past' && <PastEvents events={pastEvents} userId={user.id}/>}
     </main>
   </Box>
   );
