@@ -6,14 +6,30 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import CancelIcon from '@mui/icons-material/Cancel';
 import InfoIcon from '@mui/icons-material/Info';
+import { Container, 
+  Grid, 
+  TextField, 
+  Button, 
+  Typography, 
+  Paper, 
+  Box, 
+  Card, 
+  CardContent, 
+  Stack, 
+  InputLabel, 
+  Select, 
+  MenuItem,
+  FormControl,
+  Toolbar,
+  Drawer,
+  Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 export const EventItem = ({ event,userId}) => {
   const [tickets, setTickets] = useState([]);
-
   useEffect(() => {
     // Construct the URL with the user ID and event ID
-    const url = `http://127.0.0.1:8000/cus/event/ticket/?user_id=${userId}&event_id=${event.id}`;
+    const url = `http://127.0.0.1:8000/cus/event/ticket/?user_id=${userId}&event_id=${event.event_id}`;
 
     fetch(url)
       .then(response => {
@@ -24,7 +40,8 @@ export const EventItem = ({ event,userId}) => {
       })
       .then(data => {
         // Assuming the data is the array of tickets
-        setTickets(data);
+        setTickets(data.token);
+        console.log("ticket",data);
       })
       .catch(error => {
         console.error('There was a problem with the fetch operation:', error);
@@ -33,7 +50,7 @@ export const EventItem = ({ event,userId}) => {
 // Function to handle event cancellation
   const cancelEvent = () => {
     // Construct the URL for canceling the event
-    const url = `http://127.0.0.1:8000/cus/cancel/event/?user_id=${userId}&event_id=${event.id}`;
+    const url = ` http://127.0.0.1:8000/customer_cancel/?amount=1&reservation_id=11`;
 
     fetch(url, {
       method: 'POST', // Assuming the method is POST, but change as needed
@@ -59,16 +76,13 @@ export const EventItem = ({ event,userId}) => {
     });
   };
   return (
+    <Box>
     <ListItem>
       <ListItemText
         primary={event.event_name}
         secondary={`${new Date(event.event_date).toLocaleDateString()}`}
       />
-      <ul>
-        {tickets.map(ticket => (
-          <li key={ticket.id}>Ticket ID: {ticket.id} - Type: {ticket.type}</li>
-        ))}
-      </ul>
+     
       <ListItemSecondaryAction>
         <IconButton edge="end" aria-label="cancel" onClick={cancelEvent}>
           <CancelIcon />
@@ -78,5 +92,16 @@ export const EventItem = ({ event,userId}) => {
         </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
+    <ul>
+        {tickets.map(ticket => (
+            <li key={ticket.reservation_id}>
+              Ticket Type: {ticket.reserve_seat} 
+              - Order time: {ticket.reserving_time}
+              - Amount: {ticket.amount}
+              - Price: {ticket.ticket_price} 
+            </li>
+          ))}
+        </ul>
+    </Box>
   );
 };
