@@ -312,7 +312,7 @@ class CusAccountFunction:
             customer = Customer.objects.filter(cus_id = user_id).first()
             all_events = Event_info.objects.all()
 
-            event_list = []
+            event_dict = {}
 
             if customer is None: #找不到人的话
                 return Response({
@@ -325,31 +325,37 @@ class CusAccountFunction:
                     special_type_events = Event_info.objects.filter(event_type = customer.prefer_type).all()
                     not_special_type_events = Event_info.objects.exclude(event_type=customer.prefer_type).all()
                     for single in special_type_events: #先招呼上
-                        event_list.append(
+                        event_dict.append(
                             {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
-                                'address':single.event_address
+                                'address':single.event_address,
+                                'event_type':single.event_type,
+                                'event_description':single.event_description
                             }
                         )
                     for single in not_special_type_events:
-                        event_list.append(
+                        event_dict.append(
                             {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
-                                'address':single.event_address
+                                'address':single.event_address,
+                                'event_type':single.event_type,
+                                'event_description':single.event_description
                             }
                         )
                 else: # 如果这个人也没有写自己喜欢什么类型的演出，那直接把数据库的演出直接招呼上去
                     for single in all_events:
-                        event_list.append(
+                        event_dict.append(
                             {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
-                                'address':single.event_address
+                                'address':single.event_address,
+                                'event_type':single.event_type,
+                                'event_description':single.event_description
                             }
                         )    
             else: # 如果这个人写了tag，那就能去做推荐
@@ -370,15 +376,26 @@ class CusAccountFunction:
                 
                 sorted_dict = dict(sorted(result.items(), key=lambda item: item[1], reverse=True))
 
+                # print(sorted_dict)
+
                 keys_in_order = list(sorted_dict.keys())
 
                 for single_keys in keys_in_order:
-                    event_list.append(Event_info.objects.filter(event_id = single_keys).
-                                    values('event_id', 'event_name', 'event_date', 'event_address').first())
+                    event_dict[single_keys] = (Event_info.objects.filter(event_id = single_keys).
+                                                values(
+                                                    'event_id', 
+                                                    'event_name', 
+                                                    'event_date', 
+                                                    'event_address',
+                                                    'event_type',
+                                                    'event_type',
+                                                    'event_description'
+                                                    ).first())
+                    
             return Response({
                 'code':'1', 
                 'message':'successfully jaccard',
-                'token':event_list
+                'token':event_dict
                 }, status = 200)
         
         return Response({
@@ -623,7 +640,7 @@ class LoginPage:
 #   4) 组织者个人信息编辑保存
 class AccountInfoPage:
     @api_view(['GET']) # 测验完成
-    def cus_info_show(request, user_id):
+    def cus_info_show(request):
         '''
         展示这个人的个人信息，
 
@@ -632,6 +649,7 @@ class AccountInfoPage:
         '''
 
         if request.method == 'GET':
+            user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
             if customer:
                 customer = data_match(customer_list, customer)
@@ -652,7 +670,7 @@ class AccountInfoPage:
 
 
     @api_view(['GET']) # 测验完成
-    def org_info_show(request, user_id):
+    def org_info_show(request):
         '''
         这个函数是用来导航到account页面, 返回 organizer 的个人用户信息的
         接收参数 user_id 从url当中获取
@@ -660,6 +678,9 @@ class AccountInfoPage:
         (可能存在一个bug，即前端无法解析query类型的数据)
         '''
         if request.method == 'GET':
+            
+            user_id = request.query_params.get('user_id', None)
+
             organizer = Organizer.objects.filter(org_id = user_id).first()
             if organizer:
                 organizer = data_match(organizer_list, organizer)
@@ -828,12 +849,21 @@ class OrganizerFunctionPage:
             )
             event.save()  # 保存事件对象，这样它就有了一个ID
             for ticket in event_data['tickets']:
+                seat_pool = []
+                for seat_number in range(1, ticket['ticket_amount'] + 1):
+                    row_number = (seat_number - 1) // 20 + 1  # 确定排数
+                    seat_in_row = (seat_number - 1) % 20 + 1  # 确定在当前排的座位号
+                    seat_id = f"{ticket['ticket_type']}-{row_number}-{seat_in_row}"
+                    seat_pool.append(seat_id)
+                seat_pool_str = ",".join(seat_pool)
+
                 ticket = Ticket_info(
                     ticket_type = ticket['ticket_type'],
                     ticket_name = "Reserve" + str(ticket['ticket_type']),
                     ticket_amount = ticket['ticket_amount'],
                     ticket_price = ticket['ticket_price'],
                     ticket_remain = ticket['ticket_amount'],
+                    ticket_seat_pool = seat_pool_str,
                     event = event  # 这里直接将前面创建的event对象作为外键
                 )
                 ticket.save()  # 保存票务对象
@@ -1310,7 +1340,14 @@ class PayAndCancel:
 
         url格式：传入url的时候要按照这样传入 http://127.0.0.1:8000/booking/?email=2545322339@qq.com&event_id=1
 
-        :return: code = [1, 2, 3, 4]
+        :return: code代表的含义
+            1:订票成功
+            2:找不到这张票
+            3:余票不足
+            4:彻底没有余票了
+            5:输入的个人信息或者演出信息有问题
+            6:数据的输入格式存在问题
+        
         '''
         email = request.query_params.get('email', None)
         event_id = request.query_params.get('event_id', None)
@@ -1319,7 +1356,7 @@ class PayAndCancel:
         if not email or not event_id:
             # print("come here 2")
             return Response({
-                'code': '3',
+                'code': '5',
                 'message': 'Missing email or event_id'
             }, status = 400)
 
@@ -1330,10 +1367,11 @@ class PayAndCancel:
             except json.JSONDecodeError:
                 # print("come here 4")
                 return Response({
-                    'code': '3',
+                    'code': '6',
                     'message': 'Invalid json data'
                 }, status = 400)
-            # print("come here 5")
+            
+
             organizer = Organizer.objects.filter(org_email = email).first()
             if organizer:
                 # print("come here 6")
@@ -1345,23 +1383,28 @@ class PayAndCancel:
             # print("come here 7")
             ticket_type = data['ticket_type']
             ticket_number = int(data['ticket_number'])
+            
             if ticket_number and ticket_type:
                 # print("come here 8")
                 customer = Customer.objects.filter(cus_email = email).first()
                 event = Event_info.objects.filter(event_id = event_id).first()
                 ticket = Ticket_info.objects.filter(event = event, ticket_type = ticket_type).first()
-                if ticket.ticket_remain > 0:
-                    # print("come here 8")
-                    total_booked_tickets = Reservation.objects.filter(event=event, ticket=ticket).count()
-                    row_number = total_booked_tickets // 20 + 1  # 确定排数，每排20个座位
-                    seat_number = total_booked_tickets % 20 + 1  # 确定在当前排的座位号
-                    seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
 
+                seat_string = ticket.ticket_seat_pool.split(',')
+                seat_string = seat_string[:ticket_number]
+                remain_seat = seat_string[ticket_number:]
+                remain_seat = ",".join(remain_seat)
+                ticket.ticket_seat_pool = remain_seat
+                ticket.save()
+
+                booking_seat = ",".join(seat_string)
+                if ticket.ticket_remain < ticket_number:
+                    # print("come here 8")
                     history_booking = Reservation.objects.filter(customer = customer, event = event, ticket = ticket).first()
                     if history_booking:
                         # print("come here 9")
                         history_booking.amount += ticket_number
-                        history_booking.reserve_seat += " " + seat_assignment
+                        history_booking.reserve_seat += "," + booking_seat
                         history_booking.save()
                     else:
                         # print("come here 10")
@@ -1371,7 +1414,7 @@ class PayAndCancel:
                             customer = customer,
                             ticket = ticket,
                             amount = ticket_number,
-                            reserve_seat = seat_assignment
+                            reserve_seat = booking_seat
                         )
                         new_reserve.save()
                     # print("come here 11")
@@ -1387,14 +1430,14 @@ class PayAndCancel:
                     }, status = 200)
                 else:
                     return Response({
-                        'code':'2',
-                        'message': 'There is no remain tickect for this type for this event.'
+                        'code':'3',
+                        'message': 'There is no enough remain tickect for this type for this event.'
                     }, status = 200)
             else:
                 # print("come here 14")
                 return Response({
-                    'code':'2',
-                    'message':'something wrong with the data'
+                    'code':'6',
+                    'message':'something wrong with the input data'
                 }, status = 400)
         else:
             Response({
@@ -1407,9 +1450,7 @@ class PayAndCancel:
         '''
         取消演出票的功能
         接收参数 reservation_id 和 amount(数量)。从url当中获取
-        :return:
         '''
-
         if request.method == 'POST':
 
             reservation_id = request.query_params.get('reservation_id', None)
@@ -1418,11 +1459,19 @@ class PayAndCancel:
             # print("come here 2")
             reservation = Reservation.objects.filter(reservation_id = reservation_id).first()
             # print("come here 3")
-            if reservation is None or reservation.amount < amount or amount == 0: 
+            if reservation is None:
                 return Response({
                     "code":"2", 
-                    "message":"There is something wrong with the input data"
+                    "message":"Can not find this ticket"
                 }, status = 404) # 找不到这个订票信息
+            
+            if reservation.amount < amount:
+                return Response({
+                    "code":"2", 
+                    "message":"You order for too more"
+                }, status = 400) # 找不到这个订票信息
+
+            
             # print("come here 4")
             customer = reservation.customer
             ticket = reservation.ticket
