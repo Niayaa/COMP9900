@@ -7,10 +7,30 @@ from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponse
 
 
+def seat_pool_cal(ticket_type, amount):
+    seat_pool_list = []
+    for single_seat in range(1, 101):
+        row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
+        seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
+        seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
+        seat_pool_list.append(seat_assignment)
+    seat_pool_string = ','.join(seat_pool_list)
+    return seat_pool_string
+
+def seat_booking(ticket, amount):
+    all_string = ticket.ticket_seat_pool.split(',')
+    booking_seat = all_string[:amount]
+    remain_seat = all_string[amount:]
+    ticket.ticket_seat_pool = ','.join(remain_seat)
+    ticket.save()
+
+    return ','.join(booking_seat)
+
+
+
 @api_view(['GET'])
 def create_test_data(request):
-    # 创建两个 Customer 用户
-    # print("come here 1")
+
     live_tags = ['rock', 'pop', 'electronic', 'jazz', 'acoustic', 'indie', 'folk', 'blues', 'country', 'reggae']
     concert_tags = ['magic', 'dance', 'circus', 'drama', 'puppetry', 'illusion', 'mime', 'ballet', 'greatest', 'theater']
     comedy_tags = ['standup', 'improv', 'satire', 'sketch', 'dark', 'parody', 'slapstick', 'absurdist', 'observational', 'situational']
@@ -118,15 +138,21 @@ def create_test_data(request):
                 event_tags = random.sample(all_tags, 5),
                 organization=organizer[i % 2],  # 假设的组织者ID
             )
+            
             event_instance.save()
             i += 1
+
             for ticket_type in ["A", "B", "C"]:
+
+                seat_pool_string = seat_pool_cal(ticket_type, 100)
+
                 ticket = Ticket_info(
                     event=event_instance,
                     ticket_type=ticket_type,
                     ticket_price=random.randint(50, 200),
                     ticket_amount=100,
-                    ticket_remain=100
+                    ticket_remain=100,
+                    ticket_seat_pool = seat_pool_string
                     # reservation_time = event_date - timezone.timedelta(days=8)
                 )
                 ticket.save()
@@ -134,7 +160,7 @@ def create_test_data(request):
         # print(ticket)
 
         event_type = ['concert', 'live', 'comedy', 'opera']
-        event_date = [-7, 0, 6, 25, 45]
+        event_date = [-7, 0, 6, 25, 45, 55, 65, 75, 85, 95, 105]
         event_details = []
         for i in event_type:
             for j in event_date:
@@ -163,15 +189,19 @@ def create_test_data(request):
             )
             created_event.save()
             i += 1
-            # print(event)
+
             for ticket_type in ["A", "B", "C"]:
+
+                seat_pool_string = seat_pool_cal(ticket_type, 100)
+                
                 ticket = Ticket_info(
                     event=created_event,
                     ticket_type=ticket_type,
                     ticket_name = "Reserve for " + str(ticket_type),
                     ticket_price=random.randint(50, 200),
                     ticket_amount=100,
-                    ticket_remain=100
+                    ticket_remain=100,
+                    ticket_seat_pool = seat_pool_string
                 )
                 ticket.save()
 
@@ -190,24 +220,20 @@ def create_test_data(request):
         no_tag_event.save()
 
         for ticket_type in ["A", "B", "C"]:
+
+            seat_pool_string = seat_pool_cal(ticket_type, 100)
+
             ticket = Ticket_info(
                 event=no_tag_event,
                 ticket_type=ticket_type,
                 ticket_name = "Reserve for " + str(ticket_type),
                 ticket_price=random.randint(50, 200),
                 ticket_amount=100,
-                ticket_remain=100
+                ticket_remain=100,
+                ticket_seat_pool = seat_pool_string
             )
             ticket.save()
 
-
-
-        # ticket = Ticket_info.objects.all()
-        # print(ticket)
-        # print("come here 11")
-
-    # ticket = Ticket_info.objects.all()
-    # print(ticket)
     events = Event_info.objects.all()
     # print(events)
     customers = Customer.objects.all()
@@ -215,37 +241,35 @@ def create_test_data(request):
     # # 两个customer都订购了每场演出的各类票各张
     for event in events:
         # print(event)
-        tickets = Ticket_info.objects.filter(event=event).all()
-        # print(a_type_ticket)
-        for customer in customers:
-            for ticket in tickets:
-                amount = random.randint(1, 5)
-                for _ in range(amount):
+        if random.randint(0, 1):
+            tickets = Ticket_info.objects.filter(event=event).all()
+            # print(a_type_ticket)
+            for customer in customers:
+                for ticket in tickets:
+                    amount = random.randint(1, 5)
+                    for _ in range(amount):
 
-                    past_reserving = Reservation.objects.filter(customer = customer, event = event, ticket = ticket).first()
+                        past_reserving = Reservation.objects.filter(customer = customer, event = event, ticket = ticket).first()
+                        
+                        booking_saet_sting = seat_booking(ticket, 1)
 
-                    total_booked_tickets = Reservation.objects.filter(event=event, ticket=ticket).count()
-                    row_number = total_booked_tickets // 20 + 1  # 确定排数，每排20个座位
-                    seat_number = total_booked_tickets % 20 + 1  # 确定在当前排的座位号
-                    seat_assignment = f"{ticket.ticket_type}-{row_number}-{seat_number}"
-
-                    if past_reserving:
-                        past_reserving.amount += 1
-                        past_reserving.reserve_seat += ','+ seat_assignment
-                        past_reserving.save()
-                    else:
-                        reserve = Reservation(
-                                customer=customer,
-                                event=event,
-                                ticket=ticket,
-                                amount=1,
-                                reservation_time = event.event_date - timezone.timedelta(days = 8),
-                                reserve_seat = seat_assignment
-                            )
-                        reserve.save()   
-                    if ticket.ticket_remain - reserve.amount > 0 :
-                        ticket.ticket_remain -= reserve.amount
-                        ticket.save()
+                        if past_reserving:
+                            past_reserving.amount += 1
+                            past_reserving.reserve_seat += ','+ booking_saet_sting
+                            past_reserving.save()
+                        else:
+                            reserve = Reservation(
+                                    customer=customer,
+                                    event=event,
+                                    ticket=ticket,
+                                    amount=1,
+                                    reservation_time = event.event_date - timezone.timedelta(days = 8),
+                                    reserve_seat = booking_saet_sting.split(',')[0]
+                                )
+                            reserve.save()   
+                        if ticket.ticket_remain - reserve.amount > 0 :
+                            ticket.ticket_remain -= reserve.amount
+                            ticket.save()
     
     # 两个customer都在订购并且已结束超过一天的活动中，留下了评论，并给出了5分的评分，评论内容不能相同
     i = 0
