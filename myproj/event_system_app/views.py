@@ -2,7 +2,7 @@ import random
 import string
 from django.core.cache import cache
 from django.core.mail import send_mail, send_mass_mail
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -14,8 +14,11 @@ from .models import *
 from django.db import transaction
 import json
 import numpy as np
+from rest_framework import status
 from sklearn.metrics import jaccard_score
 from django.conf import settings
+from django.db.models import Sum, F, ExpressionWrapper, FloatField
+from django.db.models import Count
 from django.contrib.auth.hashers import make_password, check_password
 
 organizer_list = ['org_id', 'org_email', 'org_password', 'company_name', 'company_address', 'org_phone']
@@ -138,8 +141,8 @@ class MainPage:
 #   2)用户取消了票的演出
 #   3)显示一个用户的购票的详细信息
 class CusAccountFunction:
-    @api_view(['GET']) #测试完成
-    def upcoming_and_past(request):
+    @api_view(['GET']) 
+    def upcoming_and_past(request):#测试完成
         '''
         函数功能：根据userid返回这个人的所有订购的演出
         接收参数： 从url当中获取user_id
@@ -261,9 +264,9 @@ class CusAccountFunction:
             # print("come here 2")
 
             reservations = Reservation.objects.filter(customer=customer, event=event).all()
-            print(reservations)
+            # print(reservations)
 
-            if reservations is None:
+            if not reservations.exists():
                 return Response({
                     'code': '2',
                     'message': 'No data here',
@@ -275,14 +278,15 @@ class CusAccountFunction:
             for reservation in reservations:
                 ticket = reservation.ticket
                 reservations_info.append({
-                'reservation_id': reservation.reservation_id,  # 假设预订模型的主键是id
-                'ticket_type': ticket.ticket_type,
-                'reserve_seat':reservation.reserve_seat,
-                'amount': reservation.amount,
-                'ticket_price': ticket.ticket_price,
-                'total_price': reservation.amount*ticket.ticket_price,
-                'reserving_time':reservation.reservation_time
+                    'reservation_id': reservation.reservation_id,  # 假设预订模型的主键是id
+                    'ticket_type': ticket.ticket_type,
+                    'reserve_seat':reservation.reserve_seat,
+                    'amount': reservation.amount,
+                    'ticket_price': ticket.ticket_price,
+                    'total_price': reservation.amount*ticket.ticket_price,
+                    'reserving_time':reservation.reservation_time
             })
+                
             return Response({
                 'code':'1',
                 'message':'successfully finding the data',
@@ -310,9 +314,9 @@ class CusAccountFunction:
         if request.method == 'GET':
             user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
-            all_events = Event_info.objects.all()
+            # all_events = Event_info.objects.all()
 
-            event_dict = {}
+            event_list = []
 
             if customer is None: #找不到人的话
                 return Response({
@@ -320,12 +324,20 @@ class CusAccountFunction:
                     'message':'We can not find the customer'
                 },  status = 400)
             
+            now = timezone.now()
+
+            reserved_event_ids = Reservation.objects.filter(customer=customer).values_list('event__event_id', flat=True)
+
+            available_events = Event_info.objects.filter(event_date__gt=now).exclude(event_id__in=reserved_event_ids)
+            
             if customer.prefer_tags is None: #如果这个人没有写tag
                 if customer.prefer_type: #如果这个人写了喜欢什么类型的演出
-                    special_type_events = Event_info.objects.filter(event_type = customer.prefer_type).all()
-                    not_special_type_events = Event_info.objects.exclude(event_type=customer.prefer_type).all()
+                    special_type_events = available_events.filter(event_type=customer.prefer_type).all()
+                    not_special_type_events = available_events.exclude(event_type=customer.prefer_type).all()
+
                     for single in special_type_events: #先招呼上
-                        event_dict[single.event_id] = {
+                        event_list.append(
+                            {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
@@ -333,9 +345,10 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
-                        
+                        )
                     for single in not_special_type_events:
-                        event_dict[single.event_id] = {
+                        event_list.append(
+                            {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
@@ -343,9 +356,11 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
+                        )
                 else: # 如果这个人也没有写自己喜欢什么类型的演出，那直接把数据库的演出直接招呼上去
-                    for single in all_events:
-                        event_dict[single.event_id] = {
+                    for single in available_events:
+                        event_list.append(
+                            {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
@@ -353,11 +368,12 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
+                        )    
             else: # 如果这个人写了tag，那就能去做推荐
                 event_tags_dict = {}
                 empty_list = []
 
-                for event in all_events:
+                for event in available_events:
                     if event.event_tags is None:
                         empty_list.append(event.event_id)
                     else:
@@ -371,26 +387,23 @@ class CusAccountFunction:
                 
                 sorted_dict = dict(sorted(result.items(), key=lambda item: item[1], reverse=True))
 
-                # print(sorted_dict)
-
                 keys_in_order = list(sorted_dict.keys())
 
-                for single_keys in keys_in_order:
-                    event_dict[single_keys] = (Event_info.objects.filter(event_id = single_keys).
-                                                values(
-                                                    'event_id', 
-                                                    'event_name', 
-                                                    'event_date', 
-                                                    'event_address',
-                                                    'event_type',
-                                                    'event_type',
-                                                    'event_description'
-                                                    ).first())
-                    
+                for single_keys in keys_in_order[:10]:
+                    event_list.append(Event_info.objects.filter(event_id = single_keys).
+                                    values(
+                                        'event_id', 
+                                        'event_name', 
+                                        'event_date', 
+                                        'event_address',
+                                        'event_type',
+                                        'event_type',
+                                        'event_description'
+                                           ).first())
             return Response({
                 'code':'1', 
                 'message':'successfully jaccard',
-                'token':event_dict
+                'token':event_list
                 }, status = 200)
         
         return Response({
@@ -608,8 +621,8 @@ class LoginPage:
                             cus_password = make_password(password),
                             cus_phone = phone,
                             gender = data['gender'] if data['gender'] else None,
-                            prefer_type = data['prefer_type'] if data['prefer_type'] else None,
-                            prefer_tags = data['prefer_tags'] if data['prefer_tags'] else None
+                            # prefer_type = data['prefer_type'] if data['prefer_type'] else None,
+                            # prefer_tags = data['prefer_tags'] if data['prefer_tags'] else None
                         )
                         new_customer.save()
 
@@ -737,7 +750,7 @@ class AccountInfoPage:
             customer['gender'] = data['gender']
             customer['bill_address'] = data['bill_address']
             customer['cus_phone'] = data['phone']
-            # customer['age_area'] = data['age_area']
+            customer['age_area'] = data['age_area']
             customer['prefer_tags'] = data['prefer_tags']
             Customer(**customer).save()
             return Response({
@@ -988,8 +1001,7 @@ class OrganizerFunctionPage:
         这里可能存在着一个隐患，即当异常演出是没有tickets信息是，可能会出现报错
         '''
         if request.method == 'GET':
-            data = json.loads(request.body)
-            org_id = data['user_id']# 获取指定的 Organizer
+            org_id = request.query_params.get('user_id', None)
 
             organizer = Organizer.objects.get(org_id=org_id)
             if organizer is None:
@@ -1002,26 +1014,16 @@ class OrganizerFunctionPage:
             events = Event_info.objects.filter(organization=organizer).values(
                 'event_id', 'event_name', 'event_date', 'event_address'
             )
-            if events is None:
+            if not events.exists():
                 return Response({
                     'code':'2',
                     'message':'There is no recorded data for this organizer'
                 }, status = 404)
-            empty_list = []
-
-            for event in events:
-
-                event_infor = Event_info.objects.filter(event_id = event['event_id']).first()
-                tickets = Ticket_info.objects.filter(event = event_infor).values(
-                    'ticket_id', 'ticket_type', 'ticket_name', 'ticket_amount', 'ticket_price', 'ticket_remain'
-                )
-                event['tickets'] = tickets
-                empty_list.append(event)
 
             return Response({
                 'code':'1',
                 'message':'success get the past data',
-                'token':empty_list
+                'token':events
             }, status = 200)
     
         return Response({
@@ -1031,9 +1033,9 @@ class OrganizerFunctionPage:
 
     @api_view(['GET'])
     def data_showing_check(request):
-        if request.method == 'GET':
+        if request.method == 'GcET':
             event_id = request.query_params.get('event_id', None)
-            user_id = request.query_params.get('user_id', None)
+            # user_id = request.query_params.get('user_id', None)
 
             event = Event_info.objects.filter(event_id = event_id).first()
             
@@ -1049,6 +1051,8 @@ class OrganizerFunctionPage:
             for ticket in tickets:
                 ticket_list.append({
                     'ticket_id':ticket.ticket_id,
+                    # 'ticket_type':ticket.ticket_type,
+                    'ticket_price':ticket.ticket_price,
                     'ticket_name':ticket.ticket_name,
                     'ticket_remain':ticket.ticket_remain,
                     'sold_amount':ticket.ticket_amount - ticket.ticket_remain
@@ -1365,7 +1369,6 @@ class PayAndCancel:
                     'code': '6',
                     'message': 'Invalid json data'
                 }, status = 400)
-            
 
             organizer = Organizer.objects.filter(org_email = email).first()
             if organizer:
@@ -1462,9 +1465,9 @@ class PayAndCancel:
             
             if reservation.amount < amount:
                 return Response({
-                    "code":"2", 
-                    "message":"You order for too more"
-                }, status = 400) # 找不到这个订票信息
+                    "code":"3", 
+                    "message":"You order for too"
+                }, status = 404) # 找不到这个订票信息
 
             
             # print("come here 4")
@@ -1512,3 +1515,200 @@ class PayAndCancel:
             'code':'4',
             'message':'Please use the POST method'
         }, status = 405)
+    
+
+class OrganizerReport:
+    '''
+    get_event_number是在params里面输入org_id,如果想改改一下函数就行
+    2
+    '''
+    @api_view(['GET'])
+    def get_event_number(request):
+        if request.method == "GET":
+            # 由于是GET请求，我们从查询参数中获取organizer_id
+            org_id = request.query_params.get('org_id', None)
+            #当使用query_params.get函数的时候，apifox里用params查询id
+            #data.get函数使用的时候则是body->json
+
+            if org_id is not None:
+                events = Event_info.objects.filter(organization_id=org_id)
+                
+                # 计算总场次
+                total_events = events.count()
+                
+                # 计算过去的场次
+                past_events = events.filter(event_date__lt=timezone.now()).count()
+                
+                # 计算即将到来的场次
+                upcoming_events = events.filter(event_date__gte=timezone.now()).count()
+                
+                return Response({
+                    "code": "1",
+                    "total_events": total_events,
+                    "past_events": past_events,
+                    "upcoming_events": upcoming_events
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"code": "3", 'error': 'Organizer ID is required'}, status=status.HTTP_400_BAD_REQUEST)    
+
+    @api_view(['GET'])
+    def get_event_types_summary(request):
+        if request.method == "GET":
+            org_id = request.query_params.get('org_id', None)
+            
+            if org_id is not None:
+                events = Event_info.objects.filter(organization_id=org_id)
+                event_types_count = events.values('event_type').annotate(total=Count('event_type')).order_by('event_type')
+                
+                # 计算总活动数量
+                total_events = sum(item['total'] for item in event_types_count)
+                
+                if total_events > 0:
+                    # 计算每种类型的比例并四舍五入到小数点后两位
+                    event_types_ratio = [{
+                        **item, 
+                        'ratio': round(item['total'] / total_events * 100, 2)
+                    } for item in event_types_count]
+                else:
+                    event_types_ratio = []
+                
+                return Response({
+                    "code": "1",
+                    "event_types_summary": event_types_ratio
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"code": "3", 'error': 'Organizer ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @api_view(['GET'])
+    def events_by_total_tickets_sold(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            events_sorted_by_tickets_sold = Event_info.objects.filter(organization_id=org_id)\
+                .annotate(sold_tickets=Sum(F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')))\
+                .order_by('-sold_tickets')
+            
+            # 将QuerySet转换为字典列表
+            events_data = [{'event_id': event.event_id, 'sold_tickets': event.sold_tickets} for event in events_sorted_by_tickets_sold]
+            return Response(events_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)    
+
+    @api_view(['GET'])
+    def events_by_total_revenue_and_type(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            events_sorted_by_revenue_and_type = Event_info.objects.filter(organization_id=org_id).values(
+                'ticket_info__ticket_type'
+            ).annotate(
+                total_revenue=Sum(
+                    ExpressionWrapper(
+                        (F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')) * F('ticket_info__ticket_price'),
+                        output_field=FloatField()
+                    )
+                )
+            ).order_by('-total_revenue')
+
+            return Response(list(events_sorted_by_revenue_and_type), status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+           
+    @api_view(['GET'])
+    def events_by_completion_rate(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            events_sorted_by_completion_rate = Event_info.objects.filter(organization_id=org_id)\
+                .annotate(completion_rate=ExpressionWrapper(Sum(F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')) / Sum('ticket_info__ticket_amount'), output_field=FloatField()))\
+                .order_by('-completion_rate')
+            
+            # 将QuerySet转换为字典列表
+            events_data = [{'event_id': event.event_id, 'completion_rate': round(event.completion_rate * 100, 2) if event.completion_rate else 0} for event in events_sorted_by_completion_rate]
+            return Response(events_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_view(['GET'])
+    def events_by_total_sales(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            # 计算每个活动的总销售额
+            events_sorted_by_total_sales = Event_info.objects.filter(organization_id=org_id).annotate(
+                total_sales=Sum(
+                    ExpressionWrapper(
+                        (F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')) * F('ticket_info__ticket_price'),
+                        output_field=FloatField()
+                    )
+                )
+            ).order_by('-total_sales')
+
+            # 转换QuerySet为列表格式以供返回
+            events_data = [
+                {
+                    'event_id': event.event_id,
+                    'event_name': event.event_name,
+                    'total_sales': round(event.total_sales, 2) if event.total_sales else 0.00  # 保证即使没有销售也显示0.00
+                }
+                for event in events_sorted_by_total_sales
+            ]
+
+            return Response(events_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+    @api_view(['GET'])
+    def event_details_by_id(request):
+        event_id = request.query_params.get('event_id', None)
+        if event_id is not None:
+            try:
+                event = Event_info.objects.get(event_id=event_id)
+                tickets = Ticket_info.objects.filter(event=event).annotate(
+                    sold_amount=ExpressionWrapper(
+                        F('ticket_amount') - F('ticket_remain'),
+                        output_field=FloatField()
+                    ),
+                    total_sales=ExpressionWrapper(
+                        (F('ticket_amount') - F('ticket_remain')) * F('ticket_price'),
+                        output_field=FloatField()
+                    )
+                ).aggregate(
+                    total_sold=Sum('sold_amount'),
+                    total_revenue=Sum('total_sales')
+                )
+
+                tickets_detail = Ticket_info.objects.filter(event=event).values(
+                    'ticket_id', 'ticket_type','ticket_name'
+                ).annotate(
+                    sold_amount=Sum(F('ticket_amount') - F('ticket_remain')),
+                    total_sales=Sum((F('ticket_amount') - F('ticket_remain')) * F('ticket_price'))
+                )
+
+                event_details = {
+                    'event_id': event.event_id,
+                    'event_type': event.event_type,
+                    'tickets': list(tickets_detail),
+                    'total_sold': tickets['total_sold'],
+                    'total_revenue': tickets['total_revenue']
+                }
+
+                return Response(event_details, status=status.HTTP_200_OK)
+            except Event_info.DoesNotExist:
+                return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"error": "EventId is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EventPage:
+    '''
+    目前是bode json
+    '''
+    @api_view(['POST'])
+    def like_Comment(request):
+        comment_id = request.data.get('comment_id')
+        if comment_id:
+            Comment = get_object_or_404(Comment_cus, pk=comment_id)
+            Comment.likes += 1  # 增加点赞数
+            Comment.save()  # 保存更改
+            return Response({'message': 'Comment liked successfully', 'total_likes': Comment.likes})
+        else:
+            return Response({'error': 'Comment ID is required'}, status=400)

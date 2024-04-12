@@ -16,9 +16,17 @@ class Organizer(models.Model):
     def __str__(self):
         return str(self.org_id)
 
-4
+
 class Customer(models.Model):
-    # 修改成设计为 firstname 和 lastname 两种
+    class AgeArea(models.TextChoices):
+        YOUTH = '18-25', '18-25 Years'
+        YOUNG_ADULT = '26-35', '26-35 Years'
+        ADULT = '36-45', '36-45 Years'
+        MIDDLE_AGED = '46-55', '46-55 Years'
+        SENIOR = '56-65', '56-65 Years'
+        ELDERLY = '65+', '65+ Years'
+
+
     cus_id = models.AutoField(primary_key = True)
     cus_name =  models.TextField(max_length = 50, null = False)
     cus_email = models.TextField(max_length = 255, null = False)
@@ -26,6 +34,8 @@ class Customer(models.Model):
     prefer_type = models.CharField(max_length = 20,
                                    choices = [('live', 'live'),('concert', 'concert'),
                                               ('opera','opera'), ('show', 'show')], null = True)
+    
+    age_area = models.CharField(max_length = 20, choices = AgeArea.choices, null = True)
 
     prefer_tags = models.TextField(blank=True, null = True)
     cus_password = models.TextField(null = False)
@@ -52,6 +62,7 @@ class Event_info(models.Model):
     # 注意一下，static文件夹好像还没有设置过
     event_type = models.CharField(max_length = 20, choices = [('Concert', 'Concert'), ('live','live'), ('opera', 'opera')])
     event_last_selling_date = models.DateTimeField(blank = False, null = False)
+    # likes = models.IntegerField(default=0, help_text="Number of likes for the event")
     organization = models.ForeignKey(Organizer, on_delete = models.SET_NULL, null=True)
 
     class Meta:
@@ -64,7 +75,6 @@ class Event_info(models.Model):
         with transaction.atomic():
             # 获取所有相关的Reservation记录
             reservations = Reservation.objects.select_related('ticket').filter(event=self)
-
             # 为每个订票退款
             for reservation in reservations:
                 # 假设我们有一个User模型，并且Reservation模型有一个user字段以及一个ticket_price字段
@@ -84,6 +94,7 @@ class Ticket_info(models.Model):
     ticket_id = models.AutoField(primary_key = True)
     ticket_type = models.TextField(null = False)
     ticket_name = models.TextField(null = False, blank = True, default = "Special reserving area")
+    ticket_seat_pool = models.TextField(null = False, blank = True, default = '')
     ticket_amount = models.IntegerField(null = False)
     ticket_price = models.IntegerField(null = False)
     ticket_remain = models.IntegerField(null = False, default = 0)
@@ -104,7 +115,6 @@ class Reservation(models.Model):
     event = models.ForeignKey(Event_info, on_delete = models.SET_NULL, null = True)
     ticket = models.ForeignKey(Ticket_info, on_delete = models.SET_NULL, null = True)
     customer = models.ForeignKey(Customer, on_delete = models.SET_NULL, null = True)
-
 
     def __str__(self):
         return str(self.reservation_id)
@@ -134,10 +144,9 @@ class Comment_cus(models.Model):
     comment_cus = models.TextField(max_length = 500, null = False) # 这个的意思是comment的内容
     comment_time = models.DateTimeField(null = False) #消费者留下评论的时间
     comment_image_url = models.TextField(null = True, blank = True, default = None) #消费者留下评论图片的url
-    # comment_like = models.IntegerField(null = False, blank = True, default = 0)
+    likes = models.IntegerField(default=0, help_text="Number of likes for the event")
     event = models.ForeignKey(Event_info, on_delete = models.SET_NULL, null = True)
     customer = models.ForeignKey(Customer, on_delete = models.SET_NULL, null = True)
-
 
     def __str__(self):
         # 可能不该返回comment_id
