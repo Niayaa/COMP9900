@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from event_system_app import views
-from event_system_app import view_test, view_test2
+from event_system_app import view_test2
 
 router = routers.DefaultRouter()
 
@@ -12,7 +12,6 @@ urlpatterns = [
 
     # #创建测试数据
     path('create_sample_data/', view_test2.create_test_data, name = 'create_sample_data'),#1
-
 
 
     # Mainpage的功能
@@ -34,17 +33,11 @@ urlpatterns = [
     path('cus/all_canceled/', views.CusAccountFunction.canceled_events, name = 'canceled_events'),#4
     # url的设计方式为 http://127.0.0.1:8000/cus/all_canceled/?user_id=1
 
-
-    # '''
-    # Nicole 需要的第二个功能，下面的这个event_ticket
-    # '''
-
-
     path('cus/event/ticket/', views.CusAccountFunction.event_ticket, name = 'event_ticket'),#5
     # url的设计方式为 http://127.0.0.1:8000/cus/event/ticket/?user_id=1&event_id=3
 
     path('cus/event_recommend/', views.CusAccountFunction.event_recommend, name = 'event_recommend'),#6
-    # url的设计方式为 http://127.0.0.1:8000/cusevent_recommend/?user_id=1
+    # url的设计方式为 http://127.0.0.1:8000/cus/event_recommend/?user_id=1
 
 
 
@@ -66,8 +59,12 @@ urlpatterns = [
     #       2)向页面反馈当前登录的组织者的个人信息
     #       3)消费者修改并保存个人信息
     #       4)组织者修改并保存个人信息
-    path('cus/<int:user_id>', views.AccountInfoPage.cus_info_show, name='cus_info_show'), #11
-    path('org/<int:user_id>', views.AccountInfoPage.org_info_show, name='org_info_show'), #12
+    path('cus/info/', views.AccountInfoPage.cus_info_show, name='cus_info_show'), #11
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/cus/info/?user_id=1
+
+    path('org/info/', views.AccountInfoPage.org_info_show, name='org_info_show'), #12
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/cus/info/?user_id=1
+
     path('edit/cus/', views.AccountInfoPage.edit_cus_info, name='edit_cus_info'), #13
     path('edit/org/', views.AccountInfoPage.edit_org_info, name='edit_org_info'), #14
 
@@ -106,11 +103,28 @@ urlpatterns = [
     path('org_reply/', views.EventDetailPage.org_make_reply, name = 'org_make_reply'), #23
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/submit_cus_comment/?user_id=1&comment_id=1
 
+
     # Organzier function
     #   测试完成
-    #   1)获取所有创建过的演出
-    #   2)获取报告功能
+    #   1)获取所有创建的演出
+    #   2)获取演出票务信息
     path('created_events/', views.OrganizerFunctionPage.created_events, name = 'created_events'), #24
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/created_events/?user_id=1
     path('org/event/ticket/', views.OrganizerFunctionPage.data_showing_check, name = 'data_showing_check'), #25
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/org/event/ticket/?event_id=1
+
+    # organizer report的一系列功能
+    path('get_event_number/', views.OrganizerReport.get_event_number, name='get_event_number'),#26
+    path('get_event_types_summary/', views.OrganizerReport.get_event_types_summary, name='get_event_types_summary'),#27
+    path('events_by_total_tickets_sold/', views.OrganizerReport.events_by_total_tickets_sold, name='events_by_total_tickets_sold'),#28
+    path('events_by_total_revenue_and_type/', views.OrganizerReport.events_by_total_revenue_and_type, name='events_by_total_revenue_and_type'),#29
+    path('events_by_completion_rate/', views.OrganizerReport.events_by_completion_rate, name='events_by_completion_rate'),#30
+    path('events_by_total_sales/', views.OrganizerReport.events_by_total_sales, name='events_by_total_sales'),#31
+    path('event_details_by_id/', views.OrganizerReport.event_details_by_id, name='event_details_by_id'),#32
+
+    # 点赞功能
+    path('like_Comment/', views.EventPage.like_Comment, name='like_Comment'),#33
+
+
     
 ]
