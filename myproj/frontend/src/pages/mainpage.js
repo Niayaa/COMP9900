@@ -119,8 +119,8 @@ export default function MainPage() {
     applyFilters();
   }, [applyFilters]);
 
-  const handleEventClick = (event) => {
-    navigate("/eventpage", { state: [event] });
+  const handleEventClick = (eventid) => {
+    navigate("/eventpage", { state: { ID: `${eventid.event_id}` } });
   };
 
   return (

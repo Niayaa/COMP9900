@@ -5,13 +5,15 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useNavigate } from 'react-router-dom';
 
-export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount}) {
+export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, tkprice}) {
+
+    const [price, setPrice] = useState(0);
     
     const navigate = useNavigate();
 
@@ -19,6 +21,11 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount})
         handleClose()
     }
 
+    useEffect(() => {
+      setPrice(tkprice)
+    })
+
+    
 
     return(
         <>
