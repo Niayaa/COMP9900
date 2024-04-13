@@ -113,6 +113,7 @@ urlpatterns = [
     path('org/event/ticket/', views.OrganizerFunctionPage.data_showing_check, name = 'data_showing_check'), #25
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/org/event/ticket/?event_id=1
 
+
     # organizer report的一系列功能
     path('get_event_number/', views.OrganizerReport.get_event_number, name='get_event_number'),#26
     path('get_event_types_summary/', views.OrganizerReport.get_event_types_summary, name='get_event_types_summary'),#27
@@ -124,6 +125,11 @@ urlpatterns = [
 
     # 点赞功能
     path('like_Comment/', views.EventPage.like_Comment, name='like_Comment'),#33
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_Comment/?comment_id=1&cus_id=1
+
+    path('like_Comment/', views.EventPage.like_check, name='like_Comment'),#33
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_check/?comment_id=1&cus_id=1
+
 
 
     
