@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+
 from .serializer import *
 from django.shortcuts import get_object_or_404
 from django.db.models import Prefetch
@@ -20,6 +22,9 @@ from django.conf import settings
 from django.db.models import Sum, F, ExpressionWrapper, FloatField
 from django.db.models import Count
 from django.contrib.auth.hashers import make_password, check_password
+import paypalrestsdk
+from django.http import HttpResponse
+from django.shortcuts import redirect
 
 organizer_list = ['org_id', 'org_email', 'org_password', 'company_name', 'company_address', 'org_phone']
 
@@ -620,7 +625,7 @@ class LoginPage:
                             cus_email = email,
                             cus_password = make_password(password),
                             cus_phone = phone,
-                            gender = data['gender'] if data['gender'] else None,
+                            gender = data.get('gender') if data.get('gender') else None,
                             # prefer_type = data['prefer_type'] if data['prefer_type'] else None,
                             # prefer_tags = data['prefer_tags'] if data['prefer_tags'] else None
                         )
@@ -1246,7 +1251,7 @@ class EventDetailPage:
                         event_rate = int(data['event_rate']),
                         comment_cus = data['comment_cus'],
                         comment_time = timezone.now().replace(second=0, microsecond=0),
-                        comment_image_url = data['comment_image_url'] if 'comment_image_url' in data and data['comment_image_url'] else None,
+                        comment_image_url = data.get('comment_image_url') if data.get('comment_image_url') else None,
                         event = event,
                         customer = customer,
                     )
@@ -1717,7 +1722,7 @@ class EventPage:
             return Response({'error': 'Comment ID is required'}, status=400)
     
     @api_view(['GET'])
-    def like_check(request):
+    def like_checking(request):
         '''
         功能：检查一个customer是否点赞了
         传入参数：cus_id 和 comment_id
@@ -1727,22 +1732,104 @@ class EventPage:
             2：曾经点赞过了，不能再点赞
             3：找不到这个customer或者comment
         '''
-        cus_id = request.POST.get('cus_id')
-        comment_id = request.POST.get('comment_id')
-        
+        cus_id = request.query_params.get('cus_id', None)
+        comment_id = request.query_params.get('comment_id', None)
         try:
-            customer = Customer.objects.get(pk=cus_id)
-            comment = Comment_cus.objects.get(pk=comment_id)
-            
-            # 检查是否已经点赞过
-            if LikeCheck.objects.filter(customer=customer, comment=comment).exists():
-                return JsonResponse({'code': '2', 'message': 'You have already liked this comment.'}, status = 200)
-            
-            LikeCheck.objects.create(customer=customer, comment=comment)
-            # 创建新的点赞记录
-            return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status = 200)
-            
+            customer = Customer.objects.filter(cus_id = cus_id).first()
+            comment = Comment_cus.objects.filter(comment_id = comment_id).first()
+
         except Customer.DoesNotExist:
-            return JsonResponse({'code': '3', 'message': 'Customer not found.'}, status = 404)
+            return JsonResponse({'code': '3', 'message': 'Customer not found.'}, status = 200)
         except Comment_cus.DoesNotExist:
-            return JsonResponse({'code': '3', 'message': 'Comment not found.'}, status = 404)
+            return JsonResponse({'code': '3', 'message': 'Comment not found.'}, status = 200)
+
+        if LikeCheck.objects.filter(customer=customer, comment=comment).exists():
+            return JsonResponse({'code': '2', 'message': 'You have already liked this comment.'}, status=200)
+
+        LikeCheck.objects.create(customer=customer, comment=comment, created_at=timezone.now())
+        # 创建新的点赞记录
+        return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status=200)
+
+
+    
+    @api_view(['GET'])
+    def like_number_check(request):
+        comment_id = request.query_params.get('comment_id', None)
+        comment = get_object_or_404(Comment_cus, comment_id=comment_id)
+        return Response({'code':'1','message':'We find the comment and comment like', 'token' : comment.likes}, status = 200)
+
+
+import paypalrestsdk
+from django.conf import settings
+from django.http import JsonResponse
+
+def process_payment(request):
+    paypalrestsdk.configure({
+        "mode": settings.PAYPAL_MODE,
+        "client_id": settings.PAYPAL_CLIENT_ID,
+        "client_secret": settings.PAYPAL_CLIENT_SECRET
+    })
+
+    payment = paypalrestsdk.Payment({
+        "intent": "sale",
+        "payer": {
+            "payment_method": "paypal"
+        },
+        "redirect_urls": {
+            "return_url": "http://127.0.0.1:8000/payment/execute/",
+            "cancel_url": "http://127.0.0.1:8000/payment/cancel/"
+        },
+        "transactions": [{
+            "item_list": {
+                "items": [{
+                    "name": "item",
+                    "sku": "item",
+                    "price": "5.00",
+                    "currency": "USD",
+                    "quantity": 1
+                }]
+            },
+            "amount": {
+                "total": "5.00",
+                "currency": "USD"
+            },
+            "description": "This is the payment transaction description."
+        }]
+    })
+
+    if payment.create():
+        for link in payment.links:
+            if link.rel == "approval_url":
+                # Capture the url that the user must be redirected to to approve the payment
+                approval_url = str(link.href)
+                return JsonResponse({'approval_url': approval_url}, safe=False)
+    else:
+        return JsonResponse({'error': 'Payment creation failed'}, status=500)
+
+    return JsonResponse({'error': 'Unknown error occurred'}, status=500)
+
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE,
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
+
+import paypalrestsdk
+from django.conf import settings
+
+@api_view(['GET'])  # 指定该视图只接受GET请求
+def execute_payment(request):
+    payment_id = request.GET.get('paymentId')
+    payer_id = request.GET.get('PayerID')
+
+    if not payment_id or not payer_id:
+        return Response({'code':'2','message':'There is something worng'}, status = 00)
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        # 这里可以更新订单状态，记录支付成功事件等
+        return Response({'code':'1','message':'success'}, status = 200)  # 支付成功后重定向
+    else:
+        # 记录支付失败的错误信息等
+        return Response({'code':'3','message':'failed'}, status = 500)
