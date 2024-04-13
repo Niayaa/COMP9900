@@ -127,10 +127,26 @@ urlpatterns = [
     path('like_Comment/', views.EventPage.like_Comment, name='like_Comment'),#33
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_Comment/?comment_id=1&cus_id=1
 
-    path('like_check/', views.EventPage.like_check, name='like_check'),#34
+    path('like_check/', views.EventPage.like_checking, name='like_check'),#34
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_check/?comment_id=1&cus_id=1
 
+    path('like_number/', views.EventPage.like_number_check, name='like_number_check'), #35
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_number/?comment_id=1
 
 
-    
+    path('payment/process/', views.process_payment, name='process_payment'), #36
+    path('payment/execute/', views.execute_payment, name='execute_payment'), #37
+
+
+    # path('payment/success/', views.payment_success, name='payment_success'),
+    # path('payment/error/', views.payment_error, name='payment_error'),
+    # path('payment/cancelled/', views.payment_cancelled, name='payment_cancelled'),
+    # path('payment/cancel/', views.cancel_payment, name='cancel_payment'),
+
+
+
+    # path(r'^paypal/', include('paypal.standard.ipn.urls')),  # 付款完成通知
+    # path(r'^payment/(\d+)/$', views.payment),
+    # path(r'^done/$', views.payment_done),
+    # path(r'^canceled/$', views.payment_canceled),
 ]
