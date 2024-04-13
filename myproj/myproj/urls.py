@@ -127,7 +127,7 @@ urlpatterns = [
     path('like_Comment/', views.EventPage.like_Comment, name='like_Comment'),#33
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_Comment/?comment_id=1&cus_id=1
 
-    path('like_Comment/', views.EventPage.like_check, name='like_Comment'),#33
+    path('like_check/', views.EventPage.like_check, name='like_check'),#34
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_check/?comment_id=1&cus_id=1
 
 
