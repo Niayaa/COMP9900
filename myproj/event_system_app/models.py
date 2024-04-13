@@ -168,3 +168,16 @@ class Reply_org(models.Model):
     def __str__(self):
         # 可能不该返回reply_id
         return str(self.reply_id)
+
+class LikeCheck(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='liked_comments')
+    comment = models.ForeignKey(Comment_cus, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'Like'
+        unique_together = ('customer', 'comment')  # 确保每个用户对每条评论只能点赞一次
+
+    def __str__(self):
+        return f"{self.customer.cus_id} likes {self.comment.comment_id}"
+

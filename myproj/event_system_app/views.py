@@ -1705,10 +1705,44 @@ class EventPage:
     @api_view(['POST'])
     def like_Comment(request):
         comment_id = request.data.get('comment_id')
+        cus_id = request.data.get('cus_id')
         if comment_id:
             Comment = get_object_or_404(Comment_cus, pk=comment_id)
+            customer = Customer.objects.filter(cus_id = cus_id).first()
             Comment.likes += 1  # 增加点赞数
             Comment.save()  # 保存更改
+            LikeCheck.objects.create(customer=customer, comment=Comment)
             return Response({'message': 'Comment liked successfully', 'total_likes': Comment.likes})
         else:
             return Response({'error': 'Comment ID is required'}, status=400)
+    
+    @api_view(['GET'])
+    def like_check(request):
+        '''
+        功能：检查一个customer是否点赞了
+        传入参数：cus_id 和 comment_id
+
+        传出参数：code
+            1：没有点赞过，允许点赞
+            2：曾经点赞过了，不能再点赞
+            3：找不到这个customer或者comment
+        '''
+        cus_id = request.POST.get('cus_id')
+        comment_id = request.POST.get('comment_id')
+        
+        try:
+            customer = Customer.objects.get(pk=cus_id)
+            comment = Comment_cus.objects.get(pk=comment_id)
+            
+            # 检查是否已经点赞过
+            if LikeCheck.objects.filter(customer=customer, comment=comment).exists():
+                return JsonResponse({'code': '2', 'message': 'You have already liked this comment.'}, status = 200)
+            
+            LikeCheck.objects.create(customer=customer, comment=comment)
+            # 创建新的点赞记录
+            return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status = 200)
+            
+        except Customer.DoesNotExist:
+            return JsonResponse({'code': '3', 'message': 'Customer not found.'}, status = 404)
+        except Comment_cus.DoesNotExist:
+            return JsonResponse({'code': '3', 'message': 'Comment not found.'}, status = 404)
