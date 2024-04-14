@@ -18,6 +18,7 @@ import CustomerOrderPage from "./pages/Customer/CustomerOrder";
 import OrganzierAccountPage from "./pages/Organizer/OrganizerAccountPage";
 import OrganizerEventPage from "./pages/Organizer/OrganizerEventPage";
 import CreateNewEventPage from "./pages/Organizer/CreateNewEventPage";
+import OrganizerEventReport from "./pages/Organizer/OrganizerEventReport";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="/Org_Event" element={<OrganizerEventPage/>}/>
         <Route path="/Org_Account" element={<OrganzierAccountPage/>}/>
         <Route path="/CreateNew" element={<CreateNewEventPage/>}/>
+        <Route path="/Org_Report" element={<OrganizerEventReport/>}/>
 
         <Route path="/Contact" element={<ContactPage/>}/>
         {/* 默认重定向到登录页 */}

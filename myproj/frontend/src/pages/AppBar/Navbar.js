@@ -40,8 +40,10 @@ function Navbar() {
 
           <MenuItem onClick={handleClose} component={Link} to="/Org_Event">Manage events</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/CreateNew">Create New Event</MenuItem>
+          <MenuItem onClick={handleClose} component={Link} to="/Org_Report">Event Report</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/Org_Account">Account Information</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/password-reset">Reset Password</MenuItem>
+
           <MenuItem onClick={() => {
             handleClose();
             logout();
