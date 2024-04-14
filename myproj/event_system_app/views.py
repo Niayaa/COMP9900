@@ -2,7 +2,7 @@ import random
 import string
 from django.core.cache import cache
 from django.core.mail import send_mail, send_mass_mail
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -22,15 +22,23 @@ from django.conf import settings
 from django.db.models import Sum, F, ExpressionWrapper, FloatField
 from django.db.models import Count
 from django.contrib.auth.hashers import make_password, check_password
+
 import paypalrestsdk
-from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.conf import settings
+
 
 organizer_list = ['org_id', 'org_email', 'org_password', 'company_name', 'company_address', 'org_phone']
 
 customer_list = ['cus_id', 'cus_name', 'cus_email', 'gender', 'prefer_type', 'cus_password', 'bill_address', 'cus_phone']
 
 event_info_list = ['event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type']
+
+
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE,
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
 
 
 def data_match(fields_list, input_data): #这个用于将从数据库查询到的数据，和模型匹配成字典
@@ -1337,6 +1345,25 @@ class EventDetailPage:
 
 # 订购和取消功能
 class PayAndCancel:
+    @api_view(['GET'])
+    def cus_ticket_number_check(request):
+        cus_id = request.query_params.get('cus_id', None)
+        event_id = request.query_params.get('event_id', None)
+
+        customer = Customer.objects.filter(cus_id = cus_id).first()
+        event = Event_info.objects.filter(event_id = event_id).first()
+
+        if customer is None or event is None:
+            return Response({
+                'code':'2',
+                'message':'There is something wrong with the input data'
+            }, status = 200)
+
+        current_tickets = Reservation.objects.filter(customer=customer, event=event).aggregate(total_tickets=models.Sum('amount'))
+
+        return current_tickets
+
+
     @api_view(['POST'])
     def payment(request): #测试完成
         '''
@@ -1380,7 +1407,7 @@ class PayAndCancel:
                 # print("come here 6")
                 return Response({
                     'code':'2',
-                    "message": "Only customer can book the event."
+                    "message": "Only customer can book the event"
                 }, status = 200)
 
             # print("come here 7")
@@ -1520,6 +1547,92 @@ class PayAndCancel:
             'code':'4',
             'message':'Please use the POST method'
         }, status = 405)
+
+    @api_view(['GET'])
+    def process_payment(request):
+        paypalrestsdk.configure({
+            "mode": settings.PAYPAL_MODE,
+            "client_id": settings.PAYPAL_CLIENT_ID,
+            "client_secret": settings.PAYPAL_CLIENT_SECRET
+        })
+        amount = int(request.query_params.get('amount', 0))  # 默认数量为1
+        price = float(request.query_params.get('price', 0))  # 默认价格为0
+        if price <= 0 or amount <= 0:
+            return Response({
+                'code': '2',
+                'message': 'There is something wrong with the input data'
+            }, status=200)
+
+        total_price = amount * price
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"
+            },
+            "redirect_urls": {
+                "return_url": "http://127.0.0.1:8000/payment/execute/",
+                "cancel_url": "http://127.0.0.1:8000/payment/cancel/"
+            },
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "ticket",
+                        "sku": "item",
+                        "price": str(price),
+                        "currency": "USD",
+                        "quantity": amount
+                    }]
+                },
+                "amount": {
+                    "total": str(total_price),
+                    "currency": "USD"
+                },
+                "description": "This is the payment transaction description."
+            }]
+        })
+
+        if payment.create():
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    # Capture the url that the user must be redirected to to approve the payment
+                    approval_url = str(link.href)
+                    return JsonResponse({'approval_url': approval_url}, safe=False)
+        else:
+            return Response({
+                'code':'2',
+                'error': 'Payment creation failed'
+            }, status=200)
+
+        return Response({
+            'code':'2',
+            'error': 'Unknown error occurred'
+        }, status=200)
+
+    @api_view(['GET'])  # 指定该视图只接受GET请求
+    def execute_payment(request):
+        payment_id = request.GET.get('paymentId')
+        payer_id = request.GET.get('PayerID')
+
+        if not payment_id or not payer_id:
+            return Response({
+                'code': '2',
+                'message': 'There is something worng'
+            }, status=200)
+
+        payment = paypalrestsdk.Payment.find(payment_id)
+
+        if payment.execute({"payer_id": payer_id}):
+            # 这里可以更新订单状态，记录支付成功事件等
+            return Response({
+                'code': '1',
+                'message': 'success'
+            }, status=200)  # 支付成功后重定向
+        else:
+            # 记录支付失败的错误信息等
+            return Response({
+                'code': '3',
+                'message': 'failed'
+            }, status=500)
     
 
 class OrganizerReport:
@@ -1759,77 +1872,3 @@ class EventPage:
         return Response({'code':'1','message':'We find the comment and comment like', 'token' : comment.likes}, status = 200)
 
 
-import paypalrestsdk
-from django.conf import settings
-from django.http import JsonResponse
-
-def process_payment(request):
-    paypalrestsdk.configure({
-        "mode": settings.PAYPAL_MODE,
-        "client_id": settings.PAYPAL_CLIENT_ID,
-        "client_secret": settings.PAYPAL_CLIENT_SECRET
-    })
-
-    payment = paypalrestsdk.Payment({
-        "intent": "sale",
-        "payer": {
-            "payment_method": "paypal"
-        },
-        "redirect_urls": {
-            "return_url": "http://127.0.0.1:8000/payment/execute/",
-            "cancel_url": "http://127.0.0.1:8000/payment/cancel/"
-        },
-        "transactions": [{
-            "item_list": {
-                "items": [{
-                    "name": "item",
-                    "sku": "item",
-                    "price": "5.00",
-                    "currency": "USD",
-                    "quantity": 1
-                }]
-            },
-            "amount": {
-                "total": "5.00",
-                "currency": "USD"
-            },
-            "description": "This is the payment transaction description."
-        }]
-    })
-
-    if payment.create():
-        for link in payment.links:
-            if link.rel == "approval_url":
-                # Capture the url that the user must be redirected to to approve the payment
-                approval_url = str(link.href)
-                return JsonResponse({'approval_url': approval_url}, safe=False)
-    else:
-        return JsonResponse({'error': 'Payment creation failed'}, status=500)
-
-    return JsonResponse({'error': 'Unknown error occurred'}, status=500)
-
-paypalrestsdk.configure({
-    "mode": settings.PAYPAL_MODE,
-    "client_id": settings.PAYPAL_CLIENT_ID,
-    "client_secret": settings.PAYPAL_CLIENT_SECRET
-})
-
-import paypalrestsdk
-from django.conf import settings
-
-@api_view(['GET'])  # 指定该视图只接受GET请求
-def execute_payment(request):
-    payment_id = request.GET.get('paymentId')
-    payer_id = request.GET.get('PayerID')
-
-    if not payment_id or not payer_id:
-        return Response({'code':'2','message':'There is something worng'}, status = 00)
-
-    payment = paypalrestsdk.Payment.find(payment_id)
-
-    if payment.execute({"payer_id": payer_id}):
-        # 这里可以更新订单状态，记录支付成功事件等
-        return Response({'code':'1','message':'success'}, status = 200)  # 支付成功后重定向
-    else:
-        # 记录支付失败的错误信息等
-        return Response({'code':'3','message':'failed'}, status = 500)
