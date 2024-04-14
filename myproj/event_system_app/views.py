@@ -626,7 +626,11 @@ class LoginPage:
             }, status = 200)
         else:
             # 处理缓存失效的情况
-            print('No cached data available.')
+            return Response({
+                'role': None,
+                'id': None,
+                'email': None
+            }, status=200)
 
 
     @api_view(['POST']) # 测试完成
