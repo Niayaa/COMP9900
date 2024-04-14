@@ -89,6 +89,9 @@ urlpatterns = [
     #     传入url的时候要按照这样传入 http://127.0.0.1:8000/customer_cancel/?amount=1&reservation_id=1
 
 
+
+
+
     # Event Info page
     #   测试完成
     #   1)展示演出的详细信息
@@ -103,50 +106,47 @@ urlpatterns = [
     path('org_reply/', views.EventDetailPage.org_make_reply, name = 'org_make_reply'), #23
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/submit_cus_comment/?user_id=1&comment_id=1
 
+    # paypal的支付功能
+    path('payment/process/', views.PayAndCancel.process_payment, name='process_payment'), #24
+    # http://127.0.0.1:8000/payment/process/?amount=5&price=5
+
+    path('payment/execute/', views.PayAndCancel.execute_payment, name='execute_payment'), #25
+
+
+    # 检查该用户订购了在该演出订购了多少场票了
+    path('payment/check_ticket_number/', views.PayAndCancel.cus_ticket_number_check, name='cus_ticket_stage_checking'), #26
+    # http://127.0.0.1:8000/payment/check_ticket_number/?event_id=5&cus_id=5
+
+
+
 
     # Organzier function
     #   测试完成
     #   1)获取所有创建的演出
     #   2)获取演出票务信息
-    path('created_events/', views.OrganizerFunctionPage.created_events, name = 'created_events'), #24
+    path('created_events/', views.OrganizerFunctionPage.created_events, name = 'created_events'), #27
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/created_events/?user_id=1
-    path('org/event/ticket/', views.OrganizerFunctionPage.data_showing_check, name = 'data_showing_check'), #25
+    path('org/event/ticket/', views.OrganizerFunctionPage.data_showing_check, name = 'data_showing_check'), #28
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/org/event/ticket/?event_id=1
 
 
     # organizer report的一系列功能
-    path('get_event_number/', views.OrganizerReport.get_event_number, name='get_event_number'),#26
-    path('get_event_types_summary/', views.OrganizerReport.get_event_types_summary, name='get_event_types_summary'),#27
-    path('events_by_total_tickets_sold/', views.OrganizerReport.events_by_total_tickets_sold, name='events_by_total_tickets_sold'),#28
-    path('events_by_total_revenue_and_type/', views.OrganizerReport.events_by_total_revenue_and_type, name='events_by_total_revenue_and_type'),#29
-    path('events_by_completion_rate/', views.OrganizerReport.events_by_completion_rate, name='events_by_completion_rate'),#30
-    path('events_by_total_sales/', views.OrganizerReport.events_by_total_sales, name='events_by_total_sales'),#31
-    path('event_details_by_id/', views.OrganizerReport.event_details_by_id, name='event_details_by_id'),#32
+    path('get_event_number/', views.OrganizerReport.get_event_number, name='get_event_number'),#29
+    path('get_event_types_summary/', views.OrganizerReport.get_event_types_summary, name='get_event_types_summary'),#30
+    path('events_by_total_tickets_sold/', views.OrganizerReport.events_by_total_tickets_sold, name='events_by_total_tickets_sold'),#31
+    path('events_by_total_revenue_and_type/', views.OrganizerReport.events_by_total_revenue_and_type, name='events_by_total_revenue_and_type'),#32
+    path('events_by_completion_rate/', views.OrganizerReport.events_by_completion_rate, name='events_by_completion_rate'),#33
+    path('events_by_total_sales/', views.OrganizerReport.events_by_total_sales, name='events_by_total_sales'),#34
+    path('event_details_by_id/', views.OrganizerReport.event_details_by_id, name='event_details_by_id'),#35
 
     # 点赞功能
-    path('like_Comment/', views.EventPage.like_Comment, name='like_Comment'),#33
+    path('like_Comment/', views.EventPage.like_Comment, name='like_Comment'),#36
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_Comment/?comment_id=1&cus_id=1
 
-    path('like_check/', views.EventPage.like_checking, name='like_check'),#34
+    path('like_check/', views.EventPage.like_checking, name='like_check'),#37
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_check/?comment_id=1&cus_id=1
 
-    path('like_number/', views.EventPage.like_number_check, name='like_number_check'), #35
+    path('like_number/', views.EventPage.like_number_check, name='like_number_check'), #38
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_number/?comment_id=1
 
-
-    path('payment/process/', views.process_payment, name='process_payment'), #36
-    path('payment/execute/', views.execute_payment, name='execute_payment'), #37
-
-
-    # path('payment/success/', views.payment_success, name='payment_success'),
-    # path('payment/error/', views.payment_error, name='payment_error'),
-    # path('payment/cancelled/', views.payment_cancelled, name='payment_cancelled'),
-    # path('payment/cancel/', views.cancel_payment, name='cancel_payment'),
-
-
-
-    # path(r'^paypal/', include('paypal.standard.ipn.urls')),  # 付款完成通知
-    # path(r'^payment/(\d+)/$', views.payment),
-    # path(r'^done/$', views.payment_done),
-    # path(r'^canceled/$', views.payment_canceled),
 ]
