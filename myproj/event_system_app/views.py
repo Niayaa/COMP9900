@@ -7,9 +7,9 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from rest_framework.decorators import api_view
-from rest_framework.views import APIView
+# from rest_framework.views import APIView
 
-from .serializer import *
+# from .serializer import *
 from django.shortcuts import get_object_or_404
 from django.db.models import Prefetch
 from .models import *
@@ -18,7 +18,7 @@ import json
 import numpy as np
 from rest_framework import status
 from sklearn.metrics import jaccard_score
-from django.conf import settings
+# from django.conf import settings
 from django.db.models import Sum, F, ExpressionWrapper, FloatField
 from django.db.models import Count
 from django.contrib.auth.hashers import make_password, check_password
@@ -97,8 +97,8 @@ def jaccard_sim(customer_tags, event_tags):
 
 '''
 200: 数据返回成功
-400:数据错误或返回的数据格式错误
-405:请求的方法错误
+400: 数据错误或返回的数据格式错误
+405: 请求的方法错误
 
 code:1代表成功, 2代表失败, 3代表非法数据, 4代表调用失败
 '''
@@ -523,7 +523,7 @@ class LoginPage:
         '''
         print(request.method == 'POST')
         if request.method == 'POST':
-            # print("ggggg")
+
             try:
                 # print("comer here 1")
                 data = json.loads(request.body)
@@ -539,11 +539,21 @@ class LoginPage:
                         # print("comer here 5")
                     # if customer['cus_password'] == password:
                         # return Response({'code': 1, 'message': 'login success',"user_type": "customer", "token": [customer['cus_id'], customer['cus_name'], customer['cus_email']]}, status = 200) #NICOCE测试用
+                        print(customer)
+
+                        print(type(customer['cus_id']))
+                        cache.set(customer['cus_id'], {
+                            'role': 'customer',
+                            'id': customer['cus_id'],
+                            'email': customer['cus_email']
+                        }, timeout=60000)  # 缓存一个小时
+
                         return Response({'code': 1, 'message': 'login success', "user_type": "customer",
                                          "token": customer['cus_id']},
                                         status=200) # LSL测试用
                     else:
-                        # print("comer here 6")
+                        cache.set(0, {'role': None, 'id': None,
+                                      'email': None}, timeout=60000)  # 缓存一个小时
                         return Response({'code': '2', 'message': 'login failed, please check email/password',"user_type": None}, status = 400)
                         
                 else:  # 有可能这个人是个organizer
@@ -557,20 +567,67 @@ class LoginPage:
                         if check_password(password, organizer['org_password']):
                             # print("comer here 9")
                             # return Response({'code': '1', 'message': 'login success', "user_type": "organizer", "token": [organizer['org_id'], organizer['org_email'], organizer['company_name']]}, status = 200) #Nicole测试用
+
+                            cache.set(organizer['org_id'], {
+                                'role': 'organizer',
+                                'id': organizer['org_id'],
+                                'email': organizer['org_email']
+                            }, timeout = 60000)  # 缓存一个小时
+
+
                             return Response({'code': '1', 'message': 'login success', "user_type": "organizer",
                                             "token": organizer['org_id']}, status=200) # LSL测试用
+
                         else:  # 说明密码或者其他的东西出现了错误
                             # print("comer here 10")
+                            cache.set(0, {'role': None, 'id': None,
+                                                             'email': None}, timeout=60000)  # 缓存一个小时cache.set(customer_data.cus_id, {'role': 'fail', 'id': None,
+
                             return Response({'code': '2', 'message': 'login failed, please check email/password',"user_type": None }, status = 400)
-                        
+
+                    cache.set(0, {'role': None, 'id': None,
+                                                     'email': None}, timeout=60000)  # 缓存一个小时
                     return Response({'code': '2', 'message': 'login failed, please check email/password',"user_type": None }, status = 400)
                         
             except json.JSONDecodeError:
                 # print("comer here 11")
+
+                cache.set(0, {'role': None, 'id': None,
+                                                 'email': None}, timeout=60000)  # 缓存一个小时
+
                 return Response({'code': '1', 'message': 'Invalid json data'}, status = 400)
 
-        # print("comer here 12")
+
+        cache.set(0, {'role': None, 'id': None,
+                      'email': None}, timeout=60000)  # 缓存一个小时
         return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
+
+    @api_view(['GET'])
+    def get_cache_data(request):
+        '''
+        读取cache，从url当中读取user_id, 如果没读取到就自动设置为0,如下为字典格式
+        {'role': None, 'id': None,'email': None}
+        :return:
+            {
+                'role': user_info['role'],
+                'id': user_info['if'],
+                'email': user_info['email']
+            }
+        '''
+        user_id = request.query_params.get('user_id', 0)
+        if user_id != 0:
+            # 使用缓存的用户信息
+            user_info = cache.get(int(user_id))
+            # print(user_info)
+            return Response({
+                'role': user_info['role'],
+                'id': user_info['id'],
+                'email': user_info['email']
+            }, status = 200)
+        else:
+            # 处理缓存失效的情况
+            print('No cached data available.')
+
 
     @api_view(['POST']) # 测试完成
     def register(request):
@@ -1105,47 +1162,56 @@ class EventDetailPage:
             'total_rating':总评分,是个浮点数，范围是 0-5
             'tickets': 是个本场演出各类型剩余票量的字典
         '''
+        print(request.method)
         if request.method == 'GET':
+            # print("come here 1")
             event_id = request.query_params.get('event_id', None)
             if event_id:
+                # print("come here 2")
                 event = Event_info.objects.filter(event_id = event_id).first() # 先找到这个event
                 ticket_set = Ticket_info.objects.filter(event = event).all() #查询这个演出的票的种类
                 ticket_dict = {}
+                # print("come here 3")
                 for ticket in ticket_set:
                     ticket_dict[ticket.ticket_type] = [ticket.ticket_remain, ticket.ticket_price]
                 cus_comments = Comment_cus.objects.filter(event = event).all()
                 rate_num = 0
+                # print("come here 4")
                 total_rate = 0
                 for single_comment in cus_comments:
                     if single_comment.event_rate is not None:
                         total_rate += single_comment.event_rate
                         rate_num += 1
-                if total_rate > 0:
-                    ave_rate = round(total_rate / rate_num, 1)
+                # print("come here 5")
 
-                    frontend_data = {
-                        'id':event.event_id,
-                        'title':event.event_name,
-                        'date':event.event_date,
-                        'location':event.event_address,
-                        'description':event.event_description,
-                        'last_selling_date':event.event_last_selling_date,
-                        'event_tags':event.event_tags,
-                        'image':event.event_image_url,
-                        'type':event.event_type,
-                        'total_rating':ave_rate,
-                        'tickets':ticket_dict,
-                    }
-                    return Response({
-                        'code':'1',
-                        'message':'Successfuly fingding', 
-                        "token":frontend_data
-                    }, status = 200)
+                ave_rate = round(total_rate / rate_num, 1) if rate_num > 0 else 0
+
+                frontend_data = {
+                    'id':event.event_id,
+                    'title':event.event_name,
+                    'date':event.event_date,
+                    'location':event.event_address,
+                    'description':event.event_description,
+                    'last_selling_date':event.event_last_selling_date,
+                    'event_tags':event.event_tags,
+                    'image':event.event_image_url,
+                    'type':event.event_type,
+                    'total_rating':ave_rate,
+                    'tickets':ticket_dict,
+                }
+                # print("come here 6")
+                return Response({
+                    'code':'1',
+                    'message':'Successfuly fingding',
+                    "token":frontend_data
+                }, status = 200)
             else:
+                # print("come here 7")
                 return Response({
                     'code': '3',
                     'message': 'There is no event id in it'
                 }, status = 400)
+        # print("come here 8")
         return Response({
             'code': '4', 
             'message': 'This function only accepts POST data'
@@ -1172,6 +1238,8 @@ class EventDetailPage:
         }
         '''
         if request.method =='GET':
+
+            comments_with_replies = []
             event_id = request.query_params.get('event_id', None)
             # print("come here 1")
 
@@ -1190,7 +1258,7 @@ class EventDetailPage:
 
                 # print(comments)
                 # print("come here 4")
-                comments_with_replies = []
+                # comments_with_replies = []
 
                 # print("come here 5")
                 for comment in comments:
@@ -1236,25 +1304,26 @@ class EventDetailPage:
             # print("success")
             
             data = request.data
-            # print("come here 1")
+            print("come here 1")
 
             event_id = request.query_params.get('event_id', None)
             cus_id = request.query_params.get('cus_id', None)
 
             event = Event_info.objects.filter(event_id = event_id).first()
             customer = Customer.objects.filter(cus_id = cus_id).first()
-            # print("come here 2")
+            print("come here 2")
             if event and customer:
-                # print("come here 3")
+                print("come here 3")
                 comment = Comment_cus.objects.filter(event = event, customer = customer).first()
-                # print("come here 3")
+                print("come here 4")
                 if comment:
+                    print("come here 5")
                     return Response({
                         'code':'2',
                         'message':'You have leave a comment before'
                     }, status = 200)
                 if data:
-                    # print("come here 7")
+                    print("come here 7")
                     comment = Comment_cus(
                         event_rate = int(data['event_rate']),
                         comment_cus = data['comment_cus'],
@@ -1262,24 +1331,28 @@ class EventDetailPage:
                         comment_image_url = data.get('comment_image_url') if data.get('comment_image_url') else None,
                         event = event,
                         customer = customer,
+                        likes = 0
                     )
                     comment.save()
-                    # print("come here 8")
+                    print("come here 8")
                     return Response({
                         'code':'1',
                         'message':'successfuly submit the comment'
                     }, status = 200)
-                
+
+                print("come here 9")
                 return Response({
                     'code':'3',
                     'message':'The input data is not json form'
                 }, status = 400)
-            
+
+            print("come here 10")
             return Response({
                 'code':'2',
                 'message':'We did not find the appropriate data'
             }, status = 404)
 
+        print("come here 11")
         return Response({
             'code': '4',
             'message': 'This function only accepts POST data'
@@ -1361,7 +1434,14 @@ class PayAndCancel:
 
         current_tickets = Reservation.objects.filter(customer=customer, event=event).aggregate(total_tickets=models.Sum('amount'))
 
-        return current_tickets
+        # print(current_tickets)
+        # print(type(current_tickets))
+
+        return Response({
+            'token':current_tickets['total_tickets'] if current_tickets['total_tickets'] else 0,
+            'code':'1',
+            'message':'Successful'
+        }, status = 200)
 
 
     @api_view(['POST'])
@@ -1475,13 +1555,13 @@ class PayAndCancel:
                 'message': 'This function only accepts POST data'
             }, status = 405)
 
-    @api_view(['POST'])
+    @api_view(['PUT'])
     def cancel_ticket(request): #测试完成
         '''
         取消演出票的功能
         接收参数 reservation_id 和 amount(数量)。从url当中获取
         '''
-        if request.method == 'POST':
+        if request.method == 'PUT':
 
             reservation_id = request.query_params.get('reservation_id', None)
             amount = int(request.query_params.get('amount', 0))
@@ -1822,14 +1902,21 @@ class EventPage:
     '''
     @api_view(['POST'])
     def like_Comment(request):
-        comment_id = request.data.get('comment_id')
-        cus_id = request.data.get('cus_id')
+        comment_id = request.query_params.get('comment_id')
+        cus_id = request.query_params.get('cus_id')
         if comment_id:
             Comment = get_object_or_404(Comment_cus, pk=comment_id)
             customer = Customer.objects.filter(cus_id = cus_id).first()
             Comment.likes += 1  # 增加点赞数
             Comment.save()  # 保存更改
-            LikeCheck.objects.create(customer=customer, comment=Comment)
+            # LikeCheck.objects.create(customer=customer, comment=Comment)
+
+            likecheck = LikeCheck(
+                customer = customer,
+                comment = Comment,
+                created_at = timezone.now().replace(second=0, microsecond=0),
+            )
+            likecheck.save()
             return Response({'message': 'Comment liked successfully', 'total_likes': Comment.likes})
         else:
             return Response({'error': 'Comment ID is required'}, status=400)
@@ -1867,6 +1954,10 @@ class EventPage:
     
     @api_view(['GET'])
     def like_number_check(request):
+        '''
+        检查
+        :return:
+        '''
         comment_id = request.query_params.get('comment_id', None)
         comment = get_object_or_404(Comment_cus, comment_id=comment_id)
         return Response({'code':'1','message':'We find the comment and comment like', 'token' : comment.likes}, status = 200)
