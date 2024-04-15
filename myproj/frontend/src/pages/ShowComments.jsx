@@ -45,13 +45,13 @@ export default function ShowComment(props) {
     // console.log("/////////////",todaydate )
     // console.log("//////////////",props.ifOrganization )
 
-  useEffect(() => {
+  // useEffect(() => {
 
-  },[props.ifCustomer]);
+  // },[props.ifCustomer]);
 
 
   const [comments, setComments] = useState([
-    { comment_id: 1, event_rate: 4, comment: "This is a great event!", replies: [] },
+    { comment_id: 1, event_rate: 4, comment: "This is a great event!", replies: [], comment_image_url: "", },
   ]);
   const [newComment, setNewComment] = useState("");
   const [newReply, setNewReply] = useState({});
@@ -115,7 +115,7 @@ export default function ShowComment(props) {
 
   async function postComments(eventID, newComment) {
 
-    console.log("newComment", newComment.comment)
+    console.log("newComment", newComment.comment_image_url)
     // console.log("pc",eventID)
     await fetch(
       "http://127.0.0.1:8000/submit_cus_comment/?event_id="+`${eventID}`+"&cus_id=" +`${props.cus_id}`
@@ -135,26 +135,33 @@ export default function ShowComment(props) {
           // comment: 
           comment_cus: newComment.comment,
           // replies: [],
-          imageUrl: newComment.imageUrl,
-          rating: newComment.event,
+          comment_image_url: newComment.comment_image_url,
+          event_rate: newComment.rating,
           // comment_time: new Date(),
         }),
       }
     )
       .then((res) => {
-        alert(res)
+        // alert(res)
         if (res.ok) {
           return res.json();
         }
       })  
       .then(data => {
-        alert(`Comment posted successfully! ${data}`);
-        // fetchComments(eventID);  // Assuming this is to refresh the comments displayed
+        console.log("987", data)
+        if(data.code === '1'){
+          alert(`${data.message}`);
+        }else if(data.code === '2'){
+          alert(`${data.message}`);
+        }else{
+          alert(`${data.message}`);
+        }
+        fetchComments(eventID);  // Assuming this is to refresh the comments displayed
       })
       .catch((error) => {
         // handle error
         alert(error);
-        alert("Only customers can comment, if you're our customer, please login");
+        // alert("Only customers can comment, if you're our customer, please login");
         return;
       });
   }
@@ -170,12 +177,11 @@ export default function ShowComment(props) {
           rating: rate,
           comment: newComment,
           replies: [],
-          imageUrl: imageUrl, 
+          comment_image_url: imageUrl, 
         };
-        setComments([...comments, newCommentObj]);
+        // setComments([...comments, newCommentObj]);
         // post to backend
         postComments(props.eventID, newCommentObj);
-
         setNewComment("");
         // setImageFile(null);
       
@@ -186,70 +192,56 @@ export default function ShowComment(props) {
         rating: rate, // Default rating for a new comment; adjust as necessary
         comment: newComment,
         replies: [],
-        imageUrl: "",
+        comment_image_url: "",
       };
       // post到后端
       postComments(props.eventID, newCommentObj);
-      setComments([...comments, newCommentObj]);
+      // setComments([...comments, newCommentObj]);
       setNewComment(""); // Reset new comment input
     }
   };
 
-  async function postReplies(eventID, commentId, newReply) {
-    // console.log("pr",commentId)
-    await fetch(
-      "http://127.0.0.1:8000/org_reply/?user_id="+`${user_id}`+"&comment_id="+`${commentId}` ,
-      {
+  function postReplies(eventID, commentId, newReply) {
+    console.log(newReply);
+    console.log(newReply[commentId]);
+
+    fetch(`http://127.0.0.1:8000/org_reply/?user_id=${user_id}&comment_id=${commentId}`, {
         method: "POST",
         headers: {
-          "content-type": "application/json",
-            //Authorization: `Bearer ${tokenc}`,
+            "content-type": "application/json",
+            // Authorization: `Bearer ${tokenc}`,
         },
-        // Send your data in the request body as JSON
         body: JSON.stringify({
-          reply_org: newReply[commentId],
+            reply_org: newReply[commentId],
         }),
-      })
-      .then((res) => {
-        if (res.ok) {
-          console( res.json())
-          // return res.json();
+    })
+    .then((response) => {
+        if (!response.ok) {
+            // Even when unauthorized, parse the JSON to get the error message
+            return response.json().then(errData => {
+                // Throw an error with the message from server
+                throw new Error(errData.message || "Unauthorized request");
+            });
         }
-        // handle error
-        console("iiiiiiiiiii", res.json())
-        if(res.status === 400){
-          alert("Only organization who create this event can reply, if you're, please login as the event organization.");
+        return response.json(); // Properly parse JSON only here when response is ok
+    })
+    .then((task) => {
+        console.log("iii", task);
+        // Handle your response data here
+        if (task.code === '1') {
+            alert(`${task.message}`);
+            fetchComments(eventID);
+        } else {
+            alert(`${task.message}`);
         }
-      })
-      .then((task) => {
-        // do something with the new task
-            // Update local state to reflect the new reply without needing to reload comments
-                // Update local state to reflect the new reply without needing to reload comments
-                console.log("iii", task)
-        if(1){       
-        setComments(comments.map(comment => {
-          if (comment.comment_id === commentId) {
-            return {
-              ...comment,
-              replies: [...comment.replies, { reply_content: newReply[commentId], reply_time: new Date().toISOString() }]
-            };
-          }
-          return comment;
-        }));
-        fetchComments(props.eventID);
-        }else{
-          alert("Only organization who create this event can reply, if you're, please login as the event organization.");
-        }
-      })
-      .catch((error) => {
-        // handle error
-
-        alert(error);
-      });
+    })
+    .catch((error) => {
+        console.error("Fetch error:", error);
+        alert(`An error occurred: ${error.message}`);
+    });
+}
 
 
-      
-  }
 
   const addReply = (commentId) => {
     // const replyContent = newReply[commentId];
@@ -258,9 +250,9 @@ export default function ShowComment(props) {
       return;
     }
   
+    setNewReply({ ...newReply, [commentId]: "" });
     postReplies(props.eventID, commentId, newReply);
     // Reset the specific reply input field
-    setNewReply({ ...newReply, [commentId]: "" });
   };
 
 
@@ -342,7 +334,7 @@ export default function ShowComment(props) {
         >
           {comment.comment}
         </Typography>
-        {comment.imageUrl && (
+        {comment.comment_image && (
           <Box
             sx={{
               display: 'flex',
@@ -351,7 +343,7 @@ export default function ShowComment(props) {
             }}
           >
             <img
-              src={comment.imageUrl}
+              src={comment.comment_image}
               alt="Comment"
               style={{
                 maxWidth: '100%',

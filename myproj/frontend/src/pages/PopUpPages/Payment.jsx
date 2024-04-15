@@ -156,6 +156,13 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
         </Grid>
       </DialogContent>
       <DialogActions>
+        <Grid container sx={{
+          display: 'flex',
+          justifyContent: 'center',  // 水平居中
+          alignItems: 'center',      // 垂直居中
+          direction: 'column',       // 垂直布局
+        }}>
+          <Grid item>
         {!canPay && (
           <Card variant="outlined">
             <CardContent>
@@ -175,7 +182,23 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
           </Button> */}
           </>
         )}
-        <Button onClick={handleClose}>Return</Button>
+        </Grid>
+        <Grid item>
+        <Button       
+          variant="outlined"
+          style={{
+            m:1,
+            width: '200px',          // 设置宽度
+            borderRadius: '20px',    // 使按钮边缘变圆润
+            color: 'black',          // 设置文字颜色
+            borderColor: 'blue',    // 设置边框颜色
+            backgroundColor: 'transparent', // 设置背景为透明
+            textTransform: 'none',   // 取消大写字母
+          }}
+          onClick={handleClose}
+        >Return</Button>
+        </Grid>
+        </Grid>
       </DialogActions>
     </Dialog>
         </>

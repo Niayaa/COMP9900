@@ -4,12 +4,13 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import Grid from '@mui/material/Grid';
 
+
 const LikeButton = ({ commentId, userId, isCustomer }) => {
   const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
 
   const fetchCheckIfLikes = () => {
-    fetch(`http://127.0.0.1:8000/like_check/?comment_id=${commentId}&cus_id=${userId}`, {
+    fetch(`http://127.0.0.1:8000/like_check/?comment_id=${parseInt(commentId)}&cus_id=${parseInt(userId)}`, {
       method: 'GET'
     })
     .then(response => response.json())
@@ -34,7 +35,7 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
 
   const fetchNumberofLikes = () => {
     // console.log("commentIdcommentIdcommentId", userId)
-    fetch(`http://127.0.0.1:8000/like_number/?comment_id=${commentId}&cus_id=${userId}`, {
+    fetch(`http://127.0.0.1:8000/like_number/?comment_id=${parseInt(commentId)}&cus_id=${parseInt(userId)}`, {
       method: 'GET'
     })
     .then(response => response.json())
@@ -55,7 +56,7 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
   const handleLike = () => {
     // console.log("userIduserIduserIduserId", userId)
     if (!hasLiked) {
-      fetch(`http://127.0.0.1:8000/like_Comment/?comment_id=${commentId}&cus_id=${userId}`, {
+      fetch(`http://127.0.0.1:8000/like_Comment/?comment_id=${parseInt(commentId)}&cus_id=${parseInt(userId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ comment_id: commentId, cus_id: userId })
@@ -66,7 +67,8 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
         }
         return response.json();
       })
-      .then(() => {
+      .then(task => {
+        console.log("After post like", task)
         setLikes(likes => likes + 1);
         setHasLiked(true);
       })

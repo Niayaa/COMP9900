@@ -282,15 +282,16 @@ function EventPage(props) {
         className='my-component-background'
     >
         <Container sx={{paddingBottom: {xs: 4}}}>
-        <Button variant="outlined"  onClick={handlePopupBookInfo}>Call Book Info  Pop Up</Button>
-       <BookInfoPopUp cus_id={propss.user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp>
+        <></>
+        <Button variant="none" disabled={true}></Button>
+       {/* <BookInfoPopUp cus_id={user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp> */}
         <Grid container spacing={2} direction={'column'} 
             sx={{
                 // bgcolor: 'lightblue',
                 backgroundColor: 'rgba(255, 255, 255, 0.5)',
                 // filter: 'blur(10px)', // 高斯模糊效果
                 borderRadius: 2,
-                mx: 'auto', my: 4, width: '90%',
+                mx: 'auto', my: 4, width: '90%', height: 'auto',
             }}
         > 
          <Grid container spacing={2} sx={{padding: 4}}>
@@ -402,6 +403,12 @@ function EventPage(props) {
                     <Grid container direction={'column'} >
                     <Grid sx={{ml: 1}}>Tickets</Grid>
                     <Grid sx={{ml: 1}}>Last selling date: {eventInfo.last_selling_date}</Grid>
+                    {/* <Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
+                        textTransform: 'none',  
+                        minWidth: 250,          
+                    }}  onClick={handlePopupBookInfo}>Check My Booking Info</Button>
+                    <BookInfoPopUp cus_id={user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp>
+                    </Grid> */}
                     { 
                     // eventInfo.last_selling_date > todaydate 
                     // && 

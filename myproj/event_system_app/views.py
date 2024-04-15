@@ -1267,6 +1267,7 @@ class EventDetailPage:
                         "event_rate": comment.event_rate,
                         "comment": comment.comment_cus,
                         "comment_time": comment.comment_time,
+                        "comment_image":comment.comment_image_url,
                         "replies": []
                     }
                     # print("come here 6")
@@ -1408,7 +1409,7 @@ class EventDetailPage:
             return Response({
                 'code':'2',
                 'message':'Not a valid organizer for this event'
-            }, status = 400)
+            }, status = 401)
 
         return Response({
             'code': '4',

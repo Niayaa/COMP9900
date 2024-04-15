@@ -7,11 +7,14 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import Grid from '@mui/material/Grid';
 import React, { useEffect, useState } from "react";
+import { useAuth } from '../AuthContext.js';
 
 export default function BookInfoPopUp(props) {
 
     const eventID = props.eventID;
-    const user_id = props.cus_id;
+    const user_id = props.cus_id
+    const {user} = useAuth();
+
     const [eventInfo, setEventInfo] = React.useState({});
     const [InfoArray, setInfoArray] = React.useState([]);
     const [openCancelDialog, setOpenCancelDialog] = useState(false);
@@ -35,9 +38,9 @@ export default function BookInfoPopUp(props) {
         }
     };
 
-    useEffect(() => {
-        // fetchEventInfo and fetchBookInfo logic...
-    }, [InfoArray]);
+    // useEffect(() => {
+    //     // fetchEventInfo and fetchBookInfo logic...
+    // }, [InfoArray]);
 
     
     async function fetchEventInfo(){
@@ -63,7 +66,7 @@ export default function BookInfoPopUp(props) {
       }
 
     async function fetchBookInfo(){
-            console.log("fetchBookInfofetchBookInfo")
+        console.log("fetchBookInfofetchBookInfo")
           await fetch(`http://127.0.0.1:8000/cus/event/ticket/?user_id=${user_id}&event_id=${eventID}`,{
           method: 'GET',
           headers: {
@@ -77,19 +80,21 @@ export default function BookInfoPopUp(props) {
         //   alert(res.json())
       }).then(InfoArray => {
         console.log("InfoArray", InfoArray)
-        if(InfoArray.code === '1'){
-            setInfoArray(InfoArray.token)
-            console.log("InfoArray===", InfoArray)
-            
-        }else{
-            setInfoArray([])
-
+        if(InfoArray){
+            if(InfoArray.code === '1'){
+                setInfoArray(InfoArray.token)
+                console.log("InfoArray===", InfoArray)
+                
+            }else{
+                setInfoArray([])
+    
+            }
         }
         }).catch(error => {
           // handle error
+          setInfoArray(null)
           if(error === "TypeError: Failed to fetch"){
 
-              setInfoArray(null)
           }
           console.log("KKKKKKKKKKKKKKKK",error)
         //   alert(error);
@@ -146,16 +151,13 @@ export default function BookInfoPopUp(props) {
                           <Box  sx={{ outline: '1px solid', marginTop: 2}}>{eventInfo.title}</Box>
                           <Box  sx={{ outline: '1px solid', padding: 6}}>{eventInfo.description}</Box>
                       </Grid2>
-                      <Grid2 item >
+                      <Grid2 item sx={{m : 1, mt: 2}}>
                           <Box  sx={{ padding: 1}}>Date: {eventInfo.date}</Box>
                           <Box  sx={{ padding: 1}}>Event Address: {eventInfo.location}</Box>
-                          <Box  sx={{ padding: 1}}>Seat area: {}</Box>
-                          <Box  sx={{ padding: 1}}>Seat amount: {}</Box>
-
                       </Grid2>
                   </Grid2>
               
-              {(InfoArray !== undefined ) && (InfoArray.length > 0)? (InfoArray.map((info, index) => (
+              { user && (InfoArray !== null ) ? (InfoArray.map((info, index) => (
                     <Grid key={index}sx={{outline: '1px solid', marginTop: 2}} container justifyContent="space-between" alignItems="center">
                         <Grid item >
                             <p>Ticket type: {info.ticket_type}</p>
@@ -174,7 +176,7 @@ export default function BookInfoPopUp(props) {
                 ))):(<></>)}
               </DialogContent>
               <DialogActions>
-                  { InfoArray.length > 0 ?(InfoArray.map((info, index) => (
+                  { (InfoArray !== null ) ? (InfoArray.map((info, index) => (
                       <Grid key={index} container justifyContent="space-between" alignItems="center">
                           <Grid item>
                               {/* Ticket details display */}
