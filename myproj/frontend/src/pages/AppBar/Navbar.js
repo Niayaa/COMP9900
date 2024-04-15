@@ -60,7 +60,7 @@ function Navbar() {
         {/* Logo图像和链接 */}
         <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
           <Button color="inherit" component={Link} to="/MainPage">Home</Button>
-          <Button color="inherit" component={Link} to="/events">Events</Button>
+          <Button color="inherit" component={Link} to="/MainPage">Events</Button>
           <Button color="inherit" component={Link} to="/Contact">Contact Us</Button>
         </Box>
 

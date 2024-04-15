@@ -34,7 +34,7 @@ const CustomerAccountPage = () => {
       // Ensure there's a user and the user has an ID before attempting to fetch data
       if (user && user.id) {
         const fetchUserData = async () => {
-          const url = `http://127.0.0.1:8000/cus/${user.id}`;
+          const url = `http://127.0.0.1:8000/cus/info/?user_id=${user.id}`;
           
           try {
             const response = await fetch(url, {
