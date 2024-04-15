@@ -1372,50 +1372,51 @@ class EventDetailPage:
             comment_id = request.query_params.get('comment_id', None)
 
             organizer = Organizer.objects.filter(org_id = user_id).first()
-            customer = Customer.objects.filter(cus_id = user_id).first()
 
-            if customer is None and organizer is not None:# 当前用户是组织方才能继续
-                comment = Comment_cus.objects.filter(comment_id = comment_id).first()
+            if organizer is None:# 当前用户是组织方才能继续
+                return Response({'code':'3','message':'Can not find this organizer'}, status = 400)
 
-                if comment is None:
-                    return Response({
-                        'code':'2',
-                        'message':'There is no comment data'
-                    }, status = 404) # 找不到这个comment
-                
-                real_organizer = comment.event.organization
-                if organizer != real_organizer:
-                    return Response({
-                        'code':'2',
-                        'message':'Sorry, you are not the organizer of this event'
-                    }, status = 404) # 当前组织方不是这个活动组织方
-                past_reply = Reply_org.objects.filter(comment = comment).first()
+            comment = Comment_cus.objects.filter(comment_id = comment_id).first()
 
-                if past_reply is not None: # 如果曾经这个org在本评论下发表过回复，那就不能再回复了
-                    return Response({
-                        "code":'2',
-                        "message":"You have already give the reply"
-                    }, status = 400)
-                
-                reply = Reply_org(
-                    reply_org = data['reply_org'],
-                    reply_time = timezone.now().replace(second=0, microsecond=0),
-                    event = comment.event,
-                    organization = organizer,
-                    comment = comment
-                )
-                reply.save()      
+            if comment is None:
+                return Response({
+                    'code':'2',
+                    'message':'There is no comment data'
+                }, status = 404) # 找不到这个comment
+
+            real_organizer = comment.event.organization
+            if organizer != real_organizer:
+                return Response({
+                    'code':'2',
+                    'message':'Sorry, you are not the organizer of this event'
+                }, status = 404) # 当前组织方不是这个活动组织方
+            past_reply = Reply_org.objects.filter(comment = comment).first()
+
+            if past_reply is not None: # 如果曾经这个org在本评论下发表过回复，那就不能再回复了
+                return Response({
+                    "code":'2',
+                    "message":"You have already give the reply"
+                }, status = 400)
+
+            reply = Reply_org(
+                reply_org = data['reply_org'],
+                reply_time = timezone.now().replace(second=0, microsecond=0),
+                event = comment.event,
+                organization = organizer,
+                comment = comment
+            )
+            reply.save()
+            print(reply)
 
             return Response({
-                'code':'2',
-                'message':'Not a valid organizer for this event'
-            }, status = 401)
+                'code':'1',
+                'message':'Success'
+            }, status = 200)
 
         return Response({
             'code': '4',
-            'message': 'This function only accepts GET data'
+            'message': 'This function only accepts POST data'
         }, status = 405)
-
 
 # 订购和取消功能
 class PayAndCancel:
@@ -1588,7 +1589,8 @@ class PayAndCancel:
             ticket = reservation.ticket
 
             seat_list = reservation.reserve_seat.split(',')
-            seat_list = seat_list[amount:]
+            for _ in range(amount):
+                seat_list.pop()
             reservation.reserve_seat = ",".join(seat_list)
             reservation.save()
 

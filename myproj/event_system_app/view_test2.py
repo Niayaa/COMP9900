@@ -100,7 +100,7 @@ def create_test_data(request):
 
     # 创建事件
     if not Event_info.objects.exists():
-        organizer = Organizer.objects.all()  # 获取已创建的 Organizer 实例
+        organizer = Organizer.objects.filter(org_id = 1).first()  # 获取已创建的 Organizer 实例
         # print("come here 7")
         events = [
             {
@@ -133,13 +133,13 @@ def create_test_data(request):
                 event_date=timezone.datetime.strptime(event["event_date"], "%Y-%m-%d"),
                 event_description="This is an amazing event you don't want to miss!",
                 event_address="123 Event Venue St, City, Country",
-                event_image_url='static/event_default.jpg',
+                event_image_url='https://img.jzda001.com/image/8431616408138452.jpg',
                 event_type=event["event_type"],
                 event_last_selling_date=timezone.datetime.strptime(event["event_date"],
                                                                    "%Y-%m-%d") - timezone.timedelta(
                     days=1),  # 售票截止日期假设为活动前1天
                 event_tags=random.sample(all_tags, 5),
-                organization=organizer[i % 2],  # 假设的组织者ID
+                organization=organizer,  # 假设的组织者ID
             )
 
             event_instance.save()
@@ -187,7 +187,7 @@ def create_test_data(request):
                 event_type=event_detail['type'],
                 event_last_selling_date=last_selling_date,
                 event_tags=random.sample(all_tags, 5),
-                organization=organizer[i % 2]
+                organization=organizer
             )
             created_event.save()
             i += 1
@@ -215,7 +215,7 @@ def create_test_data(request):
             event_type='concert',
             event_last_selling_date=event_date - timedelta(days=1),
             event_tags=None,
-            organization=organizer[i % 2]
+            organization=organizer
         )
 
         no_tag_event.save()
@@ -246,7 +246,7 @@ def create_test_data(request):
         # print(a_type_ticket)
         for customer in customers:
             # for ticket in tickets:
-            amount = random.randint(1, 2)
+            amount = 2
             # if amount == 0:
             #     continue
             # for _ in range(amount):
