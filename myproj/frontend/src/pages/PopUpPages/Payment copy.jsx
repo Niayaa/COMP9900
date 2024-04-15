@@ -11,8 +11,6 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useNavigate } from 'react-router-dom';
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
-import PayPal from './Paypal';
 
 export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, tkprice, eventID, userEmail, cus_id}) {
 
@@ -49,7 +47,6 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
         })
 
     }
-
     async function PaymentProcess(){
       // console.log("payment process", parseInt(seatAmount))
       await fetch(`http://127.0.0.1:8000/payment/process/?amount=${parseInt(seatAmount)}&price=${price}`,{
@@ -156,13 +153,6 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Grid container sx={{
-          display: 'flex',
-          justifyContent: 'center',  // 水平居中
-          alignItems: 'center',      // 垂直居中
-          direction: 'column',       // 垂直布局
-        }}>
-          <Grid item>
         {!canPay && (
           <Card variant="outlined">
             <CardContent>
@@ -173,32 +163,11 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
           </Card>
         )}
         {canPay && (
-          <>
-        <PayPalScriptProvider options={{ "client-id": "ASQoKgTiwWzGfzaXQEkser7QAVFYnpXvkbtX-QDyuIi2FoQ_haMGX8LWTrHrN563jbyv6pTUoRjk9SRl" }}>
-            <PayPal userEmail={userEmail} eventID={eventID} seatArea={seatArea} seatAmount={seatAmount}/>
-        </PayPalScriptProvider>
-          {/* <Button type="submit" variant="contained" color="primary" onClick={PaymentProcess}>
+          <Button type="submit" variant="contained" color="primary" onClick={PaymentProcess}>
             Pay it
-          </Button> */}
-          </>
+          </Button>
         )}
-        </Grid>
-        <Grid item>
-        <Button       
-          variant="outlined"
-          style={{
-            m:1,
-            width: '200px',          // 设置宽度
-            borderRadius: '20px',    // 使按钮边缘变圆润
-            color: 'black',          // 设置文字颜色
-            borderColor: 'blue',    // 设置边框颜色
-            backgroundColor: 'transparent', // 设置背景为透明
-            textTransform: 'none',   // 取消大写字母
-          }}
-          onClick={handleClose}
-        >Return</Button>
-        </Grid>
-        </Grid>
+        <Button onClick={handleClose}>Return</Button>
       </DialogActions>
     </Dialog>
         </>

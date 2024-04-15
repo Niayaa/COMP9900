@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework import routers
 
 from event_system_app import views
-from event_system_app import view_test, view_test2
+from event_system_app import view_test2
+# from event_system_app import view_test3
 
 router = routers.DefaultRouter()
 
@@ -12,7 +13,7 @@ urlpatterns = [
 
     # #创建测试数据
     path('create_sample_data/', view_test2.create_test_data, name = 'create_sample_data'),#1
-
+    # path('create_sample_data3/', view_test3.create_test_data, name = 'create_sample_data'),#1
 
 
     # Mainpage的功能
@@ -34,11 +35,11 @@ urlpatterns = [
     path('cus/all_canceled/', views.CusAccountFunction.canceled_events, name = 'canceled_events'),#4
     # url的设计方式为 http://127.0.0.1:8000/cus/all_canceled/?user_id=1
 
-    path('cus/event/ticket/', views.CusAccountFunction.event_ticket, name = 'canceled_events'),#5
+    path('cus/event/ticket/', views.CusAccountFunction.event_ticket, name = 'event_ticket'),#5
     # url的设计方式为 http://127.0.0.1:8000/cus/event/ticket/?user_id=1&event_id=3
 
-    path('cus/event_recommend/', views.CusAccountFunction.event_recommend, name = 'canceled_events'),#6
-    # url的设计方式为 http://127.0.0.1:8000/cusevent_recommend/?user_id=1
+    path('cus/event_recommend/', views.CusAccountFunction.event_recommend, name = 'event_recommend'),#6
+    # url的设计方式为 http://127.0.0.1:8000/cus/event_recommend/?user_id=1
 
 
 
@@ -60,20 +61,32 @@ urlpatterns = [
     #       2)向页面反馈当前登录的组织者的个人信息
     #       3)消费者修改并保存个人信息
     #       4)组织者修改并保存个人信息
-    path('cus/<int:user_id>', views.AccountInfoPage.cus_info_show, name='cus_info_show'), #11
-    path('org/<int:user_id>', views.AccountInfoPage.org_info_show, name='org_info_show'), #12
+    path('cus/info/', views.AccountInfoPage.cus_info_show, name='cus_info_show'), #11
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/cus/info/?user_id=1
+
+    path('org/info/', views.AccountInfoPage.org_info_show, name='org_info_show'), #12
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/cus/info/?user_id=1
+
     path('edit/cus/', views.AccountInfoPage.edit_cus_info, name='edit_cus_info'), #13
     path('edit/org/', views.AccountInfoPage.edit_org_info, name='edit_org_info'), #14
 
 
-    # Create Event And Cancel Page
+    # Organizer Event Function
     #     测试完成
     #       1)创建演出
     #       2)修改演出
     #       3)删除演出
+    #       1)获取所有创建的演出
+    #       2)获取演出票务信息
     path('event_create/', views.OrganizerFunctionPage.event_create, name='event_create'), #15
     path('edit_event/', views.OrganizerFunctionPage.edit_event, name = 'edit_event'), #16
     path('delete_event/', views.OrganizerFunctionPage.delete_event, name='delete_event'),#17
+    path('created_events/', views.OrganizerFunctionPage.created_events, name = 'created_events'), #30
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/created_events/?user_id=1
+    path('org/event/ticket/', views.OrganizerFunctionPage.data_showing_check, name = 'data_showing_check'), #31
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/org/event/ticket/?event_id=1
+
+
 
 
     # PayAndCancel（针对用户来说）
@@ -82,8 +95,18 @@ urlpatterns = [
     #       2)取消预订功能
     path('booking/', views.PayAndCancel.payment, name = 'payment'), #18
     #     传入url的时候要按照这样传入 http://127.0.0.1:8000/booking/?email=2545322339@qq.com&event_id=1
-    path('customer_cancel/', views.PayAndCancel.cancel_ticket, name = 'cancel_ticket'), #19
-    #     传入url的时候要按照这样传入 http://127.0.0.1:8000/customer_cancel/?amount=1&reservation_id=1
+    path('cus/cancel/event/', views.PayAndCancel.cancel_ticket, name = 'cancel_ticket'), #19
+    #     传入url的时候要按照这样传入 http://127.0.0.1:8000/cus/cancel/event/?amount=1&reservation_id=1
+
+    # 检查该用户订购了在该演出订购了多少场票了
+    path('payment/check_ticket_number/', views.PayAndCancel.cus_ticket_number_check, name='cus_ticket_stage_checking'), #29
+    # http://127.0.0.1:8000/payment/check_ticket_number/?event_id=5&cus_id=5
+
+    # paypal的支付功能
+    path('payment/process/', views.PayAndCancel.process_payment, name='process_payment'), #27
+    # http://127.0.0.1:8000/payment/process/?amount=5&price=5
+    path('payment/execute/', views.PayAndCancel.execute_payment, name='execute_payment'), #28
+
 
 
     # Event Info page
@@ -92,17 +115,42 @@ urlpatterns = [
     #   2)展示评论信息和回复信息
     #   3)评论功能
     #   4)组织者回复功能
+    #   5)点赞功能
+    #   6)检查这个用户点没点过赞
+    #   7)获取一条评论的点赞数
     path('event_page_detail/', views.EventDetailPage.get_event_detail, name = 'get_event_detail'), #20
+
     path('event_page_comment/', views.EventDetailPage.get_comment, name = 'get_comment'), #21
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/event_page_comment/?event_id=1
     path('submit_cus_comment/', views.EventDetailPage.cus_make_comment, name = 'cus_make _comment'), #22
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/submit_cus_comment/?event_id=1&cus_id=1
     path('org_reply/', views.EventDetailPage.org_make_reply, name = 'org_make_reply'), #23
-    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/submit_cus_comment/?user_id=1&comment_id=1
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/org_reply/?user_id=1&comment_id=1
+    path('like_Comment/', views.EventPage.like_Comment, name='like_Comment'),#24
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_Comment/?comment_id=1&cus_id=1
+    path('like_check/', views.EventPage.like_checking, name='like_check'),#25
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_check/?comment_id=1&cus_id=1
+    path('like_number/', views.EventPage.like_number_check, name='like_number_check'), #26
+    # 传入url的时候要按照这样传入 http://127.0.0.1:8000/like_number/?comment_id=1
 
-    # Organzier function
-    #   测试完成
-    #   1)获取所有创建过的演出
-    #   2)获取报告功能
-    path('created_events/', views.OrganizerFunctionPage.created_events, name = 'created_events'), #24
+    path('get_cache/', views.LoginPage.get_cache_data, name='get_cache'), #26
+
+
+    # paypal的支付功能
+    path('payment/process/', views.PayAndCancel.process_payment, name='process_payment'), #27
+    # http://127.0.0.1:8000/payment/process/?amount=5&price=5
+    path('payment/execute/', views.PayAndCancel.execute_payment, name='execute_payment'), #28
+    # 检查该用户订购了在该演出订购了多少场票了
+    path('payment/check_ticket_number/', views.PayAndCancel.cus_ticket_number_check, name='cus_ticket_stage_checking'), #29
+    # http://127.0.0.1:8000/payment/check_ticket_number/?event_id=5&cus_id=5
+
+
+    # organizer report的一系列功能
+    path('get_event_number/', views.OrganizerReport.get_event_number, name='get_event_number'),#32
+    path('get_event_types_summary/', views.OrganizerReport.get_event_types_summary, name='get_event_types_summary'),#33
+    path('events_by_total_tickets_sold/', views.OrganizerReport.events_by_total_tickets_sold, name='events_by_total_tickets_sold'),#34
+    path('events_by_total_revenue_and_type/', views.OrganizerReport.events_by_total_revenue_and_type, name='events_by_total_revenue_and_type'),#35
+    path('events_by_completion_rate/', views.OrganizerReport.events_by_completion_rate, name='events_by_completion_rate'),#36
+    path('events_by_total_sales/', views.OrganizerReport.events_by_total_sales, name='events_by_total_sales'),#37
+    path('event_details_by_id/', views.OrganizerReport.event_details_by_id, name='event_details_by_id'),#38
 ]

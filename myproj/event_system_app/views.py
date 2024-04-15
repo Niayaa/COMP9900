@@ -2,29 +2,43 @@ import random
 import string
 from django.core.cache import cache
 from django.core.mail import send_mail, send_mass_mail
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse,HttpResponse
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from collections import defaultdict
-from rest_framework.decorators import api_view, permission_classes
-from .serializer import *
+from rest_framework.decorators import api_view
+# from rest_framework.views import APIView
+
+# from .serializer import *
 from django.shortcuts import get_object_or_404
 from django.db.models import Prefetch
 from .models import *
 from django.db import transaction
 import json
 import numpy as np
+from rest_framework import status
 from sklearn.metrics import jaccard_score
-from django.conf import settings
+# from django.conf import settings
+from django.db.models import Sum, F, ExpressionWrapper, FloatField
+from django.db.models import Count
 from django.contrib.auth.hashers import make_password, check_password
-import requests
+
+import paypalrestsdk
+from django.conf import settings
+
 
 organizer_list = ['org_id', 'org_email', 'org_password', 'company_name', 'company_address', 'org_phone']
 
 customer_list = ['cus_id', 'cus_name', 'cus_email', 'gender', 'prefer_type', 'cus_password', 'bill_address', 'cus_phone']
 
 event_info_list = ['event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type']
+
+
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE,
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
 
 
 def data_match(fields_list, input_data): #这个用于将从数据库查询到的数据，和模型匹配成字典
@@ -83,8 +97,8 @@ def jaccard_sim(customer_tags, event_tags):
 
 '''
 200: 数据返回成功
-400:数据错误或返回的数据格式错误
-405:请求的方法错误
+400: 数据错误或返回的数据格式错误
+405: 请求的方法错误
 
 code:1代表成功, 2代表失败, 3代表非法数据, 4代表调用失败
 '''
@@ -100,12 +114,12 @@ class MainPage:
         :param request: 无
         :return: 列表类型，列表元素为字典，字典内包含
                     {
-                    'event_id',
-                    'event_name',
-                    'event_date',
-                    'event_description',
-                    'event_address',
-                    'event_type'
+                        'event_id',
+                        'event_name',
+                        'event_date',
+                        'event_description',
+                        'event_address',
+                        'event_type'
                     }
         '''
         event_type_list = ['concert', 'live', 'comedy', 'opera']
@@ -118,10 +132,11 @@ class MainPage:
         events = list(
             queryset.values('event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type'))
 
-        events = list(Event_info.objects.all().values('event_id', 'event_name', 'event_date', 'event_type'))
+        events = list(Event_info.objects.all().values('event_id', 'event_name', 'event_date', 'event_description', 'event_address', 'event_type'))
+
         empty_dict = []
         for i in events:
-            filtered_event_data = {key: i[key] for key in ["event_name", "event_type", 'event_id', 'event_date']}
+            filtered_event_data = {key: i[key] for key in ["event_name", "event_type", 'event_id', 'event_date', 'event_description']}
             empty_dict.append(filtered_event_data)
 
         return JsonResponse(empty_dict, safe = False, status = 200)
@@ -139,8 +154,8 @@ class MainPage:
 #   2)用户取消了票的演出
 #   3)显示一个用户的购票的详细信息
 class CusAccountFunction:
-    @api_view(['GET']) #测试完成
-    def upcoming_and_past(request):
+    @api_view(['GET']) 
+    def upcoming_and_past(request):#测试完成
         '''
         函数功能：根据userid返回这个人的所有订购的演出
         接收参数： 从url当中获取user_id
@@ -243,15 +258,15 @@ class CusAccountFunction:
         :return:
             列表，列表元素为字典，字典格式如下
             {
-            'reservation_id': reservation.reservation_id,
-            'ticket_name': ticket.ticket_name,
-            'ticket_type': ticket.ticket_type,
-            'reserve_seat':reservation.reserve_seat,
-            'amount': reservation.amount,
-            'ticket_price': ticket.ticket_price,
+            'reservation_id': 
+            'ticket_type': 
+            'reserve_seat':
+            'amount': 
+            'ticket_price': 
+            'total_price': 
+            'reserving_time':
             }
         '''
-
         if request.method == 'GET':
             user_id = request.query_params.get('user_id', None)  # 使用get避免KeyError异常
             event_id = request.query_params.get('event_id', None)  # 使用get避免KeyError异常
@@ -262,8 +277,9 @@ class CusAccountFunction:
             # print("come here 2")
 
             reservations = Reservation.objects.filter(customer=customer, event=event).all()
+            # print(reservations)
 
-            if reservations:
+            if not reservations.exists():
                 return Response({
                     'code': '2',
                     'message': 'No data here',
@@ -275,13 +291,15 @@ class CusAccountFunction:
             for reservation in reservations:
                 ticket = reservation.ticket
                 reservations_info.append({
-                'reservation_id': reservation.reservation_id,  # 假设预订模型的主键是id
-                'ticket_name': ticket.ticket_name,
-                'ticket_type': ticket.ticket_type,
-                'reserve_seat':reservation.reserve_seat,
-                'amount': reservation.amount,
-                'ticket_price': ticket.ticket_price,
+                    'reservation_id': reservation.reservation_id,  # 假设预订模型的主键是id
+                    'ticket_type': ticket.ticket_type,
+                    'reserve_seat':reservation.reserve_seat,
+                    'amount': reservation.amount,
+                    'ticket_price': ticket.ticket_price,
+                    'total_price': reservation.amount*ticket.ticket_price,
+                    'reserving_time':reservation.reservation_time
             })
+                
             return Response({
                 'code':'1',
                 'message':'successfully finding the data',
@@ -309,7 +327,7 @@ class CusAccountFunction:
         if request.method == 'GET':
             user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
-            all_events = Event_info.objects.all()
+            # all_events = Event_info.objects.all()
 
             event_list = []
 
@@ -319,17 +337,26 @@ class CusAccountFunction:
                     'message':'We can not find the customer'
                 },  status = 400)
             
+            now = timezone.now()
+
+            reserved_event_ids = Reservation.objects.filter(customer=customer).values_list('event__event_id', flat=True)
+
+            available_events = Event_info.objects.filter(event_date__gt=now).exclude(event_id__in=reserved_event_ids)
+            
             if customer.prefer_tags is None: #如果这个人没有写tag
                 if customer.prefer_type: #如果这个人写了喜欢什么类型的演出
-                    special_type_events = Event_info.objects.filter(event_type = customer.prefer_type).all()
-                    not_special_type_events = Event_info.objects.exclude(event_type=customer.prefer_type).all()
+                    special_type_events = available_events.filter(event_type=customer.prefer_type).all()
+                    not_special_type_events = available_events.exclude(event_type=customer.prefer_type).all()
+
                     for single in special_type_events: #先招呼上
                         event_list.append(
                             {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
-                                'address':single.event_address
+                                'address':single.event_address,
+                                'event_type':single.event_type,
+                                'event_description':single.event_description
                             }
                         )
                     for single in not_special_type_events:
@@ -338,24 +365,28 @@ class CusAccountFunction:
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
-                                'address':single.event_address
+                                'address':single.event_address,
+                                'event_type':single.event_type,
+                                'event_description':single.event_description
                             }
                         )
                 else: # 如果这个人也没有写自己喜欢什么类型的演出，那直接把数据库的演出直接招呼上去
-                    for single in all_events:
+                    for single in available_events:
                         event_list.append(
                             {
                                 'event_id':single.event_id,
                                 'event_name':single.event_name,
                                 'event_date':single.event_date,
-                                'address':single.event_address
+                                'address':single.event_address,
+                                'event_type':single.event_type,
+                                'event_description':single.event_description
                             }
                         )    
             else: # 如果这个人写了tag，那就能去做推荐
                 event_tags_dict = {}
                 empty_list = []
 
-                for event in all_events:
+                for event in available_events:
                     if event.event_tags is None:
                         empty_list.append(event.event_id)
                     else:
@@ -371,9 +402,17 @@ class CusAccountFunction:
 
                 keys_in_order = list(sorted_dict.keys())
 
-                for single_keys in keys_in_order:
+                for single_keys in keys_in_order[:10]:
                     event_list.append(Event_info.objects.filter(event_id = single_keys).
-                                    values('event_id', 'event_name', 'event_date', 'event_address').first())
+                                    values(
+                                        'event_id', 
+                                        'event_name', 
+                                        'event_date', 
+                                        'event_address',
+                                        'event_type',
+                                        'event_type',
+                                        'event_description'
+                                           ).first())
             return Response({
                 'code':'1', 
                 'message':'successfully jaccard',
@@ -384,7 +423,7 @@ class CusAccountFunction:
             'code':'4', 
             'message':'The function is not right', 
             }, status = 400)
-    
+ 
 
 # LoginPage
 #   1)发送验证码功能
@@ -484,7 +523,7 @@ class LoginPage:
         '''
         print(request.method == 'POST')
         if request.method == 'POST':
-            # print("ggggg")
+
             try:
                 # print("comer here 1")
                 data = json.loads(request.body)
@@ -500,11 +539,21 @@ class LoginPage:
                         # print("comer here 5")
                     # if customer['cus_password'] == password:
                         # return Response({'code': 1, 'message': 'login success',"user_type": "customer", "token": [customer['cus_id'], customer['cus_name'], customer['cus_email']]}, status = 200) #NICOCE测试用
+                        print(customer)
+
+                        print(type(customer['cus_id']))
+                        cache.set(customer['cus_id'], {
+                            'role': 'customer',
+                            'id': customer['cus_id'],
+                            'email': customer['cus_email']
+                        }, timeout=60000)  # 缓存一个小时
+
                         return Response({'code': 1, 'message': 'login success', "user_type": "customer",
                                          "token": customer['cus_id']},
                                         status=200) # LSL测试用
                     else:
-                        # print("comer here 6")
+                        cache.set(0, {'role': None, 'id': None,
+                                      'email': None}, timeout=60000)  # 缓存一个小时
                         return Response({'code': '2', 'message': 'login failed, please check email/password',"user_type": None}, status = 400)
                         
                 else:  # 有可能这个人是个organizer
@@ -518,20 +567,67 @@ class LoginPage:
                         if check_password(password, organizer['org_password']):
                             # print("comer here 9")
                             # return Response({'code': '1', 'message': 'login success', "user_type": "organizer", "token": [organizer['org_id'], organizer['org_email'], organizer['company_name']]}, status = 200) #Nicole测试用
+
+                            cache.set(organizer['org_id'], {
+                                'role': 'organizer',
+                                'id': organizer['org_id'],
+                                'email': organizer['org_email']
+                            }, timeout = 60000)  # 缓存一个小时
+
+
                             return Response({'code': '1', 'message': 'login success', "user_type": "organizer",
                                             "token": organizer['org_id']}, status=200) # LSL测试用
+
                         else:  # 说明密码或者其他的东西出现了错误
                             # print("comer here 10")
+                            cache.set(0, {'role': None, 'id': None,
+                                                             'email': None}, timeout=60000)  # 缓存一个小时cache.set(customer_data.cus_id, {'role': 'fail', 'id': None,
+
                             return Response({'code': '2', 'message': 'login failed, please check email/password',"user_type": None }, status = 400)
-                        
+
+                    cache.set(0, {'role': None, 'id': None,
+                                                     'email': None}, timeout=60000)  # 缓存一个小时
                     return Response({'code': '2', 'message': 'login failed, please check email/password',"user_type": None }, status = 400)
                         
             except json.JSONDecodeError:
                 # print("comer here 11")
+
+                cache.set(0, {'role': None, 'id': None,
+                                                 'email': None}, timeout=60000)  # 缓存一个小时
+
                 return Response({'code': '1', 'message': 'Invalid json data'}, status = 400)
 
-        # print("comer here 12")
+
+        cache.set(0, {'role': None, 'id': None,
+                      'email': None}, timeout=60000)  # 缓存一个小时
         return Response({'code': '4', 'message': 'This function only accepts POST data'}, status = 405)
+
+    @api_view(['GET'])
+    def get_cache_data(request):
+        '''
+        读取cache，从url当中读取user_id, 如果没读取到就自动设置为0,如下为字典格式
+        {'role': None, 'id': None,'email': None}
+        :return:
+            {
+                'role': user_info['role'],
+                'id': user_info['if'],
+                'email': user_info['email']
+            }
+        '''
+        user_id = request.query_params.get('user_id', 0)
+        if user_id != 0:
+            # 使用缓存的用户信息
+            user_info = cache.get(int(user_id))
+            # print(user_info)
+            return Response({
+                'role': user_info['role'],
+                'id': user_info['id'],
+                'email': user_info['email']
+            }, status = 200)
+        else:
+            # 处理缓存失效的情况
+            print('No cached data available.')
+
 
     @api_view(['POST']) # 测试完成
     def register(request):
@@ -546,6 +642,7 @@ class LoginPage:
             # 这个是人为创造的数据，cus数据和org数据，后面得删了
             try:
                 data = json.loads(request.body)
+
                 if data['role'] == 'organizer':
                     organization_name = data['organization_name']
                     organization_address = data['organization_address']
@@ -593,9 +690,9 @@ class LoginPage:
                             cus_email = email,
                             cus_password = make_password(password),
                             cus_phone = phone,
-                            gender = data['gender'] if data['gender'] else None,
-                            prefer_type = data['prefer_type'] if data['prefer_type'] else None,
-                            prefer_tags = data['prefer_tags'] if data['prefer_tags'] else None
+                            gender = data.get('gender') if data.get('gender') else None,
+                            # prefer_type = data['prefer_type'] if data['prefer_type'] else None,
+                            # prefer_tags = data['prefer_tags'] if data['prefer_tags'] else None
                         )
                         new_customer.save()
 
@@ -621,7 +718,7 @@ class LoginPage:
 #   4) 组织者个人信息编辑保存
 class AccountInfoPage:
     @api_view(['GET']) # 测验完成
-    def cus_info_show(request, user_id):
+    def cus_info_show(request):
         '''
         展示这个人的个人信息，
 
@@ -630,6 +727,7 @@ class AccountInfoPage:
         '''
 
         if request.method == 'GET':
+            user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
             if customer:
                 customer = data_match(customer_list, customer)
@@ -650,7 +748,7 @@ class AccountInfoPage:
 
 
     @api_view(['GET']) # 测验完成
-    def org_info_show(request, user_id):
+    def org_info_show(request):
         '''
         这个函数是用来导航到account页面, 返回 organizer 的个人用户信息的
         接收参数 user_id 从url当中获取
@@ -658,6 +756,9 @@ class AccountInfoPage:
         (可能存在一个bug，即前端无法解析query类型的数据)
         '''
         if request.method == 'GET':
+            
+            user_id = request.query_params.get('user_id', None)
+
             organizer = Organizer.objects.filter(org_id = user_id).first()
             if organizer:
                 organizer = data_match(organizer_list, organizer)
@@ -719,7 +820,7 @@ class AccountInfoPage:
             customer['gender'] = data['gender']
             customer['bill_address'] = data['bill_address']
             customer['cus_phone'] = data['phone']
-            # customer['age_area'] = data['age_area']
+            customer['age_area'] = data['age_area']
             customer['prefer_tags'] = data['prefer_tags']
             Customer(**customer).save()
             return Response({
@@ -826,12 +927,21 @@ class OrganizerFunctionPage:
             )
             event.save()  # 保存事件对象，这样它就有了一个ID
             for ticket in event_data['tickets']:
+                seat_pool = []
+                for seat_number in range(1, ticket['ticket_amount'] + 1):
+                    row_number = (seat_number - 1) // 20 + 1  # 确定排数
+                    seat_in_row = (seat_number - 1) % 20 + 1  # 确定在当前排的座位号
+                    seat_id = f"{ticket['ticket_type']}-{row_number}-{seat_in_row}"
+                    seat_pool.append(seat_id)
+                seat_pool_str = ",".join(seat_pool)
+
                 ticket = Ticket_info(
                     ticket_type = ticket['ticket_type'],
                     ticket_name = "Reserve" + str(ticket['ticket_type']),
                     ticket_amount = ticket['ticket_amount'],
                     ticket_price = ticket['ticket_price'],
                     ticket_remain = ticket['ticket_amount'],
+                    ticket_seat_pool = seat_pool_str,
                     event = event  # 这里直接将前面创建的event对象作为外键
                 )
                 ticket.save()  # 保存票务对象
@@ -961,8 +1071,7 @@ class OrganizerFunctionPage:
         这里可能存在着一个隐患，即当异常演出是没有tickets信息是，可能会出现报错
         '''
         if request.method == 'GET':
-            data = json.loads(request.body)
-            org_id = data['user_id']# 获取指定的 Organizer
+            org_id = request.query_params.get('user_id', None)
 
             organizer = Organizer.objects.get(org_id=org_id)
             if organizer is None:
@@ -975,28 +1084,55 @@ class OrganizerFunctionPage:
             events = Event_info.objects.filter(organization=organizer).values(
                 'event_id', 'event_name', 'event_date', 'event_address'
             )
-            if events is None:
+            if not events.exists():
                 return Response({
                     'code':'2',
                     'message':'There is no recorded data for this organizer'
                 }, status = 404)
-            empty_list = []
-
-            for event in events:
-
-                event_infor = Event_info.objects.filter(event_id = event['event_id']).first()
-                tickets = Ticket_info.objects.filter(event = event_infor).values(
-                    'ticket_id', 'ticket_type', 'ticket_name', 'ticket_amount', 'ticket_price', 'ticket_remain'
-                )
-                event['tickets'] = tickets
-                empty_list.append(event)
 
             return Response({
                 'code':'1',
                 'message':'success get the past data',
-                'token':empty_list
+                'token':events
             }, status = 200)
     
+        return Response({
+            'code':'4',
+            'message':'The method is not allowed'
+        }, status = 405)
+
+    @api_view(['GET'])
+    def data_showing_check(request):
+        if request.method == 'GcET':
+            event_id = request.query_params.get('event_id', None)
+            # user_id = request.query_params.get('user_id', None)
+
+            event = Event_info.objects.filter(event_id = event_id).first()
+            
+            tickets = Ticket_info.objects.filter(event = event).all()
+            if tickets is None:
+                return Response({
+                    'code':'2',
+                    'message':'We did not find any data'
+                    }, status = 404)
+
+            ticket_list = []
+
+            for ticket in tickets:
+                ticket_list.append({
+                    'ticket_id':ticket.ticket_id,
+                    # 'ticket_type':ticket.ticket_type,
+                    'ticket_price':ticket.ticket_price,
+                    'ticket_name':ticket.ticket_name,
+                    'ticket_remain':ticket.ticket_remain,
+                    'sold_amount':ticket.ticket_amount - ticket.ticket_remain
+                })
+            return Response({
+                'code':'1',
+                'message':'We find the data',
+                'token':ticket_list
+            })
+
         return Response({
             'code':'4',
             'message':'The method is not allowed'
@@ -1026,47 +1162,56 @@ class EventDetailPage:
             'total_rating':总评分,是个浮点数，范围是 0-5
             'tickets': 是个本场演出各类型剩余票量的字典
         '''
+        print(request.method)
         if request.method == 'GET':
+            # print("come here 1")
             event_id = request.query_params.get('event_id', None)
             if event_id:
+                # print("come here 2")
                 event = Event_info.objects.filter(event_id = event_id).first() # 先找到这个event
                 ticket_set = Ticket_info.objects.filter(event = event).all() #查询这个演出的票的种类
                 ticket_dict = {}
+                # print("come here 3")
                 for ticket in ticket_set:
                     ticket_dict[ticket.ticket_type] = [ticket.ticket_remain, ticket.ticket_price]
                 cus_comments = Comment_cus.objects.filter(event = event).all()
                 rate_num = 0
+                # print("come here 4")
                 total_rate = 0
                 for single_comment in cus_comments:
                     if single_comment.event_rate is not None:
                         total_rate += single_comment.event_rate
                         rate_num += 1
-                if total_rate > 0:
-                    ave_rate = round(total_rate / rate_num, 1)
+                # print("come here 5")
 
-                    frontend_data = {
-                        'id':event.event_id,
-                        'title':event.event_name,
-                        'date':event.event_date,
-                        'location':event.event_address,
-                        'description':event.event_description,
-                        'last_selling_date':event.event_last_selling_date,
-                        'event_tags':event.event_tags,
-                        'image':event.event_image_url,
-                        'type':event.event_type,
-                        'total_rating':ave_rate,
-                        'tickets':ticket_dict,
-                    }
-                    return Response({
-                        'code':'1',
-                        'message':'Successfuly fingding', 
-                        "token":frontend_data
-                    }, status = 200)
+                ave_rate = round(total_rate / rate_num, 1) if rate_num > 0 else 0
+
+                frontend_data = {
+                    'id':event.event_id,
+                    'title':event.event_name,
+                    'date':event.event_date,
+                    'location':event.event_address,
+                    'description':event.event_description,
+                    'last_selling_date':event.event_last_selling_date,
+                    'event_tags':event.event_tags,
+                    'image':event.event_image_url,
+                    'type':event.event_type,
+                    'total_rating':ave_rate,
+                    'tickets':ticket_dict,
+                }
+                # print("come here 6")
+                return Response({
+                    'code':'1',
+                    'message':'Successfuly fingding',
+                    "token":frontend_data
+                }, status = 200)
             else:
+                # print("come here 7")
                 return Response({
                     'code': '3',
                     'message': 'There is no event id in it'
                 }, status = 400)
+        # print("come here 8")
         return Response({
             'code': '4', 
             'message': 'This function only accepts POST data'
@@ -1093,6 +1238,8 @@ class EventDetailPage:
         }
         '''
         if request.method =='GET':
+
+            comments_with_replies = []
             event_id = request.query_params.get('event_id', None)
             # print("come here 1")
 
@@ -1111,7 +1258,7 @@ class EventDetailPage:
 
                 # print(comments)
                 # print("come here 4")
-                comments_with_replies = []
+                # comments_with_replies = []
 
                 # print("come here 5")
                 for comment in comments:
@@ -1120,6 +1267,7 @@ class EventDetailPage:
                         "event_rate": comment.event_rate,
                         "comment": comment.comment_cus,
                         "comment_time": comment.comment_time,
+                        "comment_image":comment.comment_image_url,
                         "replies": []
                     }
                     # print("come here 6")
@@ -1157,50 +1305,55 @@ class EventDetailPage:
             # print("success")
             
             data = request.data
-            # print("come here 1")
+            print("come here 1")
 
             event_id = request.query_params.get('event_id', None)
             cus_id = request.query_params.get('cus_id', None)
 
             event = Event_info.objects.filter(event_id = event_id).first()
             customer = Customer.objects.filter(cus_id = cus_id).first()
-            # print("come here 2")
+            print("come here 2")
             if event and customer:
-                # print("come here 3")
+                print("come here 3")
                 comment = Comment_cus.objects.filter(event = event, customer = customer).first()
-                # print("come here 3")
+                print("come here 4")
                 if comment:
+                    print("come here 5")
                     return Response({
                         'code':'2',
                         'message':'You have leave a comment before'
                     }, status = 200)
                 if data:
-                    # print("come here 7")
+                    print("come here 7")
                     comment = Comment_cus(
                         event_rate = int(data['event_rate']),
                         comment_cus = data['comment_cus'],
                         comment_time = timezone.now().replace(second=0, microsecond=0),
-                        comment_image_url = data['comment_image_url'] if 'comment_image_url' in data and data['comment_image_url'] else None,
+                        comment_image_url = data.get('comment_image_url') if data.get('comment_image_url') else None,
                         event = event,
                         customer = customer,
+                        likes = 0
                     )
                     comment.save()
-                    # print("come here 8")
+                    print("come here 8")
                     return Response({
                         'code':'1',
                         'message':'successfuly submit the comment'
                     }, status = 200)
-                
+
+                print("come here 9")
                 return Response({
                     'code':'3',
                     'message':'The input data is not json form'
                 }, status = 400)
-            
+
+            print("come here 10")
             return Response({
                 'code':'2',
                 'message':'We did not find the appropriate data'
             }, status = 404)
 
+        print("come here 11")
         return Response({
             'code': '4',
             'message': 'This function only accepts POST data'
@@ -1256,7 +1409,7 @@ class EventDetailPage:
             return Response({
                 'code':'2',
                 'message':'Not a valid organizer for this event'
-            }, status = 400)
+            }, status = 401)
 
         return Response({
             'code': '4',
@@ -1266,6 +1419,32 @@ class EventDetailPage:
 
 # 订购和取消功能
 class PayAndCancel:
+    @api_view(['GET'])
+    def cus_ticket_number_check(request):
+        cus_id = request.query_params.get('cus_id', None)
+        event_id = request.query_params.get('event_id', None)
+
+        customer = Customer.objects.filter(cus_id = cus_id).first()
+        event = Event_info.objects.filter(event_id = event_id).first()
+
+        if customer is None or event is None:
+            return Response({
+                'code':'2',
+                'message':'There is something wrong with the input data'
+            }, status = 200)
+
+        current_tickets = Reservation.objects.filter(customer=customer, event=event).aggregate(total_tickets=models.Sum('amount'))
+
+        # print(current_tickets)
+        # print(type(current_tickets))
+
+        return Response({
+            'token':current_tickets['total_tickets'] if current_tickets['total_tickets'] else 0,
+            'code':'1',
+            'message':'Successful'
+        }, status = 200)
+
+
     @api_view(['POST'])
     def payment(request): #测试完成
         '''
@@ -1273,7 +1452,14 @@ class PayAndCancel:
 
         url格式：传入url的时候要按照这样传入 http://127.0.0.1:8000/booking/?email=2545322339@qq.com&event_id=1
 
-        :return: code = [1, 2, 3, 4]
+        :return: code代表的含义
+            1:订票成功
+            2:找不到这张票
+            3:余票不足
+            4:彻底没有余票了
+            5:输入的个人信息或者演出信息有问题
+            6:数据的输入格式存在问题
+        
         '''
         email = request.query_params.get('email', None)
         event_id = request.query_params.get('event_id', None)
@@ -1282,7 +1468,7 @@ class PayAndCancel:
         if not email or not event_id:
             # print("come here 2")
             return Response({
-                'code': '3',
+                'code': '5',
                 'message': 'Missing email or event_id'
             }, status = 400)
 
@@ -1293,38 +1479,43 @@ class PayAndCancel:
             except json.JSONDecodeError:
                 # print("come here 4")
                 return Response({
-                    'code': '3',
+                    'code': '6',
                     'message': 'Invalid json data'
                 }, status = 400)
-            # print("come here 5")
+
             organizer = Organizer.objects.filter(org_email = email).first()
             if organizer:
                 # print("come here 6")
                 return Response({
                     'code':'2',
-                    "message": "Only customer can book the event."
+                    "message": "Only customer can book the event"
                 }, status = 200)
 
             # print("come here 7")
             ticket_type = data['ticket_type']
             ticket_number = int(data['ticket_number'])
+            
             if ticket_number and ticket_type:
                 # print("come here 8")
                 customer = Customer.objects.filter(cus_email = email).first()
                 event = Event_info.objects.filter(event_id = event_id).first()
                 ticket = Ticket_info.objects.filter(event = event, ticket_type = ticket_type).first()
-                if ticket.ticket_remain > 0:
-                    # print("come here 8")
-                    total_booked_tickets = Reservation.objects.filter(event=event, ticket=ticket).count()
-                    row_number = total_booked_tickets // 20 + 1  # 确定排数，每排20个座位
-                    seat_number = total_booked_tickets % 20 + 1  # 确定在当前排的座位号
-                    seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
 
+                seat_string = ticket.ticket_seat_pool.split(',')
+                seat_string = seat_string[:ticket_number]
+                remain_seat = seat_string[ticket_number:]
+                remain_seat = ",".join(remain_seat)
+                ticket.ticket_seat_pool = remain_seat
+                ticket.save()
+
+                booking_seat = ",".join(seat_string)
+                if ticket.ticket_remain < ticket_number:
+                    # print("come here 8")
                     history_booking = Reservation.objects.filter(customer = customer, event = event, ticket = ticket).first()
                     if history_booking:
                         # print("come here 9")
                         history_booking.amount += ticket_number
-                        history_booking.reserve_seat += " " + seat_assignment
+                        history_booking.reserve_seat += "," + booking_seat
                         history_booking.save()
                     else:
                         # print("come here 10")
@@ -1334,7 +1525,7 @@ class PayAndCancel:
                             customer = customer,
                             ticket = ticket,
                             amount = ticket_number,
-                            reserve_seat = seat_assignment
+                            reserve_seat = booking_seat
                         )
                         new_reserve.save()
                     # print("come here 11")
@@ -1350,14 +1541,14 @@ class PayAndCancel:
                     }, status = 200)
                 else:
                     return Response({
-                        'code':'2',
-                        'message': 'There is no remain tickect for this type for this event.'
+                        'code':'3',
+                        'message': 'There is no enough remain tickect for this type for this event.'
                     }, status = 200)
             else:
                 # print("come here 14")
                 return Response({
-                    'code':'2',
-                    'message':'something wrong with the data'
+                    'code':'6',
+                    'message':'something wrong with the input data'
                 }, status = 400)
         else:
             Response({
@@ -1365,29 +1556,42 @@ class PayAndCancel:
                 'message': 'This function only accepts POST data'
             }, status = 405)
 
-    @api_view(['POST'])
+    @api_view(['PUT'])
     def cancel_ticket(request): #测试完成
         '''
         取消演出票的功能
         接收参数 reservation_id 和 amount(数量)。从url当中获取
-        :return:
         '''
-
-        if request.method == 'POST':
+        if request.method == 'PUT':
 
             reservation_id = request.query_params.get('reservation_id', None)
             amount = int(request.query_params.get('amount', 0))
+
             # print("come here 2")
             reservation = Reservation.objects.filter(reservation_id = reservation_id).first()
             # print("come here 3")
-            if reservation is None or reservation.amount < amount: 
+            if reservation is None:
                 return Response({
                     "code":"2", 
-                    "message":"There is something wrong with the input data"
+                    "message":"Can not find this ticket"
                 }, status = 404) # 找不到这个订票信息
+            
+            if reservation.amount < amount:
+                return Response({
+                    "code":"3", 
+                    "message":"You order for too"
+                }, status = 404) # 找不到这个订票信息
+
+            
             # print("come here 4")
             customer = reservation.customer
             ticket = reservation.ticket
+
+            seat_list = reservation.reserve_seat.split(',')
+            seat_list = seat_list[amount:]
+            reservation.reserve_seat = ",".join(seat_list)
+            reservation.save()
+
             # print("come here 5")
             with transaction.atomic():
                 customer.account_balance += ticket.ticket_price * amount
@@ -1424,3 +1628,339 @@ class PayAndCancel:
             'code':'4',
             'message':'Please use the POST method'
         }, status = 405)
+
+    @api_view(['GET'])
+    def process_payment(request):
+        paypalrestsdk.configure({
+            "mode": settings.PAYPAL_MODE,
+            "client_id": settings.PAYPAL_CLIENT_ID,
+            "client_secret": settings.PAYPAL_CLIENT_SECRET
+        })
+        amount = int(request.query_params.get('amount', 0))  # 默认数量为1
+        price = float(request.query_params.get('price', 0))  # 默认价格为0
+        if price <= 0 or amount <= 0:
+            return Response({
+                'code': '2',
+                'message': 'There is something wrong with the input data'
+            }, status=200)
+
+        total_price = amount * price
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"
+            },
+            "redirect_urls": {
+                "return_url": "http://127.0.0.1:8000/payment/execute/",
+                "cancel_url": "http://127.0.0.1:8000/payment/cancel/"
+            },
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "ticket",
+                        "sku": "item",
+                        "price": str(price),
+                        "currency": "USD",
+                        "quantity": amount
+                    }]
+                },
+                "amount": {
+                    "total": str(total_price),
+                    "currency": "USD"
+                },
+                "description": "This is the payment transaction description."
+            }]
+        })
+
+        if payment.create():
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    # Capture the url that the user must be redirected to to approve the payment
+                    approval_url = str(link.href)
+                    return JsonResponse({'approval_url': approval_url}, safe=False)
+        else:
+            return Response({
+                'code':'2',
+                'error': 'Payment creation failed'
+            }, status=200)
+
+        return Response({
+            'code':'2',
+            'error': 'Unknown error occurred'
+        }, status=200)
+
+    @api_view(['GET'])  # 指定该视图只接受GET请求
+    def execute_payment(request):
+        payment_id = request.GET.get('paymentId')
+        payer_id = request.GET.get('PayerID')
+
+        if not payment_id or not payer_id:
+            return Response({
+                'code': '2',
+                'message': 'There is something worng'
+            }, status=200)
+
+        payment = paypalrestsdk.Payment.find(payment_id)
+
+        if payment.execute({"payer_id": payer_id}):
+            # 这里可以更新订单状态，记录支付成功事件等
+            return Response({
+                'code': '1',
+                'message': 'success'
+            }, status=200)  # 支付成功后重定向
+        else:
+            # 记录支付失败的错误信息等
+            return Response({
+                'code': '3',
+                'message': 'failed'
+            }, status=500)
+    
+
+class OrganizerReport:
+    '''
+    get_event_number是在params里面输入org_id,如果想改改一下函数就行
+    2
+    '''
+    @api_view(['GET'])
+    def get_event_number(request):
+        if request.method == "GET":
+            # 由于是GET请求，我们从查询参数中获取organizer_id
+            org_id = request.query_params.get('org_id', None)
+            #当使用query_params.get函数的时候，apifox里用params查询id
+            #data.get函数使用的时候则是body->json
+
+            if org_id is not None:
+                events = Event_info.objects.filter(organization_id=org_id)
+                
+                # 计算总场次
+                total_events = events.count()
+                
+                # 计算过去的场次
+                past_events = events.filter(event_date__lt=timezone.now()).count()
+                
+                # 计算即将到来的场次
+                upcoming_events = events.filter(event_date__gte=timezone.now()).count()
+                
+                return Response({
+                    "code": "1",
+                    "total_events": total_events,
+                    "past_events": past_events,
+                    "upcoming_events": upcoming_events
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"code": "3", 'error': 'Organizer ID is required'}, status=status.HTTP_400_BAD_REQUEST)    
+
+    @api_view(['GET'])
+    def get_event_types_summary(request):
+        if request.method == "GET":
+            org_id = request.query_params.get('org_id', None)
+            
+            if org_id is not None:
+                events = Event_info.objects.filter(organization_id=org_id)
+                event_types_count = events.values('event_type').annotate(total=Count('event_type')).order_by('event_type')
+                
+                # 计算总活动数量
+                total_events = sum(item['total'] for item in event_types_count)
+                
+                if total_events > 0:
+                    # 计算每种类型的比例并四舍五入到小数点后两位
+                    event_types_ratio = [{
+                        **item, 
+                        'ratio': round(item['total'] / total_events * 100, 2)
+                    } for item in event_types_count]
+                else:
+                    event_types_ratio = []
+                
+                return Response({
+                    "code": "1",
+                    "event_types_summary": event_types_ratio
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({"code": "3", 'error': 'Organizer ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @api_view(['GET'])
+    def events_by_total_tickets_sold(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            events_sorted_by_tickets_sold = Event_info.objects.filter(organization_id=org_id)\
+                .annotate(sold_tickets=Sum(F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')))\
+                .order_by('-sold_tickets')
+            
+            # 将QuerySet转换为字典列表
+            events_data = [{'event_id': event.event_id, 'sold_tickets': event.sold_tickets} for event in events_sorted_by_tickets_sold]
+            return Response(events_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)    
+
+    @api_view(['GET'])
+    def events_by_total_revenue_and_type(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            events_sorted_by_revenue_and_type = Event_info.objects.filter(organization_id=org_id).values(
+                'ticket_info__ticket_type'
+            ).annotate(
+                total_revenue=Sum(
+                    ExpressionWrapper(
+                        (F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')) * F('ticket_info__ticket_price'),
+                        output_field=FloatField()
+                    )
+                )
+            ).order_by('-total_revenue')
+
+            return Response(list(events_sorted_by_revenue_and_type), status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+           
+    @api_view(['GET'])
+    def events_by_completion_rate(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            events_sorted_by_completion_rate = Event_info.objects.filter(organization_id=org_id)\
+                .annotate(completion_rate=ExpressionWrapper(Sum(F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')) / Sum('ticket_info__ticket_amount'), output_field=FloatField()))\
+                .order_by('-completion_rate')
+            
+            # 将QuerySet转换为字典列表
+            events_data = [{'event_id': event.event_id, 'completion_rate': round(event.completion_rate * 100, 2) if event.completion_rate else 0} for event in events_sorted_by_completion_rate]
+            return Response(events_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_view(['GET'])
+    def events_by_total_sales(request):
+        org_id = request.query_params.get('org_id', None)
+        if org_id is not None:
+            # 计算每个活动的总销售额
+            events_sorted_by_total_sales = Event_info.objects.filter(organization_id=org_id).annotate(
+                total_sales=Sum(
+                    ExpressionWrapper(
+                        (F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')) * F('ticket_info__ticket_price'),
+                        output_field=FloatField()
+                    )
+                )
+            ).order_by('-total_sales')
+
+            # 转换QuerySet为列表格式以供返回
+            events_data = [
+                {
+                    'event_id': event.event_id,
+                    'event_name': event.event_name,
+                    'total_sales': round(event.total_sales, 2) if event.total_sales else 0.00  # 保证即使没有销售也显示0.00
+                }
+                for event in events_sorted_by_total_sales
+            ]
+
+            return Response(events_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+    @api_view(['GET'])
+    def event_details_by_id(request):
+        event_id = request.query_params.get('event_id', None)
+        if event_id is not None:
+            try:
+                event = Event_info.objects.get(event_id=event_id)
+                tickets = Ticket_info.objects.filter(event=event).annotate(
+                    sold_amount=ExpressionWrapper(
+                        F('ticket_amount') - F('ticket_remain'),
+                        output_field=FloatField()
+                    ),
+                    total_sales=ExpressionWrapper(
+                        (F('ticket_amount') - F('ticket_remain')) * F('ticket_price'),
+                        output_field=FloatField()
+                    )
+                ).aggregate(
+                    total_sold=Sum('sold_amount'),
+                    total_revenue=Sum('total_sales')
+                )
+
+                tickets_detail = Ticket_info.objects.filter(event=event).values(
+                    'ticket_id', 'ticket_type','ticket_name'
+                ).annotate(
+                    sold_amount=Sum(F('ticket_amount') - F('ticket_remain')),
+                    total_sales=Sum((F('ticket_amount') - F('ticket_remain')) * F('ticket_price'))
+                )
+
+                event_details = {
+                    'event_id': event.event_id,
+                    'event_type': event.event_type,
+                    'tickets': list(tickets_detail),
+                    'total_sold': tickets['total_sold'],
+                    'total_revenue': tickets['total_revenue']
+                }
+
+                return Response(event_details, status=status.HTTP_200_OK)
+            except Event_info.DoesNotExist:
+                return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"error": "EventId is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EventPage:
+    '''
+    目前是bode json
+    '''
+    @api_view(['POST'])
+    def like_Comment(request):
+        comment_id = request.query_params.get('comment_id')
+        cus_id = request.query_params.get('cus_id')
+        if comment_id:
+            Comment = get_object_or_404(Comment_cus, pk=comment_id)
+            customer = Customer.objects.filter(cus_id = cus_id).first()
+            Comment.likes += 1  # 增加点赞数
+            Comment.save()  # 保存更改
+            # LikeCheck.objects.create(customer=customer, comment=Comment)
+
+            likecheck = LikeCheck(
+                customer = customer,
+                comment = Comment,
+                created_at = timezone.now().replace(second=0, microsecond=0),
+            )
+            likecheck.save()
+            return Response({'message': 'Comment liked successfully', 'total_likes': Comment.likes})
+        else:
+            return Response({'error': 'Comment ID is required'}, status=400)
+    
+    @api_view(['GET'])
+    def like_checking(request):
+        '''
+        功能：检查一个customer是否点赞了
+        传入参数：cus_id 和 comment_id
+
+        传出参数：code
+            1：没有点赞过，允许点赞
+            2：曾经点赞过了，不能再点赞
+            3：找不到这个customer或者comment
+        '''
+        cus_id = request.query_params.get('cus_id', None)
+        comment_id = request.query_params.get('comment_id', None)
+        try:
+            customer = Customer.objects.filter(cus_id = cus_id).first()
+            comment = Comment_cus.objects.filter(comment_id = comment_id).first()
+
+        except Customer.DoesNotExist:
+            return JsonResponse({'code': '3', 'message': 'Customer not found.'}, status = 200)
+        except Comment_cus.DoesNotExist:
+            return JsonResponse({'code': '3', 'message': 'Comment not found.'}, status = 200)
+
+        if LikeCheck.objects.filter(customer=customer, comment=comment).exists():
+            return JsonResponse({'code': '2', 'message': 'You have already liked this comment.'}, status=200)
+
+        LikeCheck.objects.create(customer=customer, comment=comment, created_at=timezone.now())
+        # 创建新的点赞记录
+        return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status=200)
+
+
+    
+    @api_view(['GET'])
+    def like_number_check(request):
+        '''
+        检查
+        :return:
+        '''
+        comment_id = request.query_params.get('comment_id', None)
+        comment = get_object_or_404(Comment_cus, comment_id=comment_id)
+        return Response({'code':'1','message':'We find the comment and comment like', 'token' : comment.likes}, status = 200)
+
+

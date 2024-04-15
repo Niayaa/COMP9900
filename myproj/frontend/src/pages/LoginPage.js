@@ -1,4 +1,4 @@
-import React, { useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Box, Typography } from "@mui/material";
@@ -16,7 +16,14 @@ const LoginPage = () => {
   useEffect(() => {
     // Once the user is logged in, check the user's role to decide where to redirect
     if (user && user.role) {
-      navigate(user.role === "customer" ? "/Cus_Account" : "/Org_Account");
+      // 传递额外的用户信息到主页
+      navigate("/mainpage", {
+        state: {
+          user_id: user.id, // 假设用户信息中包含id
+          user_email: user.email, // 用户邮箱
+          isCustomer: user.role === "customer", // 是否为顾客
+        },
+      });
     }
   }, [user, navigate]);
 

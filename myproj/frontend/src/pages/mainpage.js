@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Button,
   TextField,
@@ -11,6 +11,8 @@ import {
 
 export default function MainPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user_id, user_email, isCustomer } = location.state || {};
   const [searchTerm, setSearchTerm] = useState("");
   const [eventType, setEventType] = useState("All");
   const eventTypes = ["All", "Concert", "Live", "Opera", "Comedy"];
@@ -29,7 +31,7 @@ export default function MainPage() {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        console.log('Event',data);
+        console.log("Event", data);
         setEvents(data);
         setFilteredEvents(data); // 初始时显示所有事件，后续可以根据前端逻辑进行筛选
       } catch (error) {
@@ -54,8 +56,12 @@ export default function MainPage() {
 
     // 根据搜索词过滤
     if (searchTerm) {
-      result = result.filter((event) =>
-        event.event_name.toLowerCase().includes(searchTerm.toLowerCase())
+      result = result.filter(
+        (event) =>
+          event.event_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          event.event_description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
@@ -119,8 +125,16 @@ export default function MainPage() {
     applyFilters();
   }, [applyFilters]);
 
-  const handleEventClick = (event) => {
-    navigate("/eventpage", { state: [event] });
+  const handleEventClick = (eventid) => {
+    navigate("/eventpage", {
+      state: {
+        ID: eventid.event_id,
+        isCustomer: isCustomer,
+        user_id: user_id,
+        user_email: user_email,
+        // isLoggedIn: true,
+      },
+    });
   };
 
   return (

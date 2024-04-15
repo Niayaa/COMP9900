@@ -167,11 +167,21 @@ const SignUpPage = () => {
         const data = await response.json(); // 解析JSON响应
         localStorage.setItem("userToken", data.token); 
         // 调用 login 方法更新全局用户状态
-        console.log("Before login call", { name: data.name, email: data.email, role: data.user_type });
-        login({ email:email,password:password});
+        console.log("Before login call", {
+          name: data.name,
+          email: data.email,
+          role: data.user_type,
+        });
+        login({ email: email, password: password });
         console.log("After login call");
         // 根据用户类型导航到不同页面
-        navigate("/mainpage");
+        navigate("/mainpage", {
+          state: {
+            isCustomer: role === "customer",
+            user_id: data.user_id,
+            user_email: email,
+          },
+        });
       } else {
         // 处理失败的情况
         const errorData = await response.json(); // 尝试解析错误消息

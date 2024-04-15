@@ -4,8 +4,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import PasswordResetPage from "./pages/PasswordResetPage";
 import MainPage from "./pages/mainpage";
-import EventPage from "./pages/EventPage";
-import UseEventPage from "./pages/FakeCallEventPage";
+// import EventPage from "./pages/EventPage";
+import EventPage from "./pages/updateEventPage";
+// import UseEventPage from "./pages/FakeCallEventPage";
 import MyAccount from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import ContactPage from "./pages/ContactPage";
@@ -18,6 +19,7 @@ import CustomerOrderPage from "./pages/Customer/CustomerOrder";
 import OrganzierAccountPage from "./pages/Organizer/OrganizerAccountPage";
 import OrganizerEventPage from "./pages/Organizer/OrganizerEventPage";
 import CreateNewEventPage from "./pages/Organizer/CreateNewEventPage";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 function App() {
   return (
@@ -30,8 +32,9 @@ function App() {
         <Route path="/MainPage" element={<MainPage />} />
         {/*<Route path="/EventsPage" element={<EventsPage />} />*/}
         <Route path="/MyAccount" element={<MyAccount />} />
-        <Route path="/events" element={<UseEventPage></UseEventPage>} />
+        {/* <Route path="/events" element={<UseEventPage></UseEventPage>} /> */}
         <Route path="/eventpage" element={<EventPage></EventPage>} />
+        {/* <Route path="/payment" element={<PaymentPopUp />} /> */}
         <Route path="/SignUpPage" element={<SignUpPage />} />
          {/*Customer Page*/}
         <Route path="/Cus_Event" element={<CustomerEventPage/>}/>

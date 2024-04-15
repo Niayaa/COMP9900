@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "event_system_app.apps.EventSystemApp",
+    'paypal.standard.ipn',
     'corsheaders',
     'rest_framework',
     'django_extensions',
@@ -46,6 +47,17 @@ INSTALLED_APPS = [
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
 )
+
+PAYPAL_TEST = True
+PAYPAL_RECEIVER_EMAIL = 'sb-f86zl30398995@business.example.com'
+
+
+
+PAYPAL_CLIENT_ID = 'ASg3Z5TQ1Yzl0iuuzMAie7X7flNwARwQYeNhatA5GVbS7X2MGWjAIfTEy0RNDMGSNitmYzUs2EufqoFE'
+PAYPAL_CLIENT_SECRET = 'EIRFGLROHUiEAvoYDhr6ALiG6W3Fd8nidGDJV9BhoDw3HCmxAnqQIwixmkx4BYl5sfqZ_PK6SDBY29HW'
+PAYPAL_MODE = 'sandbox'  # sandbox or live
+
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
