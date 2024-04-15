@@ -29,6 +29,7 @@ import BookInfoPopUp from '../PopUpPages/BookInfo.jsx';
 export const EventItem = ({ event,userId}) => {
   const [tickets, setTickets] = useState([]);
   const [openI, setOpenI] = useState(false);
+  const [events, setEvents] = useState([]);
   const navigate = useNavigate();
   // 弹窗的可见状态，初始为 false，即默认不显示
 
@@ -40,7 +41,38 @@ export const EventItem = ({ event,userId}) => {
   // 关闭弹窗的函数
   const handleClosePopup = () => {
     setOpenI(false);
+    fetchTickets();
   };
+
+  const fetchTickets = () => {
+    const url = `http://127.0.0.1:8000/org/event/ticket/?event_id=${event.event_id}`;
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Assuming data.token is an array of tickets for the event
+        const validTickets = data.token.filter(ticket => ticket.ticket_amount !== undefined);
+        setTickets(validTickets);
+        
+        // 如果票的数量是undefined，也不显示event
+        if (validTickets.length === 0) {
+          setEvents(prevEvents => prevEvents.filter(e => e.event_id !== event.event_id));
+        }
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
+  };
+  
+  useEffect(() => {
+    fetchTickets();
+  }, [event.event_id, userId]); 
+
+
 // Usage in a component or elsewhere
 const handleEventClick = (eventid) => {
   navigate("/eventpage", {
