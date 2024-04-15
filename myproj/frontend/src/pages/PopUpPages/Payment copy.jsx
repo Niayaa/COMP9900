@@ -11,8 +11,6 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useNavigate } from 'react-router-dom';
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
-import PayPal from './Paypal';
 
 export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, tkprice, eventID, userEmail, cus_id}) {
 
@@ -165,14 +163,9 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
           </Card>
         )}
         {canPay && (
-          <>
-        <PayPalScriptProvider options={{ "client-id": "YOUR_CLIENT_ID" }}>
-            <PayPal />
-        </PayPalScriptProvider>
-          {/* <Button type="submit" variant="contained" color="primary" onClick={PaymentProcess}>
+          <Button type="submit" variant="contained" color="primary" onClick={PaymentProcess}>
             Pay it
-          </Button> */}
-          </>
+          </Button>
         )}
         <Button onClick={handleClose}>Return</Button>
       </DialogActions>

@@ -1,0 +1,6 @@
+.my-component-background {
+    background: url('../image/sydney-opera-house-363244_1280.jpg') no-repeat center center fixed;
+    background-size: cover;
+    /* height: 100vh;   */
+    width: 100%;    
+}

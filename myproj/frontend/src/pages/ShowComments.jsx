@@ -12,18 +12,24 @@ import {
   // ImageList,
   // ListItem,
   // Stack,
+  TextField,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import Rating from "@mui/material/Rating";
-import { TextField } from "@mui/material";
+// import { TextField } from "@mui/material";
+import LikeButton from "./PopUpPages/Likes";
 
 export default function ShowComment(props) {
 
   const tokenc = localStorage.getItem("userToken");
-  console.log("tokenc", tokenc);
-  console.log("ifCustomer---------", props.ifCustomer);
+  // console.log("tokenc", tokenc);
+  // console.log("ifCustomer---------", props.ifCustomer);
+  // console.log("idddd---------", props.cus_id);
+  const user_id = props.cus_id;
 
   function getCurrentDateISOString() {
     const now = new Date();
@@ -34,10 +40,10 @@ export default function ShowComment(props) {
     }
     
     const todaydate = getCurrentDateISOString();
-    console.log(todaydate);
-    console.log("/////////////",todaydate > props.event_date)
-    console.log("/////////////",todaydate )
-    console.log("/////////////",props.event_date )
+    // console.log(todaydate);
+    // console.log("/////////////",todaydate > props.event_date)
+    // console.log("/////////////",todaydate )
+    // console.log("//////////////",props.ifOrganization )
 
   useEffect(() => {
 
@@ -45,7 +51,7 @@ export default function ShowComment(props) {
 
 
   const [comments, setComments] = useState([
-    { id: 1, rating: 4, content: "This is a great event!", replies: [] },
+    { comment_id: 1, event_rate: 4, comment: "This is a great event!", replies: [] },
   ]);
   const [newComment, setNewComment] = useState("");
   const [newReply, setNewReply] = useState({});
@@ -55,7 +61,9 @@ export default function ShowComment(props) {
 
   const [rate, setRate] = useState(0);
 
-  const [imageFile, setImageFile] = useState(null);
+  // const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");  // State to hold the image URL
+  const [showImageUrlInput, setShowImageUrlInput] = useState(false);
 
   const handleRating = (e) => {
     setRate(parseFloat(e.target.value));
@@ -67,13 +75,16 @@ export default function ShowComment(props) {
     return `${timestamp}-${random}`; // 结合时间戳和随机数生成唯一 ID
   }
 
-  const fetchComments = (eventID) => {
+  const fetchComments = async (eventID) => {
     // 获取event id
     // 读取对应event的comment
     // console.log("if id",eventID)
-    fetch(
+    await fetch(
       "http://127.0.0.1:8000/event_page_comment/?event_id=" +
-        `${eventID}` ,
+        `${eventID}` ,    
+        // await fetch(
+        //   "https://660265249d7276a75553232d.mockapi.io/event/1/comments"
+        //   ,
       {
         method: "GET",
         headers: { "content-type": "application/json" },
@@ -87,25 +98,31 @@ export default function ShowComment(props) {
       })
       .then((eventdata) => {
         console.log("GET COMMENTS", eventdata.token);
+        // console.log("GET COMMENTS", eventdata);
         // Do something with the list of tasks
         setComments(eventdata.token);
+        // setComments(eventdata);
       })
       .catch((error) => {
         // handle error
+        alert(error)
       });
   };
 
   useEffect(() => {
     fetchComments(props.eventID);
-  }, []); //加不加comments
+  }, [1000]); //加不加comments
 
   async function postComments(eventID, newComment) {
 
-    console.log("newComment", newComment)
+    console.log("newComment", newComment.comment)
     // console.log("pc",eventID)
     await fetch(
       "http://127.0.0.1:8000/submit_cus_comment/?event_id="+`${eventID}`+"&cus_id=" +`${props.cus_id}`
-       ,
+       ,    
+      //  await fetch(
+      //   "https://660265249d7276a75553232d.mockapi.io/event/1/comments"
+      //    ,
       {
         method: "POST",
         headers: { "content-type": "application/json",
@@ -113,13 +130,14 @@ export default function ShowComment(props) {
       },
         // Send your data in the request body as JSON
         body: JSON.stringify({
-          comment_id: newComment.id,
-          useremail: "",
-          comment_cus: newComment.content,
-          replies: [],
+          // comment_id: newComment.id,
+          // useremail: "",
+          // comment: 
+          comment_cus: newComment.comment,
+          // replies: [],
           imageUrl: newComment.imageUrl,
           rating: newComment.event,
-          comment_time: new Date(),
+          // comment_time: new Date(),
         }),
       }
     )
@@ -128,10 +146,10 @@ export default function ShowComment(props) {
         if (res.ok) {
           return res.json();
         }
-        // handle error
-      })
-      .then((task) => {
-        // do something with the new task
+      })  
+      .then(data => {
+        alert(`Comment posted successfully! ${data}`);
+        // fetchComments(eventID);  // Assuming this is to refresh the comments displayed
       })
       .catch((error) => {
         // handle error
@@ -145,30 +163,28 @@ export default function ShowComment(props) {
   // 在下一次更新的时候再
   const addComment = () => {
     if (newComment === "") return;
-    if (imageFile) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        // 文件读取完成后，e.target.result包含图片的Base64
+    if (imageUrl !== "") {
+       
         const newCommentObj = {
           id: generateUniqueId(),
           rating: rate,
-          content: newComment,
+          comment: newComment,
           replies: [],
-          imageUrl: e.target.result, // 将图片Base64保存为评论的一部分
+          imageUrl: imageUrl, 
         };
         setComments([...comments, newCommentObj]);
         // post to backend
         postComments(props.eventID, newCommentObj);
 
         setNewComment("");
-        setImageFile(null);
-      };
-      reader.readAsDataURL(imageFile);
+        // setImageFile(null);
+      
+      // reader.readAsDataURL(imageFile);
     } else {
       const newCommentObj = {
         id: generateUniqueId(),
         rating: rate, // Default rating for a new comment; adjust as necessary
-        content: newComment,
+        comment: newComment,
         replies: [],
         imageUrl: "",
       };
@@ -182,113 +198,82 @@ export default function ShowComment(props) {
   async function postReplies(eventID, commentId, newReply) {
     // console.log("pr",commentId)
     await fetch(
-      "https://660265249d7276a75553232d.mockapi.io/event/" +
-        `${eventID}` +
-        "/comments/" +
-        `${commentId}` +
-        "",
+      "http://127.0.0.1:8000/org_reply/?user_id="+`${user_id}`+"&comment_id="+`${commentId}` ,
       {
         method: "POST",
         headers: {
           "content-type": "application/json",
-            Authorization: `Bearer ${tokenc}`,
+            //Authorization: `Bearer ${tokenc}`,
         },
         // Send your data in the request body as JSON
         body: JSON.stringify({
-          id: newReply.id,
-          eventId: eventID,
-          commentID: commentId,
-          content: newReply.content,
-          createAt: new Date(),
+          reply_org: newReply[commentId],
         }),
-      }
-    )
+      })
       .then((res) => {
         if (res.ok) {
-          return res.json();
+          console( res.json())
+          // return res.json();
         }
         // handle error
+        console("iiiiiiiiiii", res.json())
+        if(res.status === 400){
+          alert("Only organization who create this event can reply, if you're, please login as the event organization.");
+        }
       })
       .then((task) => {
         // do something with the new task
+            // Update local state to reflect the new reply without needing to reload comments
+                // Update local state to reflect the new reply without needing to reload comments
+                console.log("iii", task)
+        if(1){       
+        setComments(comments.map(comment => {
+          if (comment.comment_id === commentId) {
+            return {
+              ...comment,
+              replies: [...comment.replies, { reply_content: newReply[commentId], reply_time: new Date().toISOString() }]
+            };
+          }
+          return comment;
+        }));
+        fetchComments(props.eventID);
+        }else{
+          alert("Only organization who create this event can reply, if you're, please login as the event organization.");
+        }
       })
       .catch((error) => {
         // handle error
-        alert(error);
-      });
-  }
 
-  async function fakeUpdateRepies(eventID, commentId, Replies) {
-    // console.log("Replies", Replies)
-    await fetch(
-      "https://660265249d7276a75553232d.mockapi.io/event/" +
-        `${eventID}` +
-        "/comments/" +
-        `${commentId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-          //   Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          id: commentId,
-          replies: Replies,
-        }),
-      }
-    )
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-        console.log("res", res)
-        // handle error
-      })
-      .then((task) => {
-        // do something with the new task
-      })
-      .catch((error) => {
-        // handle error
         alert(error);
       });
+
+
+      
   }
 
   const addReply = (commentId) => {
-    if (newReply[commentId] === "") return;
-    const updatedComments = comments.map((comment) => {
-      if (comment.id === commentId) {
-        fakeUpdateRepies(props.eventID, commentId, [
-          ...comment.replies,
-          newReply[commentId],
-        ]);
-        return {
-          ...comment,
-          replies: [...comment.replies, newReply[commentId]],
-        };
-      }
-      return comment;
-    });
-    setComments(updatedComments);
-    // console.log("comments", comments)
-    // console.log("comments[commentId].replies", comments[commentId])
-    // post到后端 或者选择 update/put comments 倾向前一种
-    // postReplies(props.eventID, commentId, newReply[commentId])
-    setNewReply({ ...newReply, [commentId]: "" }); // Reset reply input for this comment
+    // const replyContent = newReply[commentId];
+    if (!newReply[commentId]) {
+      alert("Reply cannot be empty");
+      return;
+    }
+  
+    postReplies(props.eventID, commentId, newReply);
+    // Reset the specific reply input field
+    setNewReply({ ...newReply, [commentId]: "" });
   };
+
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleReplyChange = (event, commentId) => {
     setNewReply({ ...newReply, [commentId]: event.target.value });
   };
 
-  const handleImageChange = (event) => {
-    if (event.target.files[0]) {
-      setImageFile(event.target.files[0]);
-    }
-  };
-
   return (
     <Box sx={{ padding: { xs: 0, md: 4, lg: 4 } }}>
-    {props.ifCustomer && (todaydate > props.event_date) && (
+    {props.ifCustomer && props.isLogin && (todaydate > props.event_date) && (
       <>
         <TextField
           label="Add a Comment"
@@ -299,7 +284,8 @@ export default function ShowComment(props) {
           variant="outlined"
           sx={{ mb: 2 }}
         />
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        {/* <input type="file" accept="image/*" onChange={handleImageChange} /> */}
+        <TextField label="Image URL" fullWidth value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} variant="outlined" sx={{ mb: 2 }} />
         <Rating name="rating" value={rate} onChange={handleRating} />
         <Button variant="contained" onClick={addComment}>
           Add Comment
@@ -307,101 +293,107 @@ export default function ShowComment(props) {
       </>
     )}
     {
-      !props.ifCustomer &&(
+      !props.isLogin &&(
         <Grid>Only login as customer can commment.</Grid>
       )
     }
     {
-      props.ifCustomer && (todaydate < props.event_date) &&(
+      props.ifCustomer && props.isLogin && (todaydate < props.event_date) &&(
         <Grid>Comments are allowed after the event date</Grid>
       )
     }
-      {/* <TextField
-        label="Add a Comment"
-        multiline
-        fullWidth
-        value={newComment}
-        onChange={(event) => setNewComment(event.target.value)}
-        variant="outlined"
-        sx={{ mb: 2 }}
-      />
-      <input type="file" accept="image/*" onChange={handleImageChange} />
-      <Rating name="rating" value={rate} onChange={handleRating} />
-      <Button variant="contained" onClick={addComment}>
-        Add Comment
-      </Button> */}
       {comments.map((comment, index) => (
-        <Card
+        <Card 
           key={comment.comment_id}
           variant="outlined"
-          sx={{ bgcolor: "transparent", mt: 1, mb: 1 }}
+          sx={{ bgcolor: "transparent", mt: 1, mb: 1, border:'none' }}
         >
-          <Card>
-            <CardContent
-              sx={{
-                width: {
-                  xs: "50%", // 小于600px宽时，Box占满容器
-                  sm: "100%", // 小于960px宽时，Box宽度为容器的75%
-                  md: "100%", // 小于1280px宽时，Box宽度为容器的50%
-                  lg: "100%", // 小于1920px宽时，Box宽度为容器的25%
-                },
-                display: "flex",
-                flexDirection: { xs: "column", md: "column" }, // 在小屏设备上使用列布局，在中等及以上设备上使用行布局
-                // justifyContent: 'space-between',
-                // alignItems: 'center',
-                // gap: 1, // 添加间距
-                transition: "all 0.5s ease",
+
+    <Card sx={{boxShadow: 5, m: 2}}>
+      <CardContent
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          transition: "all 0.5s ease",
+          
+        }}
+      >
+        <Box sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
+          flexDirection: isMobile ? 'column' : 'row',
+        }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Avatar alt="User Name" src="/static/images/avatar/1.jpg" />
+            <Typography variant="subtitle1" sx={{ ml: 2 }}>
+              {comment.username}
+            </Typography>
+          </Box>
+          <Box sx={{ mt: isMobile ? 2 : 0 }}>
+            <LikeButton commentId={comment.comment_id} userId={user_id} isCustomer={props.ifCustomer} />
+          </Box>
+        </Box>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ mx: 4, wordWrap: "break-word" }}
+        >
+          {comment.comment}
+        </Typography>
+        {comment.imageUrl && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mt: 2,
+            }}
+          >
+            <img
+              src={comment.imageUrl}
+              alt="Comment"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '200px',
               }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Avatar alt="User Name" src="/static/images/avatar/1.jpg" />
-                <Typography variant="subtitle1" sx={{ ml: 2 }}>
-                  {/* {comment.username} */}
-                </Typography>
-              </Box>
-              {/* <Typography variant="subtitle1">
-                            {"Comment #" + comment.id}
-                        </Typography> */}
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ m: 4, mr: 10 }}
-                style={{ wordWrap: "break-word" }}
-              >
-                {comment.comment}
-              </Typography>
-              {comment.imageUrl && (
-                <img
-                  src={comment.imageUrl}
-                  alt="Comment"
-                  style={{
-                    maxWidth: "50%",
-                    maxHeight: "200px",
-                    alignItems: "center",
-                  }}
-                />
-              )}
-            </CardContent>
-          </Card>
-          { props.ifOrganization &&(           
+            />
+          </Box>
+        )}
+      </CardContent>
+    </Card>
+          { props.isLogin && props.ifOrganization &&(           
           <CardActions>
           <TextField
               label="Your Reply"
-              size="medium"
-              multiline="true"
-              value={newReply[comment.id]}
-              onChange={(event) => handleReplyChange(event, comment.id)}
+              size="small"
+              multiline={true}
+              value={newReply[comment.comment_id]}
+              onChange={(event) => handleReplyChange(event, comment.comment_id)}
               variant="outlined"
               sx={{
-                marginLeft: "auto",
-                width: "40%", // 或者使用具体的宽度值，比如 '300px'
+                // radius: 3,
+                borderRadius: 3,
+                // marginLeft: "auto",
+                width: "100%", // 或者使用具体的宽度值，比如 '300px'
                 m: 1,
+                ml: 9,
+                mr: 2,
+              }}
+              InputProps={{
+                style: {
+                  borderRadius: '20px'  // 设置更大的圆角
+                }
+              }}
+              // 如果是多行文本，还需要对textarea进行样式调整
+              InputLabelProps={{
+                shrink: true,
               }}
             />
             <Button
               variant="contained"
               size="small"
-              onClick={() => addReply(comment.id)}
+              onClick={() => addReply(comment.comment_id)}
             >
               Reply
             </Button>
@@ -415,6 +407,7 @@ export default function ShowComment(props) {
                 ml: 10,
                 mr: 2,
                 mt: 1,
+                marginBottom: 1,
                 bgcolor: "background.paper",
                 p: 3,
                 boxShadow: 5, // 应用阴影

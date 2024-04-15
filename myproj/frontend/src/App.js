@@ -19,6 +19,7 @@ import CustomerOrderPage from "./pages/Customer/CustomerOrder";
 import OrganzierAccountPage from "./pages/Organizer/OrganizerAccountPage";
 import OrganizerEventPage from "./pages/Organizer/OrganizerEventPage";
 import CreateNewEventPage from "./pages/Organizer/CreateNewEventPage";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/MyAccount" element={<MyAccount />} />
         {/* <Route path="/events" element={<UseEventPage></UseEventPage>} /> */}
         <Route path="/eventpage" element={<EventPage></EventPage>} />
+        {/* <Route path="/payment" element={<PaymentPopUp />} /> */}
         <Route path="/SignUpPage" element={<SignUpPage />} />
          {/*Customer Page*/}
         <Route path="/Cus_Event" element={<CustomerEventPage/>}/>

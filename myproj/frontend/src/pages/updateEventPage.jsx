@@ -1,12 +1,13 @@
 import React, {useEffect, useRef, useState} from 'react';
+// import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import Sun from '@mui/icons-material/LightMode';
 import { styled } from '@mui/material/styles';
-// import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
-import { Autocomplete, Avatar, Box, Button, CardHeader, Chip, Container, ImageList, ListItem, Stack, TablePagination } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardHeader, Chip, Container, ImageList, ListItem, Stack, TablePagination, Divider } from '@mui/material';
 // import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -26,28 +27,17 @@ import CardMedia from '@mui/material/CardMedia'; // 引入CardMedia组件用于�
 
 import Image from './image/sydney-opera-house-363244_1280.jpg';
 import { useLocation } from 'react-router-dom';
+import './PopUpPages/bgImage.css';
 
 // import MyComponent from './PopUpPages/EmbeddedGoogleMap.jsx';
 import PaymentPopUp from './PopUpPages/Payment.jsx';
 import ScrollableFrame from './PopUpPages/ForScroll.jsx';
 
 import ShowComment from './ShowComments.jsx'; 
-// import BookInfoPopUp from './PopUpPages/BookInfo.jsx';
+import BookInfoPopUp from './PopUpPages/BookInfo.jsx';
 
-// const useStyles = makeStyles((theme) => ({
-//     root: {
-//       // 添加背景图片
-//     //   backgroundImage: `url(${Image})`,
-//       backgroundImage: `url('${Image}')`,
-//       backgroundSize: 'cover', // 背景图片铺满容器
-//       backgroundPosition: 'center', // 将背景图片居中
-//       minHeight: '100vh', // 确保容器高度与视口高度相等
-//       display: 'flex',
-//       justifyContent: 'center',
-//       alignItems: 'center',
-//       zIndex: -1, // 将背景置于底层
-//     },
-//   }));
+import { useAuth } from './AuthContext.js';
+
 
 function EventInfoGrid() {
 
@@ -57,25 +47,66 @@ function EventInfoGrid() {
 };
 
 function EventPage(props) {
+
+    const [isCustomer, setIsCustomer] = useState(false);
+    const [isOrganizer, setisOrganizer] = useState(false);
+    const [isLogin, setisLogin] = useState(false);
+    const { user } = useAuth();
+
+    console.log("UUUUUUUUUUUUUUUUUSER", user)
+    const isLoggedIn = user ? true : false;
+    useEffect(() => {
+
+        if(isLoggedIn){
+            if(user.role === 'organizer'){
+                setIsCustomer(false);
+                setisOrganizer(true);
+            }else{
+                setIsCustomer(true);
+                setisOrganizer(false);
+            }
+        }
+        else{
+            setIsCustomer(false);
+            setisOrganizer(false);
+        }
+    }, 
+    [1000]);
     
     const token = localStorage.getItem('token');
-    console.log("token", token);
+    // console.log("token", token);
+    const tagElements = [];
 
-    // const classes = useStyles();
     const location = useLocation();
     const propss = location.state
     console.log("propss", propss)
-    console.log("ID", propss.ID)
+    // console.log("ID", propss.ID)
+    const isCustome = propss.isCustomer;
+    // console.log("isCustomer", isCustome)
+    const isOrganize = !(propss.isCustomer);
+    // console.log("isOrganize", isOrganize)
+    // console.log("props", propss.isLoggedIn)
+
+    const user_id = user? user.id: null;
     const [eventInfo, setEventInfo] = useState([])
     const [seatarea, setSeatarea] = useState('');
-    const [seatamount, setSeatamount] = useState(0);
-    const [tags, setTags] = useState(['#TaylorSwiftLive, #SwiftieNation, #FolkloreOnStage, #EvermoreExperience, #SwiftieMeetup']);
+    const [seat, setSeat] = useState({ area: '', price: 0 });
+    const handleSeatarea = (event) => {
+        const selectedArea = event.target.value;
+        const selectedPrice = ticketPrice[ticketType.indexOf(selectedArea)][1]; // 假设 ticketPrice 根据区域索引存储价格
+        setSeat({ area: selectedArea, price: selectedPrice });
+    };
+    
+    const [seatamount, setSeatamount] = useState(null);
+    const [tags, setTags] = useState(['#','#', '#']);
     const [ticketType, setTicketType] = useState([]);
+    const [ticketPrice, setTicketPrice] = useState([]);
     const [openC, setOpenC] = useState(false);
     const [openP, setOpenP] = useState(false);
     const [totalRating, setTotalRating] = useState(0);
     const [averageRating, setAverageRating] = useState(0);
     const [commentLength, setCommentLength] = useState(0);
+    const [numTicket, setNumTicket] = useState(0);
 
     function getCurrentDateISOString() {
         const now = new Date();
@@ -98,22 +129,37 @@ function EventPage(props) {
     };
 
     const handlePopupPayment = () => {
-        if (seatarea === '' || seatamount === '' ){
+        if (seat.area === '' || seatamount === '' ){
             alert("Please select seat area and seat amount first")
             return;
         } 
         setOpenP(true)
     };
-
+    // function handlePopupPayment() {
+        // const newWindow = window.open('', '_blank');
+        // newWindow.document.write(`
+        //     <html>
+        //     <head>
+        //         <title>Payment</title>
+        //         <link rel="stylesheet" type="text/css" href="/path/to/your/css/styles.css">
+        //         <script src="/path/to/your/bundle.js"></script>
+        //     </head>
+        //     <body>
+        //         <div id="popup"></div>
+        //     </body>
+        //     </html>
+        // `);
+        // newWindow.document.close();
+    
+        // newWindow.onload = function() {
+        //     const reactContent = newWindow.document.getElementById('popup');
+        //     ReactDOM.render(<PaymentPopUp open={openP} cus_id={user_id} handleClose={handleClosePayment} tkprice={seat.price} seatArea={seat.area} seatAmount={seatamount} userEmail={propss.user_email} eventID={propss.ID}/>, reactContent);
+        // };
+    // }
+    
     const handleClosePayment = () => {
         setOpenP(false)
     };
-
-
-    const handleSeatarea = (e) => {
-        setSeatarea(e.target.value);
-        
-    }
 
     const handleSeatamount = (e) => {
         
@@ -137,11 +183,6 @@ function EventPage(props) {
 
     }
 
-    const getTags = () =>{
-
-        setTags()
-    }
-
     async function fetchEventInfo(eventID){
         // await fetch("https://660265249d7276a75553232d.mockapi.io/event/"+`${eventID}`,{
             await fetch("http://127.0.0.1:8000/event_page_detail/?event_id="+`${eventID}`,{
@@ -159,15 +200,33 @@ function EventPage(props) {
             console.log("we get first event", event.token);
             // Do something with the list of tasks
             
-            console.log("fetchEventInfo", event)
+            // console.log("fetchEventInfo", event)
             setEventInfo(event.token)
             // console.log("Hei HHH",event.token.type )
-            // setTags([event.token.type, ""])
+            setTags([event.token.type, ""])
             setTicketType(Object.keys(event.token.tickets))
+            setTicketPrice(Object.values(event.token.tickets))
+            // console.log(Object.values(event.token.tickets)[1])
             setTotalRating(event.token.total_rating)
             // console.log("Hei hei", tags)
-            console.log("Hei hei", event.token.image)
-            // console.log("Hei hei hei", Object.keys(event.token.tickets))
+            // console.log("Hei hei", event.token.image)
+            // if (Array.isArray(event.token.event_tags)) {
+            //     console.log("Hei hei hei", event.token.event_tags);
+            // }else{
+            //     console.log("Hei hei hei", "not an array");
+            // }
+            
+            let jsonStr = event.token.event_tags.replace(/'/g, '"');
+
+            // 使用JSON.parse()将字符串转换为数组
+            let arr = JSON.parse(jsonStr);
+            setTags(arr|| [])
+            if (Array.isArray(tags)) {
+                console.log("Hei hei hei", tags);
+            }else{
+                console.log("Hei hei hei", "not an array");
+            }
+            console.log("Hei hei heii", tags)
 
           }).catch(error => {
             // handle error
@@ -175,20 +234,37 @@ function EventPage(props) {
           })
     }
 
+
     useEffect(() => {
         const fetchData = async () => {
             console.log("Reload EventPage");
             await fetchEventInfo(propss.ID);
             console.log("useEff event", eventInfo); // 在这里可以看到 eventInfo 的值
+            
             if (eventInfo && eventInfo.comments && eventInfo.comments.length > 0) {
                 const averageRating = eventInfo.total_ratings / eventInfo.comments.length;
                 setAverageRating(averageRating);
                 setCommentLength(eventInfo.comments.length)
+                
             }
         };
-    
+        
         fetchData();
+        setTags(eventInfo.event_tags|| [])
+        
+        // if(propss.isCustomer === 'true' || propss.isCustomer === true){
+        //     setIsCustomer(true);
+        //     setisOrganizer(false);
+        // }
+        // else if(propss.isCustomer === 'false' || propss.isCustomer === false){
+        //     setIsCustomer(false);
+        //     setisOrganizer(true);
+        // }
     }, []);
+
+    useEffect(() => {
+        console.log("Tags updated:", tags); // 当 tags 更新时执行
+    }, [tags]); // 
 
     const [openI, setOpenI] = useState(false);
 
@@ -203,10 +279,11 @@ function EventPage(props) {
     return (
     <div 
     // className={classes.root}
+        className='my-component-background'
     >
         <Container sx={{paddingBottom: {xs: 4}}}>
-        <Button variant="outlined" onClick={handlePopupBookInfo}>Call Book Info  Pop Up</Button>
-       {/* <BookInfoPopUp open={openI} handleClose={handleCloseBookInfo}></BookInfoPopUp> */}
+        <Button variant="outlined"  onClick={handlePopupBookInfo}>Call Book Info  Pop Up</Button>
+       <BookInfoPopUp cus_id={propss.user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp>
         <Grid container spacing={2} direction={'column'} 
             sx={{
                 // bgcolor: 'lightblue',
@@ -220,6 +297,32 @@ function EventPage(props) {
             {/* left */}
             <Grid item xs={12} md={8}>
                 {/* <Paper elevation={3} style={{ padding: 2 }}>左侧内容</Paper> */}
+    <Box sx={{backgroundColor: 'rgba(255, 255, 255, 0.0)', width: '100%', mt: 3, mr:3, p: 2, textAlign: 'center',  borderRadius: '4px' }}>
+      <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{mr: 10}}>
+        {todaydate <= eventInfo.date ? (
+          <Typography variant="subtitle1">
+            Event total rating will show up soon.
+          </Typography>
+        ) : (
+          <>
+            <Typography variant="h6" sx={{ lineHeight: 'normal', mt: '-5px' }}>
+              The event total rating:
+            </Typography>
+            <Divider orientation="vertical" flexItem sx={{ mx: 2, height: '30px' }} />
+            <Rating
+              name="read-only"
+              value={totalRating}
+              precision={0.1}
+              readOnly
+              sx={{ verticalAlign: 'middle' }}  // Adjust alignment here
+            />
+            <Typography variant="subtitle1" sx={{ ml: 2, verticalAlign: 'middle' }}>
+              {totalRating}
+            </Typography>
+          </>
+        )}
+      </Grid>
+    </Box>
                 <Grid> 
                     <Box
                         
@@ -241,7 +344,7 @@ function EventPage(props) {
                                 }}>
                                 <CardMedia
                                     sx={{ height: 200 }}
-                                    image={eventInfo.image}
+                                    image={eventInfo.event_image_url}
                                     title=""
                                 />
                                 <CardHeader
@@ -276,92 +379,55 @@ function EventPage(props) {
                             transition: 'all 0.5s ease',
                         }}
                     >
-                        <Box
-                            height={400}
-                            
-                            my={1}
-                            mx={1}
-                            display="flex"
-                            alignItems="center"
-                            gap={1}
-                            p={2}
-                            sx={{width:'100%', border: '2px solid grey' }}
-                            >
-                            {/* <MyComponent/> */}
-                                <iframe
-                                    style={{ border: 0 }}
-                                    width="600"
-                                    height="450"
-                                    loading="lazy"
-                                    allowFullScreen
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDxvom4yrKgZyzzPIR6hbb1ubsMxw79GnI&q=${eventInfo.location}`}
-                                ></iframe>
-
-                        </Box>
-                        <Box
-                            height={400}
-                            my={1}
-                            mx={1}
-                            display="flex"
-                            alignItems="center"
-                            gap={1}
-                            p={2}
-                            sx={{width:'100%', border: '2px solid grey' }}
-                            >
-                            <Stack>
-                            <iframe width="auto" height="auto" src="https://www.youtube.com/embed/KudedLV0tP0?si=T-jx27C0cgOIj16C" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
-
-                            {/* <video src={'https://youtu.be/KudedLV0tP0?si=ywV_5uA3bwasbsvb'} width="100%" height="100%" controls="controls" autoplay="true" /> */}
-                            <Card>This is a video</Card>
-                            </Stack>
-                        </Box>
-                        </Box>
+                        </Box> 
                     </Grid>
             </Grid>
             </Grid>
             {/*right  */}
-            <Grid  item xs={12} md={2}>
+            <Grid sx={{ mt: 7}} item xs={12} md={2}>
             <Box sx={{ width: '100%' }}>
             <Stack spacing={2} >
                 <Grid sx={{ m: 1, minWidth: 250 }} elevation={0} style={{ padding: 2 }}>
-                    {/* {tags} */}
-                    {tags.map((tag, index)=>(
-                        // <Chip>
-                        <Button>{tag}</Button>
-                            
-                    //   {/* </Chip> */}
-                    ))}
+                    <Grid sx={{ m: 1, minWidth: 250 }} elevation={0} style={{ padding: 2 }}>
+                        {/* {Array.isArray(tags) && tags.length > 0 && tags.map((tag, index) => (
+                            <Button key={index}>{tag}</Button>
+                        ))} */}
+                        {tags.map((tag, index) => (
+                            <Chip key={index} label={tag} sx={{mt:0.3, mb: 0.3, mr: 0.6}}/>
+                        ))}
+                        {/* {tags} */}
+                    </Grid>
+                    {tagElements.map((tagElement) => tagElement)}
                 </Grid>
-                    <Grid container direction={'column'}>
-                    <Grid>Tickets</Grid>
-                    <Grid>Last selling date: {eventInfo.last_selling_date}</Grid>
+                    <Grid container direction={'column'} >
+                    <Grid sx={{ml: 1}}>Tickets</Grid>
+                    <Grid sx={{ml: 1}}>Last selling date: {eventInfo.last_selling_date}</Grid>
                     { 
                     // eventInfo.last_selling_date > todaydate 
                     // && 
                     <form onSubmit={handleSeatFormSubmit}>
-                    <FormControl sx={{ m: 1, minWidth: 250 }}>
+                    <FormControl sx={{ mb: 1, ml:1, mr: 1, minWidth: 250 }}>
                         <InputLabel id="demo-simple-select-helper-label">Seat area</InputLabel>
                         <Select
-                        labelId="demo-simple-select-helper-label"
-                        id="demo-simple-select-helper"
-                        value={seatarea}
-                        label="Seat area"
-                        onChange={handleSeatarea}
+                            labelId="demo-simple-select-helper-label"
+                            id="demo-simple-select-helper"
+                            value={seat.area}
+                            label="Seat area"
+                            onChange={handleSeatarea}
                         >
-                        <MenuItem value="">
-                            <em>None</em>
-                        </MenuItem>
-                        {ticketType.map((area,index)=>(
-                            <MenuItem value={area}>{area}</MenuItem>
-                        ))}
-                        {/* <MenuItem value={'A'}>A</MenuItem>
-                        <MenuItem value={'B'}>B</MenuItem>
-                        <MenuItem value={'C'}>C</MenuItem> */}
+                            <MenuItem value={seat.area}>
+                                <em>None</em>
+                            </MenuItem>
+                            {ticketType.map((area, index) => (
+                                <MenuItem key={area} value={area}>
+                                    {area} - Price: {ticketPrice[index][1]}
+                                </MenuItem>
+                            ))}
                         </Select>
                         <FormHelperText>Select Seat Area</FormHelperText>
                     </FormControl>
-                    <FormControl sx={{ m: 1, minWidth: 250 }}>
+
+                    <FormControl sx={{ mb: 1, ml:1, mr: 1, minWidth: 250 }}>
                         <InputLabel id="demo-simple-select-helper-label">Seat amount</InputLabel>
                         <Select
                         labelId="demo-simple-select-helper-label"
@@ -370,21 +436,23 @@ function EventPage(props) {
                         label="Seat amount"
                         onChange={handleSeatamount}
                         >
-                        <MenuItem value="">
+                        <MenuItem value={seatamount}>
                             <em>None</em>
                         </MenuItem>
                         <MenuItem value={1}>1</MenuItem>
                         <MenuItem value={2}>2</MenuItem>
-                        {/* <MenuItem value={3}>3</MenuItem>
-                        <MenuItem value={4}>4</MenuItem>
-                        <MenuItem value={5}>5</MenuItem>
-                        <MenuItem value={6}>6</MenuItem> */}
+
                         </Select>
                         <FormHelperText>Select Seat Amount</FormHelperText>
                     </FormControl>
                     <br></br>
-                    <Button sx={{position: ""}} type='button' variant='contained' onClick={handlePopupPayment}>Book</Button>
-                    <PaymentPopUp open={openP} handleClose={handleClosePayment} tkprice={eventInfo} seatArea={seatarea} seatAmount={seatamount}></PaymentPopUp>
+                    {isLoggedIn && isCustomer && ( 
+                        <>
+                        <Button sx={{ m: 1, minWidth: 250 }} type='button' variant='contained' onClick={handlePopupPayment}>Book</Button>
+                        <PaymentPopUp open={openP} cus_id={user_id} handleClose={handleClosePayment} tkprice={seat.price} seatArea={seat.area} seatAmount={seatamount} userEmail={propss.user_email} eventID={propss.ID}></PaymentPopUp>
+                        </>
+                    )}
+                    
                     </form>
                     }
                     </Grid>
@@ -394,24 +462,7 @@ function EventPage(props) {
             </Grid>
         {/* <Button onClick={handleClickOpen}>Click to Comment</Button> *点击然后弹出评论窗口 */}
         {/* <CommentPopUp open={open} handleClose={handleClose}/> */}
-        {(todaydate <= eventInfo.date )&&
-        (<Grid sx={{direction: 'row'}}>
-                Event total rating will show up soon.
-            </Grid>)}
-            { (todaydate > eventInfo.date )&&(<Grid sx={{direction: 'row'}}>
-                <Typography component="legend">The event total rating</Typography>
-                <Rating
-                    name="read-only"
-                    value={totalRating}
-                    precision={0.1} // 允许显示半星以提高精确度
-                    readOnly // 将评分组件设置为只读，用户不能更改
-                />
-                {/* <Typography component="p">total {commentLength} ratings</Typography> */}
-                <Typography>
-                    {totalRating}
-                </Typography>
-            </Grid>)}
-            <ScrollableFrame children={<ShowComment cus_id={1} ifCustomer={true} ifOrganization={false} event_date = {eventInfo.date} eventID={propss.ID}/>}></ScrollableFrame>
+            <ScrollableFrame children={<ShowComment isLogin={isLoggedIn} cus_id={user_id} ifCustomer={isCustomer} ifOrganization={isOrganizer} event_date = {eventInfo.date} eventID={propss.ID}/>}></ScrollableFrame>
             
         </Grid>
     </Container>
