@@ -19,16 +19,14 @@ class Organizer(models.Model):
 
 class Customer(models.Model):
     class AgeArea(models.TextChoices):
-        YOUTH = '18-25', '18-25 Years'
-        YOUNG_ADULT = '26-35', '26-35 Years'
-        ADULT = '36-45', '36-45 Years'
-        MIDDLE_AGED = '46-55', '46-55 Years'
-        SENIOR = '56-65', '56-65 Years'
-        ELDERLY = '65+', '65+ Years'
+        CHILD = '0-18', '0-18 Years'
+        TEENAGE = '19-40', '19-40 Years'
+        MIDDLEAGE = '41-60', '41-60 Years'
+        ELDER = '61-100', '61-100 Years'
 
 
     cus_id = models.AutoField(primary_key = True)
-    cus_name =  models.TextField(max_length = 50, null = False)
+    cus_name = models.TextField(max_length = 50, null = False)
     cus_email = models.TextField(max_length = 255, null = False)
     gender = models.CharField(max_length = 20, choices=[('Male', 'Male'), ('Female', 'Female')], null = True)
     prefer_type = models.CharField(max_length = 20,
@@ -176,7 +174,7 @@ class LikeCheck(models.Model):
 
     class Meta:
         db_table = 'Like'
-        # unique_together = ('customer', 'comment')  # 确保每个用户对每条评论只能点赞一次
+        unique_together = ('customer', 'comment')  # 确保每个用户对每条评论只能点赞一次
 
     def __str__(self):
         return f"{self.customer.cus_id} likes {self.comment.comment_id}"

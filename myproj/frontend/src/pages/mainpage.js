@@ -7,19 +7,27 @@ import {
   Card,
   CardContent,
   Typography,
+  CardMedia,
 } from "@mui/material";
 
 export default function MainPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user_id, user_email, isCustomer } = location.state || {};
+  const { user_id, user_email, isCustomer, isLoggedIn } = location.state || {};
   const [searchTerm, setSearchTerm] = useState("");
   const [eventType, setEventType] = useState("All");
   const eventTypes = ["All", "Concert", "Live", "Opera", "Comedy"];
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [timeFilter, setTimeFilter] = useState("All");
-
+  const images = [
+    "https://lh5.googleusercontent.com/proxy/WOJX-CFnY7iZ1pF22TMJLYuL6ZYqX8nhjrGlMPX8yU6rLDI96t-mRbgVsMCYuS5GkMRxyIONtQi7TBbrb8ukKctjN1oI6XfNABV8ZKt0l7c",
+    "https://img95.699pic.com/photo/50133/6436.jpg_wh300.jpg",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOd6xvWVOZX6wxp35Y19YuhbxRbyVk_JukPjfismu02A&s",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWqAJMmp6GGGW4SLr_5EjAT4gAe5sTtijMtYdsH16H-g&s",
+    "https://img95.699pic.com/photo/50074/8646.jpg_wh300.jpg",
+    // 添加更多的图片URL
+  ];
   useEffect(() => {
     const fetchEvents = async () => {
       // 假设这是后端提供的获取所有事件的URL
@@ -132,7 +140,7 @@ export default function MainPage() {
         isCustomer: isCustomer,
         user_id: user_id,
         user_email: user_email,
-        // isLoggedIn: true,
+        isLoggedIn: isLoggedIn,
       },
     });
   };
@@ -218,7 +226,23 @@ export default function MainPage() {
                 sx={{ height: 150, width: 200 }}
                 onClick={() => handleEventClick(event)} // 传递当前事件对象给handleEventClick
               >
-                <Card sx={{ width: "100%", height: "100%" }}>
+                <Card
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundImage: `url(${
+                      images[Math.floor(Math.random() * images.length)]
+                    })`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    color: "white",
+                    textShadow: "1px 1px 3px rgba(0,0,0,0.9)", // Text shadow for better readability
+                  }}
+                >
                   <CardContent>{event.event_name}</CardContent>
                   <CardContent>
                     {new Date(event.event_date).toLocaleDateString()}

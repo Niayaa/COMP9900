@@ -17,11 +17,12 @@ const LoginPage = () => {
     // Once the user is logged in, check the user's role to decide where to redirect
     if (user && user.role) {
       // 传递额外的用户信息到主页
-      navigate("/mainpage", {
+      navigate(user.role === "customer" ? "/Cus_Account" : "/Org_Account", {
         state: {
           user_id: user.id, // 假设用户信息中包含id
           user_email: user.email, // 用户邮箱
           isCustomer: user.role === "customer", // 是否为顾客
+          isLoggedIn: true,
         },
       });
     }

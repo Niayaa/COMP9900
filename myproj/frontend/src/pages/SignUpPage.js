@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useAuth } from "./AuthContext";
 const SignUpPage = () => {
-  const { login } = useAuth(); 
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [isOrganizer, setIsOrganizer] = useState(true);
   const [username, setUsername] = useState("");
@@ -165,7 +165,7 @@ const SignUpPage = () => {
       if (response.ok) {
         // 假设成功的HTTP状态码范围为200-299
         const data = await response.json(); // 解析JSON响应
-        localStorage.setItem("userToken", data.token); 
+        localStorage.setItem("userToken", data.token);
         // 调用 login 方法更新全局用户状态
         console.log("Before login call", {
           name: data.name,
@@ -180,6 +180,7 @@ const SignUpPage = () => {
             isCustomer: role === "customer",
             user_id: data.user_id,
             user_email: email,
+            isLoggedIn: true,
           },
         });
       } else {
