@@ -19,16 +19,14 @@ class Organizer(models.Model):
 
 class Customer(models.Model):
     class AgeArea(models.TextChoices):
-        YOUTH = '18-25', '18-25 Years'
-        YOUNG_ADULT = '26-35', '26-35 Years'
-        ADULT = '36-45', '36-45 Years'
-        MIDDLE_AGED = '46-55', '46-55 Years'
-        SENIOR = '56-65', '56-65 Years'
-        ELDERLY = '65+', '65+ Years'
+        CHILD = '0-18', '0-18 Years'
+        TEENAGE = '19-40', '19-40 Years'
+        MIDDLEAGE = '41-60', '41-60 Years'
+        ELDER = '61-100', '61-100 Years'
 
 
     cus_id = models.AutoField(primary_key = True)
-    cus_name =  models.TextField(max_length = 50, null = False)
+    cus_name = models.TextField(max_length = 50, null = False)
     cus_email = models.TextField(max_length = 255, null = False)
     gender = models.CharField(max_length = 20, choices=[('Male', 'Male'), ('Female', 'Female')], null = True)
     prefer_type = models.CharField(max_length = 20,
@@ -170,8 +168,8 @@ class Reply_org(models.Model):
         return str(self.reply_id)
 
 class LikeCheck(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='liked_comments')
-    comment = models.ForeignKey(Comment_cus, on_delete=models.CASCADE, related_name='likes')
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment_cus, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
