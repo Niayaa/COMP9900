@@ -2,10 +2,14 @@ import React from 'react';
 import { AppBar, Toolbar, Button, Box, MenuItem, Menu } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 
 function Navbar() {
   const { user, logout } = useAuth(); // 假设useAuth()返回的user对象包含一个role属性
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const navigate = useNavigate(); 
+  
   const open = Boolean(anchorEl);
 
   const handleMenu = (event) => {
@@ -30,6 +34,7 @@ function Navbar() {
           <MenuItem onClick={() => {
             handleClose();
             logout();
+            navigate('/MainPage'); // Navigate to MainPage after logout
           }}>Logout</MenuItem>
         </>
       );
@@ -40,12 +45,14 @@ function Navbar() {
 
           <MenuItem onClick={handleClose} component={Link} to="/Org_Event">Manage events</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/CreateNew">Create New Event</MenuItem>
+          <MenuItem onClick={handleClose} component={Link} to="/Org_Report">Report</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/Org_Account">Account Information</MenuItem>
           <MenuItem onClick={handleClose} component={Link} to="/password-reset">Reset Password</MenuItem>
           <MenuItem onClick={() => {
             handleClose();
             logout();
-          }}>Logout</MenuItem>    
+            navigate('/MainPage'); // Navigate to MainPage after logout
+          }}>Logout</MenuItem>  
         </>
       );
     }

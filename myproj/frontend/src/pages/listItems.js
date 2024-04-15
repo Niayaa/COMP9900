@@ -67,12 +67,6 @@ export const DrawerOrganzierLists = ({ onItemSelected }) => (
       </ListItemIcon>
       <ListItemText primary="Past Event" />
     </ListItemButton>
-    <ListItemButton onClick={() => onItemSelected('report')}>
-      <ListItemIcon>
-        <DashboardIcon />
-      </ListItemIcon>
-      <ListItemText primary="Reports" />
-    </ListItemButton>
   </React.Fragment>
 );
 

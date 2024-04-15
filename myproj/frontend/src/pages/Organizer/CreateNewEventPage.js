@@ -1,211 +1,138 @@
-import React, {useState}from "react";
-import { 
-  Paper, 
-  Button, 
-  Box, 
-  Typography,
-  IconButton,
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
   TextField,
-  Grid } from '@mui/material';
-import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
+  Typography,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  IconButton
+} from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../AuthContext";
 
-const styles = {
-  paperContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '140px', // Adjust the height as needed
-    width:'300px' ,
-    border: '1px dashed grey',
-    borderRadius: 4,
-    backgroundColor: '#fafafa',
-    marginTop: '16px', // For spacing above the container
-  },
-  icon: {
-    fontSize: '2.5rem', // Adjust the size as needed
-    color: 'grey'
-  }
-};
 
 const CreateNewEventPage = () => {
-  const [fileName, setFileName] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState({
-    Concert: false,
-    Live: false,
-    Comedy: false,
-    Opera: false,
+  const [eventDetails, setEventDetails] = useState({
+    event_name: '',
+    event_date: '',
+    event_description: '',
+    event_address: '',
+    event_image_url: '',
+    event_type: '',
+    event_last_selling_date: '',
+    event_tags: '',
+    tickets: [{ ticket_type: '', ticket_amount: '', ticket_price: '', ticket_remain: '' }]
   });
-  const [seatTypes, setSeatTypes] = useState([{ type: '', price: '' }]);
+  const navigate = useNavigate();
+  const {user} = useAuth();
+  const userId = user.id;  // Replace with actual user ID
 
-  const handleFileChange = (event) => {
-    // Assuming you want to store the file name in the state
-    const file = event.target.files[0];
-    setFileName(file ? file.name : '');
+  // Handler for general event details
+  const handleChange = (prop) => (event) => {
+    setEventDetails({ ...eventDetails, [prop]: event.target.value });
   };
-
-  const toggleCategory = (category) => {
-    setSelectedCategories(prevState => ({
-      [category]: !prevState[category]
-    }));
+  
+  // Handler for ticket information
+  const handleTicketChange = (index, prop) => (event) => {
+    const updatedTickets = [...eventDetails.tickets];
+    updatedTickets[index][prop] = event.target.value;
+    setEventDetails({ ...eventDetails, tickets: updatedTickets });
   };
-  const handleTypeChange = (index, event) => {
-    const newSeatTypes = [...seatTypes];
-    newSeatTypes[index].type = event.target.value;
-    setSeatTypes(newSeatTypes);
+  
+  // Add a new ticket type
+  const addTicketType = () => {
+    setEventDetails({
+      ...eventDetails,
+      tickets: [...eventDetails.tickets, { ticket_type: '', ticket_amount: '', ticket_price: '', ticket_remain: '' }]
+    });
   };
-
-  const handlePriceChange = (index, event) => {
-    const newSeatTypes = [...seatTypes];
-    newSeatTypes[index].price = event.target.value;
-    setSeatTypes(newSeatTypes);
+  
+  // Remove a ticket type
+  const removeTicketType = (index) => {
+    const updatedTickets = [...eventDetails.tickets];
+    updatedTickets.splice(index, 1);
+    setEventDetails({ ...eventDetails, tickets: updatedTickets });
   };
-
-  const addSeatType = () => {
-    setSeatTypes([...seatTypes, { type: '', price: '' }]);
-  };
-
-  const removeSeatType = index => {
-    const newSeatTypes = [...seatTypes];
-    newSeatTypes.splice(index, 1);
-    setSeatTypes(newSeatTypes);
-  };
-
-  // You can use this function to send the data to your backend or store it as needed
-  const submitCategories = () => {
-    const schema = {
-      categories: Object.keys(selectedCategories).filter(category => selectedCategories[category]),
-      // Include other information in the schema as needed
-    };
+  
+  // Handle form submission
+  const handleSubmit = async () => {
+    // Validation here...
     
-    console.log(schema);
-    // Send `schema` to your backend or store it
+    // Assuming the event_image_url should be the actual URL after image upload
+    const formData = new FormData();
+    formData.append('event_name', eventDetails.event_name);
+    formData.append('event_date', eventDetails.event_date);
+    formData.append('event_description', eventDetails.event_description);
+    formData.append('event_address', eventDetails.event_address);
+    formData.append('event_image_url', eventDetails.event_image_url);
+    formData.append('event_type', eventDetails.event_type);
+    formData.append('event_last_selling_date', eventDetails.event_last_selling_date);
+    formData.append('event_tags', eventDetails.event_tags);
+    formData.append('tickets', JSON.stringify(eventDetails.tickets));  // Assuming backend expects a JSON string
+    
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/event_create/?user_id=${user.id}`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        // Handle success
+        const data = await response.json();
+        console.log(data);
+        navigate('/events'); // Redirect to events page
+      } else {
+        // Handle errors
+        console.error('Failed to submit form:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
   };
+  
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        mt: 4,
-        mb: 2
-      }}
-    >
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mt: 4, mb: 2 }}>
       <Typography variant="h6">New Event Information</Typography>
-      {/* Add your form fields */}
-      <TextField
-        label="Event Name"
-        variant="outlined"
-        sx={{ mb: 2, width: "300px" }}
-      />
-      <TextField
-        label="Event date"
-        variant="outlined"
-        type="date"
-        sx={{ mb: 2, width: "300px" }}
-      />
-      <TextField
-        label="Event Description"
-        variant="outlined"
-        multiline
-        rows={4} // Adjust the number of rows as needed
-        sx={{ mb: 2, width: "300px" }}
-      />
-      <TextField
-        label="Event Address"
-        variant="outlined"
-        sx={{ mb: 2, width: "300px" }}
-      />
-      <TextField
-        label="Event Official Site Link"
-        variant="outlined"
-        sx={{ mb: 2, width: "300px" }}
-      />
-      <Typography variant="h8">Relevant Document</Typography>
-      <Paper style={styles.paperContainer} elevation={0} variant="outlined" > 
-        <CloudUploadIcon style={styles.icon} />
-      </Paper>
-      <Button
-        variant="contained"
-        component="label"
-        sx={{ mb: 2 }}
-      >
-        Upload File
-        <input
-          type="file"
-          hidden
-          onChange={handleFileChange}
-        />
-      </Button>
-      {fileName && <TextField fullWidth disabled value={fileName} />}
-      {Object.keys(selectedCategories).map((category) => (
-        <Button
-          key={category}
-          variant={selectedCategories[category] ? "contained" : "outlined"}
-          onClick={() => toggleCategory(category)}
-          sx={{ margin: '8px' }} // Adds spacing between buttons
-        >
-          {category}
-        </Button>
-      ))}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={submitCategories}
-        sx={{ marginTop: '16px' }} // Adds space above the submit button
-      >
-        Submit Selection
-      </Button>
-      <TextField
-        label="Ticket Amount"
-        variant="outlined"
-        type="number"
-        sx={{ mb: 2, width: "300px" }}
-      />
-      {seatTypes.map((seat, index) => (
-      <Box key={index} display="flex" alignItems="center" gap={2} marginBottom={2}>
-        <TextField
-          label="Seat area type"
-          variant="outlined"
-          value={seat.type}
-          onChange={event => handleTypeChange(index, event)}
-          fullWidth
-        />
-        <TextField
-          label="Seat price"
-          variant="outlined"
-          value={seat.price}
-          onChange={event => handlePriceChange(index, event)}
-          fullWidth
-        />
-        {seatTypes.length > 1 && (
-          <IconButton onClick={() => removeSeatType(index)}>
+      <TextField label="Event Name" variant="outlined" onChange={handleChange('event_name')} sx={{ mb: 2, width: "300px" }} />
+      <TextField label="Event Date" variant="outlined" type="date" value={eventDetails.eventDate} onChange={handleChange('eventDate')} sx={{ mb: 2, width: "300px" }} />
+      <TextField label="Event Description" variant="outlined" multiline rows={4} value={eventDetails.eventDescription} onChange={handleChange('eventDescription')} sx={{ mb: 2, width: "300px" }} />
+      <TextField label="Event Address" variant="outlined" value={eventDetails.eventAddress} onChange={handleChange('eventAddress')} sx={{ mb: 2, width: "300px" }} />
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Event Type</FormLabel>
+        <RadioGroup row name="eventType" value={eventDetails.eventType} onChange={handleChange('eventType')}>
+          <FormControlLabel value="Concert" control={<Radio />} label="Concert" />
+          <FormControlLabel value="Live" control={<Radio />} label="Live" />
+          <FormControlLabel value="Comedy" control={<Radio />} label="Comedy" />
+          <FormControlLabel value="Opera" control={<Radio />} label="Opera" />
+        </RadioGroup>
+      </FormControl>
+      <TextField label="Ticket Selling Last Date" variant="outlined" type="datetime-local" value={eventDetails.eventLastSellingDate} onChange={handleChange('eventLastSellingDate')} sx={{ mb: 2, width: "300px" }} />
+      {eventDetails.tickets.map((ticket, index) => (
+        <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <TextField label="Seat Type" value={ticket.ticket_type} onChange={handleTicketChange(index, 'ticket_type')} />
+          <TextField label="Amount" type="number" value={ticket.ticket_amount} onChange={handleTicketChange(index, 'ticket_amount')} />
+          <TextField label="Price" type="number" value={ticket.ticket_price} onChange={handleTicketChange(index, 'ticket_price')} />
+          <TextField label="Remaining" type="number" value={ticket.ticket_remain} onChange={handleTicketChange(index, 'ticket_remain')} />
+          <IconButton onClick={() => removeTicketType(index)}>
             <RemoveCircleOutlineIcon />
           </IconButton>
-        )}
         </Box>
       ))}
-      <IconButton onClick={addSeatType}>
+      <IconButton onClick={addTicketType}>
         <AddCircleOutlineIcon />
       </IconButton>
-      {/* Add more fields as necessary */}
-      <TextField
-        label="Ticket Selling Last Date"
-        variant="outlined"
-        type="datetime-local"
-        sx={{ mb: 2, width: "300px" }}
-      />
-      <Link to="/Org_Acc">
-      <Button variant="contained" sx={{ mb: 2, width: "300px" }}>
-       Add New Event
+      <Button variant="contained" color="primary" onClick={handleSubmit}>
+        Submit Event
       </Button>
-      </Link>
     </Box>
   );
 };
 
 export default CreateNewEventPage;
-
-

@@ -237,6 +237,7 @@ def create_test_data(request):
     events = Event_info.objects.all()
     # print(events)
     customers = Customer.objects.all()
+    customers = Customer.objects.filter(cus_id__in=[1,2]);
     # # print(customers)
     # # 两个customer都订购了每场演出的各类票各张
     for event in events:

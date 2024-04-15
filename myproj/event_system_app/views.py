@@ -915,6 +915,25 @@ class AccountInfoPage:
 # 修改演出的功能
 # 删除演出的功能
 # 查询历史创建演出的功能
+
+def seat_pool_cal(ticket_type, amount):
+    seat_pool_list = []
+    for single_seat in range(1, 101):
+        row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
+        seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
+        seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
+        seat_pool_list.append(seat_assignment)
+    seat_pool_string = ','.join(seat_pool_list)
+    return seat_pool_string
+
+
+def seat_booking(ticket, amount):
+    all_string = ticket.ticket_seat_pool.split(',')
+    booking_seat = all_string[:amount]
+    remain_seat = all_string[amount:]
+    ticket.ticket_seat_pool = ','.join(remain_seat)
+    ticket.save()
+    return ','.join(booking_seat)
 class OrganizerFunctionPage:
     @api_view(['POST'])
     def event_create(request): # 测试完成
@@ -954,13 +973,7 @@ class OrganizerFunctionPage:
             )
             event.save()  # 保存事件对象，这样它就有了一个ID
             for ticket in event_data['tickets']:
-                seat_pool = []
-                for seat_number in range(1, ticket['ticket_amount'] + 1):
-                    row_number = (seat_number - 1) // 20 + 1  # 确定排数
-                    seat_in_row = (seat_number - 1) % 20 + 1  # 确定在当前排的座位号
-                    seat_id = f"{ticket['ticket_type']}-{row_number}-{seat_in_row}"
-                    seat_pool.append(seat_id)
-                seat_pool_str = ",".join(seat_pool)
+                seat_pool_string = seat_pool_cal(ticket['ticket_type'], ticket['ticket_amount'])
 
                 ticket = Ticket_info(
                     ticket_type = ticket['ticket_type'],
@@ -1034,7 +1047,7 @@ class OrganizerFunctionPage:
             'code': '4',
             'message': 'This function only accepts POST data'
         }, status = 405)
-    
+    @csrf_exempt 
     @api_view(['DELETE'])
     def delete_event(request): 
         '''
@@ -1130,7 +1143,7 @@ class OrganizerFunctionPage:
 
     @api_view(['GET'])
     def data_showing_check(request):
-        if request.method == 'GcET':
+        if request.method == 'GET':
             event_id = request.query_params.get('event_id', None)
             # user_id = request.query_params.get('user_id', None)
 

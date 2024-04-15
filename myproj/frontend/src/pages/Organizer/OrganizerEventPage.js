@@ -27,7 +27,7 @@ import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {DrawerOrganzierLists} from "../listItems";
-import { UpcomingEvents,PastEvents} from '../Cus_EventList/EventLists';
+import { UpcomingEvents,PastEvents} from '../Org_Event/EventLists';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -36,136 +36,107 @@ import HistoryIcon from '@mui/icons-material/History';
 import OrganizerAccountPage from "./OrganizerAccountPage";
 import { useAuth } from "../AuthContext";
 
-const allEvents = [
-    { id: 1, name: 'Event 1', address: '123 Main St', date: '2024-07-21' },
-    { id: 2, name: 'Event 2', address: '456 Broadway', date: '2023-12-15' },
-    { id: 3, name: 'Event 3', address: '789 Elm St', date: '2024-03-10' },
-
-  ];
-
 const OrganizerEventPage = () => {
-    const [drawerOpen, setDrawerOpen] = useState(true);
-    const concertInfoArray=[];
-    const navigate = useNavigate();
-  
-    concertInfoArray[0] = {ConcertTitle: "TAYLOR SWIFT | THE ERAS TOUR", Date: "THUR, MAR 7, 2024"}
-      
-    async function handleEventPage() { 
-          //对于每个event标签卡 button或者card 点击跳转 会传concert信息给eventpage
-          //（应该是每个event标签卡的json数组里也会存着id和Info，然后读取对应的信息传递）
-          
-          console.log(concertInfoArray)
-          navigate('/eventpage', {state:  concertInfoArray })
-          
-      }
-    const handleDelete = () => {
-          console.info('You clicked the delete icon.');
-        };
-  
-    const [selectedCategory, setSelectedCategory] = React.useState('booked');
-  
-    // Function to handle category change
-      const handleCategoryChange = (category) => {
-      setSelectedCategory(category);
-      }; 
-      
-      const drawerWidth = 240;
-      
-      //for drawer
-      const AppBar = styled(MuiAppBar, {
-        shouldForwardProp: (prop) => prop !== 'open',
-      })(({ theme, open }) => ({
-        zIndex: theme.zIndex.drawer + 1,
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const navigate = useNavigate();
+
+    
+    const drawerWidth = 240;
+    
+    //for drawer
+    const AppBar = styled(MuiAppBar, {
+      shouldForwardProp: (prop) => prop !== 'open',
+    })(({ theme, open }) => ({
+      zIndex: theme.zIndex.drawer + 1,
+      transition: theme.transitions.create(['width', 'margin'], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+      ...(open && {
+        marginLeft: drawerWidth,
+        width: `calc(100% - ${drawerWidth}px)`,
         transition: theme.transitions.create(['width', 'margin'], {
           easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
+          duration: theme.transitions.duration.enteringScreen,
         }),
-        ...(open && {
-          marginLeft: drawerWidth,
-          width: `calc(100% - ${drawerWidth}px)`,
-          transition: theme.transitions.create(['width', 'margin'], {
+      }),
+    }));
+
+    const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+      ({ theme, open }) => ({
+        '& .MuiDrawer-paper': {
+          position: 'relative',
+          whiteSpace: 'nowrap',
+          width: drawerWidth,
+          transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),
-        }),
-      }));
-  
-      const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-        ({ theme, open }) => ({
-          '& .MuiDrawer-paper': {
-            position: 'relative',
-            whiteSpace: 'nowrap',
-            width: drawerWidth,
+          boxSizing: 'border-box',
+          ...(!open && {
+            overflowX: 'hidden',
             transition: theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
+              duration: theme.transitions.duration.leavingScreen,
             }),
-            boxSizing: 'border-box',
-            ...(!open && {
-              overflowX: 'hidden',
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-              width: theme.spacing(7),
-              [theme.breakpoints.up('sm')]: {
-                width: theme.spacing(9),
-              },
-            }),
-          },
-        }),
-      );
-      
-      const handleDrawerToggle = () => {
-        setDrawerOpen(!drawerOpen);
-      };
+            width: theme.spacing(7),
+            [theme.breakpoints.up('sm')]: {
+              width: theme.spacing(9),
+            },
+          }),
+        },
+      }),
+    );
     
-      const handleEventSelection = (eventType) => {
-        setSelectedEventType(eventType);
-      };
+    const handleDrawerToggle = () => {
+      setDrawerOpen(!drawerOpen);
+    };
+  
+    const handleEventSelection = (eventType) => {
+      setSelectedEventType(eventType);
+    };
 
-    const [selectedEventType, setSelectedEventType] = useState('upcoming');
-    const [upcomingEvents, setUpcomingEvents] = useState([]);
-    const [pastEvents, setPastEvents] = useState([]);
-    const {user} = useAuth();
-    useEffect(() => {
-      if (user && user.id) {
-        const fetchUserData = async () => {
-          const url = `http://127.0.0.1:8000/created_events/?user_id=1`;
-          
-          try {
-            const response = await fetch(url, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const responseData = await response.json();
-    
-            if (responseData.code === '1') {
-              const events = responseData.token; // Access the actual events array
-              const today = new Date();
-              const upcoming = events.filter(event => new Date(event.event_date) >= today);
-              const past = events.filter(event => new Date(event.event_date) < today);
-              console.log(events.token);
-              setUpcomingEvents(upcoming);
-              setPastEvents(past);
-              
-            } else {
-              console.error('Failed to fetch events:', responseData.message);
-            }
-          } catch (error) {
-            console.error("Failed to fetch events:", error.message);
-          }
-        };
+  const [selectedEventType, setSelectedEventType] = useState('upcoming');
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+  const {user} = useAuth();
+  useEffect(() => {
+    if (user && user.id) {
+      const fetchUserData = async () => {
+        const url = `http://127.0.0.1:8000/created_events/?user_id=${user.id}`;
         
-        fetchUserData();
-      }
-    }, [user]);
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseData = await response.json();
+  
+          if (responseData.code === '1') {
+            const events = responseData.token; // Access the actual events array
+            console.log('Order',responseData);
+            const today = new Date();
+            const upcoming = events.filter(event => new Date(event.event_date) >= today);
+            const past = events.filter(event => new Date(event.event_date) < today);
+            setUpcomingEvents(upcoming);
+            setPastEvents(past);
+          } else {
+            console.error('Failed to fetch events:', responseData.message);
+          }
+        } catch (error) {
+          console.error("Failed to fetch events:", error.message);
+        }
+      };
+      
+      fetchUserData();
+    }
+  }, [user]);
     
       /*
       Organizer Created Event:
@@ -227,8 +198,8 @@ const OrganizerEventPage = () => {
         Events
       </Typography>
       </Box>
-        {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} />}
-        {selectedEventType === 'past' && <PastEvents events={pastEvents} />}
+        {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} userId={user.id}/>}
+        {selectedEventType === 'past' && <PastEvents events={pastEvents} userId={user.id}/>}
       </main>
     </Box>
     );
