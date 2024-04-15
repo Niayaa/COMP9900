@@ -49,6 +49,7 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
         })
 
     }
+
     async function PaymentProcess(){
       // console.log("payment process", parseInt(seatAmount))
       await fetch(`http://127.0.0.1:8000/payment/process/?amount=${parseInt(seatAmount)}&price=${price}`,{
@@ -166,8 +167,8 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
         )}
         {canPay && (
           <>
-        <PayPalScriptProvider options={{ "client-id": "YOUR_CLIENT_ID" }}>
-            <PayPal />
+        <PayPalScriptProvider options={{ "client-id": "ASQoKgTiwWzGfzaXQEkser7QAVFYnpXvkbtX-QDyuIi2FoQ_haMGX8LWTrHrN563jbyv6pTUoRjk9SRl" }}>
+            <PayPal userEmail={userEmail} eventID={eventID} seatArea={seatArea} seatAmount={seatAmount}/>
         </PayPalScriptProvider>
           {/* <Button type="submit" variant="contained" color="primary" onClick={PaymentProcess}>
             Pay it
