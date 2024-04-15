@@ -674,6 +674,13 @@ class LoginPage:
                         )
                         new_organizer.save()
                         # response的内容都要修改一下，这个函数内的所有response
+
+                    cache.set(new_organizer.org_id, {
+                        'role': 'organizer',
+                        'id': new_organizer.org_id,
+                        'email': new_organizer.org_email
+                    }, timeout=60000)  # 缓存一个小时
+
                     return Response({
                         'code': '1',
                         'message': 'JSON data received and processed successfully',
@@ -700,6 +707,12 @@ class LoginPage:
                         )
                         new_customer.save()
 
+                    cache.set(new_customer.cus_id, {
+                        'role': 'customer',
+                        'id': new_customer.cus_id,
+                        'email': new_customer.cus_email
+                    }, timeout=60000)  # 缓存一个小时
+
                     # 第一种方式
                     return Response({
                         'code': '1', 
@@ -707,6 +720,13 @@ class LoginPage:
                         'token':new_customer.cus_id}, 
                     status = 200)
             except   json.JSONDecodeError:
+
+                cache.set(0, {
+                    'role': None,
+                    'id': None,
+                    'email': None
+                }, timeout=60000)  # 缓存一个小时
+
                 return Response({
                     'code': '3',
                     'message': 'Invalid JSON data'}, 
