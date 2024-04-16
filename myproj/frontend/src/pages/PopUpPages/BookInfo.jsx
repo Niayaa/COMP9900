@@ -1,4 +1,4 @@
-import { Card, Button, CardContent, TextField } from '@mui/material';
+import { Box, Card, Button, CardContent, TextField, Typography } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -8,7 +8,7 @@ import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import Grid from '@mui/material/Grid';
 import React, { useEffect, useState } from "react";
 import { useAuth } from '../AuthContext.js';
-
+import backgroundimg from '../image/BlackBeigeModernMusicFestivalEventTicket2.jpg';
 export default function BookInfoPopUp(props) {
     function getCurrentDateISOString() {
         const now = new Date();
@@ -172,31 +172,101 @@ export default function BookInfoPopUp(props) {
         }
     }, [eventInfo]); // Dependency on eventInfo
 
-
+    const ticketStyle = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        background: 'linear-gradient(130deg, #ffffff, #f4f4f4)',
+        color: '#333',
+        padding: '16px',
+        margin: '8px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        fontWeight: 'bold',
+        letterSpacing: '0.015em',
+      };
+    
+      const sectionStyle = {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        padding: '8px',
+        gap: '4px',
+      };
+      const aspectRatio = 647 / 2000;
     return (
       <>
           <Dialog
               open={props.open}
               onClose={props.handleClose}
               maxWidth="md"
+            //   sx={{backgroundColor: 'rgba(255, 255, 255, 0.5)'}}
+                sx={{
+                    '& .MuiDialog-container': {
+                        '& .MuiPaper-root': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)', // Slightly transparent background
+                        }
+                    },
+                    height: { xs: '300px', sm: 'auto' }, // Set height to 300px on xs screens, and 'auto' on sm screens and above
+                    mb: { xs: '200px', sm: 'auto' }, 
+                }}
           >
-              <DialogTitle>Book Information</DialogTitle>
-              <DialogContent>
-                  <Grid2 container >
-
-                      <Grid2 item >
-                          <Card  sx={{ m:1, marginTop: 2, padding: 2}}>{eventInfo.title}</Card>
-                          <Card  sx={{ m:1, padding: 6}}>{eventInfo.description}</Card>
+              <DialogTitle sx={{ fontFamily: 'Arial, sans-serif', fontWeight: 'bold' }}>Book Information</DialogTitle>
+              <DialogContent >
+                  <Grid2 container spacing={2} >
+                      <Grid2 item  xs={12} md={6}>
+                      <Card sx={{ m: 1, mt: 2, padding: 2, boxShadow: 3 }}>
+                                <Typography variant="h6" component="div" sx={{ textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
+                                    {eventInfo.title}
+                                </Typography>
+                            </Card>
+                            <Card sx={{ m: 1, padding: 3, boxShadow: 3 }}>
+                                <Typography sx={{ fontFamily: 'Arial, sans-serif' }}>
+                                    {eventInfo.description}
+                                </Typography>
+                            </Card>
                       </Grid2>
                       <Grid2 item sx={{m : 1, mt: 2}}>
-                          <Card  sx={{ m:1, padding: 1}}>Date: {eventInfo.date}</Card>
-                          <Card  sx={{ m:1, padding: 1}}>Event Address: {eventInfo.location}</Card>
+                      <Card sx={{ m: 1, padding: 1, boxShadow: 3 }}>
+                                <Typography sx={{ fontFamily: 'Arial, sans-serif' }}>
+                                    Date: {eventInfo.date}
+                                </Typography>
+                            </Card>
+                            <Card sx={{ m: 1, padding: 1, boxShadow: 3 }}>
+                                <Typography sx={{ fontFamily: 'Arial, sans-serif' }}>
+                                    Event Address: {eventInfo.location}
+                                </Typography>
+                            </Card>
                       </Grid2>
                   </Grid2>
-              
               { user && (InfoArray !== null ) && (InfoArray.length > 0)? (InfoArray.map((info, index) => (
-                    <Grid key={index}sx={{outline: '1px solid', marginTop: 2}} container justifyContent="space-between" alignItems="center">
+                        <Card 
+                        // sx={{ 
+                        //     width: '100%', m: 1, padding: 1, boxShadow: 3 }}
+                        // sx={{
+                        //     maxWidth: '100%', // To ensure it doesn't exceed the width of its container
+                        //     height: `calc(100vw * ${aspectRatio})`, // Set the height to match the image
+                        //     // backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                        //     backgroundColor: 'transparent', // Set the background to transparent
+                        //     backgroundImage: `url(${backgroundimg})`,
+                        //     backgroundRepeat: 'no-repeat',
+                        //     backgroundSize: 'contain',
+                        //     // backgroundPosition: 'center',
+                        //     display: 'flex',
+                        //     flexDirection: 'column',
+                        //     justifyContent: 'space-between',
+                        //     // p: 2,
+                        //     pl:1,
+                        //     pr:1,
+                        //     boxShadow: 3,
+                        //     position: 'relative',
+                        //     overflow: 'hidden',
+                        // }}
+                            >
+                  <Grid key={index}sx={{marginTop: 2}} container justifyContent="space-between" alignItems="center">
                         <Grid item >
+                        <Card sx={{height: '100%', width: '100%', m: 1, padding: 1, boxShadow: 3 }}>
                             <p>Ticket type: {info.ticket_type}</p>
                             <p>Seat: {info.reserve_seat}</p>
                             <p>Number of Tickets: {info.amount}</p>
@@ -204,15 +274,21 @@ export default function BookInfoPopUp(props) {
                             <p>Total price: {info.total_price}</p>
                             <p>Booked time: {info.reserving_time}</p>
                             {/* {info.amount > 1 && <p>More than one ticket booked!</p>} */}
+                        </Card>
                         </Grid>
                         <Grid item>
+                        <Card sx={{ height: '100%', width: '100%', m: 1, padding: 1, boxShadow: 3 }}>
                             {/* <Button onClick={() => CancelTicket(1, info.reservation_id)}>Cancel</Button> */}
                             {
                                 todaydate < eventInfo.date || (dayDifferece > 7) ? <Button onClick={() => {handleOpenCancelDialog(info)}}>Cancel</Button> : <Button disabled>Cancel</Button>
-                            // <Button onClick={() => {handleOpenCancelDialog(info)}}>Cancel</Button>
+                                // <Button onClick={() => {handleOpenCancelDialog(info)}}>Cancel</Button>
                             }
+                            
+                            </Card>
                         </Grid>
                     </Grid>
+                        </Card>
+
                 ))):(<></>)}
               </DialogContent>
               <DialogActions>

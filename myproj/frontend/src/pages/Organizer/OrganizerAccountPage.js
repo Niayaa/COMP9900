@@ -80,7 +80,7 @@ const OrganizerAccountPage = () => {
         const url = 'http://127.0.0.1:8000/edit/org/'; // 示例API端点，根据你的后端API调整
         try {
           const response = await fetch(url, {
-            method: 'POST', // 或者'POST', 根据后端API的要求
+            method: 'PUT', // 或者'POST', 根据后端API的要求
             headers: {
               'Content-Type': 'application/json',
               // 如果你的API需要身份验证，可能还需要添加Authorization头

@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponse
 
 def seat_pool_cal(ticket_type, amount):
     seat_pool_list = []
-    for single_seat in range(1, 101):
+    for single_seat in range(0, amount):
         row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
         seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
         seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
@@ -21,7 +21,9 @@ def seat_pool_cal(ticket_type, amount):
 def seat_booking(ticket, amount):
     all_string = ticket.ticket_seat_pool.split(',')
     booking_seat = all_string[:amount]
+    # print(booking_seat)
     remain_seat = all_string[amount:]
+    # print(remain_seat)
     ticket.ticket_seat_pool = ','.join(remain_seat)
     ticket.save()
 
@@ -71,7 +73,7 @@ def create_test_data(request):
             bill_address="cc",
             cus_phone="111",
             account_balance=0,
-            prefer_tags=set(random.sample(all_tags, 6))
+            prefer_tags=random.sample(all_tags, 6)
         ).save()
         # print("come here 4")
         Customer.objects.create(  # 第一个cus账户，设置随机tag为6个，不设置喜欢演出类型
@@ -83,7 +85,7 @@ def create_test_data(request):
             bill_address="cc",
             cus_phone="111",
             account_balance=0,
-            prefer_tags=set(random.sample(all_tags, 6))
+            prefer_tags=random.sample(all_tags, 6)
         ).save()
         # print("come here 5")
         Customer.objects.create(  # 第3个cus账户，不设置tag，不设置喜欢演出类型
@@ -95,7 +97,7 @@ def create_test_data(request):
             bill_address="cc",
             cus_phone="111",
             account_balance=0,
-            prefer_tags=set(random.sample(all_tags, 6))
+            prefer_tags=random.sample(all_tags, 6)
         ).save()
 
     # 创建事件
@@ -221,23 +223,23 @@ def create_test_data(request):
         no_tag_event.save()
 
         for ticket_type in ["A", "B", "C"]:
-            seat_pool_string = seat_pool_cal(ticket_type, 100)
+            seat_pool_string = seat_pool_cal(ticket_type, 50)
 
             ticket = Ticket_info(
                 event=no_tag_event,
                 ticket_type=ticket_type,
                 ticket_name="Reserve for " + str(ticket_type),
                 ticket_price=random.randint(50, 200),
-                ticket_amount=100,
-                ticket_remain=100,
+                ticket_amount=50,
+                ticket_remain=50,
                 ticket_seat_pool=seat_pool_string
             )
             ticket.save()
 
     events = Event_info.objects.all()
     # print(events)
-    customers = Customer.objects.all()
-    customers = Customer.objects.filter(cus_id__in=[1,2]);
+    # customers = Customer.objects.all()
+    customers = Customer.objects.filter(cus_id__in=[1, 2])
     # # print(customers)
     # # 两个customer都订购了每场演出的各类票各张
     for event in events:
@@ -247,12 +249,13 @@ def create_test_data(request):
         # print(a_type_ticket)
         for customer in customers:
             # for ticket in tickets:
-            amount = random.randint(1, 2)
+            amount = 2
             # if amount == 0:
             #     continue
             # for _ in range(amount):
             #     past_reserving = Reservation.objects.filter(customer=customer, event=event, ticket=ticket).first()
-            booking_seat_sting = seat_booking(ticket, amount)
+            booking_seat_string = seat_booking(ticket, amount)
+            print(booking_seat_string)
                 # if past_reserving:
                 #     past_reserving.amount += 1
                 #     past_reserving.reserve_seat += ',' + booking_seat_sting
@@ -262,9 +265,9 @@ def create_test_data(request):
                 customer=customer,
                 event=event,
                 ticket=ticket,
-                amount=amount,
+                amount=2,
                 reservation_time=event.event_date - timezone.timedelta(days=8),
-                reserve_seat=booking_seat_sting.split(',')[0]
+                reserve_seat=booking_seat_string
             )
             reserve.save()
             if ticket.ticket_remain - reserve.amount > 0:

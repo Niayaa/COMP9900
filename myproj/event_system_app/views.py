@@ -94,6 +94,8 @@ def jaccard_sim(customer_tags, event_tags):
     # sorted_dict = dict(sorted(jaccard_scores.items(), key=lambda item: item[1], reverse=True))
     return jaccard_scores
 
+
+
 '''
 200: 数据返回成功
 400: 数据错误或返回的数据格式错误
@@ -330,26 +332,33 @@ class CusAccountFunction:
             user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
             # all_events = Event_info.objects.all()
+            print("come here 1")
 
             event_list = []
 
             if customer is None: #找不到人的话
+                print("come here 2")
                 return Response({
                     'code':'2', 
                     'message':'We can not find the customer'
                 },  status = 400)
-            
+            print("come here 3")
             now = timezone.now()
 
             reserved_event_ids = Reservation.objects.filter(customer=customer).values_list('event__event_id', flat=True)
-
+            print("come here 4")
             available_events = Event_info.objects.filter(event_date__gt=now).exclude(event_id__in=reserved_event_ids)
-            
+            if available_events.count() == 0:
+                return Response({'code':'1'})
+            print("come here 5")
             if customer.prefer_tags is None: #如果这个人没有写tag
+                print("come here 6")
                 if customer.prefer_type: #如果这个人写了喜欢什么类型的演出
+                    print("come here 7")
                     special_type_events = available_events.filter(event_type=customer.prefer_type).all()
                     not_special_type_events = available_events.exclude(event_type=customer.prefer_type).all()
 
+                    print("come here 8")
                     for single in special_type_events: #先招呼上
                         event_list.append(
                             {
@@ -361,6 +370,7 @@ class CusAccountFunction:
                                 'event_description':single.event_description
                             }
                         )
+                    print("come here 9")
                     for single in not_special_type_events:
                         event_list.append(
                             {
@@ -372,6 +382,7 @@ class CusAccountFunction:
                                 'event_description':single.event_description
                             }
                         )
+                    print("come here 10")
                 else: # 如果这个人也没有写自己喜欢什么类型的演出，那直接把数据库的演出直接招呼上去
                     for single in available_events:
                         event_list.append(
@@ -383,27 +394,35 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
-                        )    
+                        )
+                    print("come here 11")
             else: # 如果这个人写了tag，那就能去做推荐
                 event_tags_dict = {}
                 empty_list = []
+                print("come here 12")
 
+
+                print(available_events)
                 for event in available_events:
+                    print(event.event_tags)
                     if event.event_tags is None:
                         empty_list.append(event.event_id)
                     else:
                         event_tags_dict[event.event_id] = event.event_tags
-
+                print("come here 13")
+                print(event_tags_dict)
                 if event_tags_dict: # 只有里面有东西，我们才开始用jaccard算法
+                    print("come here 14")
                     result = jaccard_sim(customer.prefer_tags, event_tags_dict)
 
                 for event in empty_list: #把tag是none的演出的得分设置为0，加入其中
+                    print("come here 15")
                     result[event] = 0
-                
+                print("come here 16")
                 sorted_dict = dict(sorted(result.items(), key=lambda item: item[1], reverse=True))
-
+                print("come here 17")
                 keys_in_order = list(sorted_dict.keys())
-
+                print("come here 18")
                 for single_keys in keys_in_order[:10]:
                     event_list.append(Event_info.objects.filter(event_id = single_keys).
                                     values(
@@ -415,12 +434,13 @@ class CusAccountFunction:
                                         'event_type',
                                         'event_description'
                                            ).first())
+                print("come here 19")
             return Response({
                 'code':'1', 
                 'message':'successfully jaccard',
                 'token':event_list
                 }, status = 200)
-        
+        print("come here 20")
         return Response({
             'code':'4', 
             'message':'The function is not right', 
@@ -910,12 +930,6 @@ class AccountInfoPage:
             'message': 'This function only accepts POST data'
         }, status = 405)
 
-
-# 创建演出的功能
-# 修改演出的功能
-# 删除演出的功能
-# 查询历史创建演出的功能
-
 def seat_pool_cal(ticket_type, amount):
     seat_pool_list = []
     for single_seat in range(1, 101):
@@ -934,6 +948,12 @@ def seat_booking(ticket, amount):
     ticket.ticket_seat_pool = ','.join(remain_seat)
     ticket.save()
     return ','.join(booking_seat)
+
+
+# 创建演出的功能
+# 修改演出的功能
+# 删除演出的功能
+# 查询历史创建演出的功能
 class OrganizerFunctionPage:
     @api_view(['POST'])
     def event_create(request): # 测试完成
@@ -973,6 +993,7 @@ class OrganizerFunctionPage:
             )
             event.save()  # 保存事件对象，这样它就有了一个ID
             for ticket in event_data['tickets']:
+
                 seat_pool_string = seat_pool_cal(ticket['ticket_type'], ticket['ticket_amount'])
 
                 ticket = Ticket_info(
@@ -981,7 +1002,7 @@ class OrganizerFunctionPage:
                     ticket_amount = ticket['ticket_amount'],
                     ticket_price = ticket['ticket_price'],
                     ticket_remain = ticket['ticket_amount'],
-                    ticket_seat_pool = seat_pool_str,
+                    ticket_seat_pool = seat_pool_string,
                     event = event  # 这里直接将前面创建的event对象作为外键
                 )
                 ticket.save()  # 保存票务对象
@@ -1057,7 +1078,7 @@ class OrganizerFunctionPage:
         成功显示：删除事件成功。同时删除预定的记录，退款，和群发邮件。
         '''
         if request.method == "DELETE":
-            event_id = request.query_params.get('event_id', None)  # Accessing the ID from request body
+            event_id = request.data.get('event_id', None)  # Accessing the ID from request body
             if event_id is not None:
                 try:
                     # 先收集预订了该事件的所有用户的邮箱地址
@@ -1412,48 +1433,50 @@ class EventDetailPage:
             comment_id = request.query_params.get('comment_id', None)
 
             organizer = Organizer.objects.filter(org_id = user_id).first()
-            customer = Customer.objects.filter(cus_id = user_id).first()
 
-            if customer is None and organizer is not None:# 当前用户是组织方才能继续
-                comment = Comment_cus.objects.filter(comment_id = comment_id).first()
+            if organizer is None:# 当前用户是组织方才能继续
+                return Response({'code':'3','message':'Can not find this organizer'}, status = 400)
 
-                if comment is None:
-                    return Response({
-                        'code':'2',
-                        'message':'There is no comment data'
-                    }, status = 404) # 找不到这个comment
-                
-                real_organizer = comment.event.organization
-                if organizer != real_organizer:
-                    return Response({
-                        'code':'2',
-                        'message':'Sorry, you are not the organizer of this event'
-                    }, status = 404) # 当前组织方不是这个活动组织方
-                past_reply = Reply_org.objects.filter(comment = comment).first()
+            comment = Comment_cus.objects.filter(comment_id = comment_id).first()
 
-                if past_reply is not None: # 如果曾经这个org在本评论下发表过回复，那就不能再回复了
-                    return Response({
-                        "code":'2',
-                        "message":"You have already give the reply"
-                    }, status = 400)
-                
-                reply = Reply_org(
-                    reply_org = data['reply_org'],
-                    reply_time = timezone.now().replace(second=0, microsecond=0),
-                    event = comment.event,
-                    organization = organizer,
-                    comment = comment
-                )
-                reply.save()      
+            if comment is None:
+                return Response({
+                    'code':'2',
+                    'message':'There is no comment data'
+                }, status = 404) # 找不到这个comment
+
+            real_organizer = comment.event.organization
+            if organizer != real_organizer:
+                return Response({
+                    'code':'2',
+                    'message':'Sorry, you are not the organizer of this event'
+                }, status = 404) # 当前组织方不是这个活动组织方
+            past_reply = Reply_org.objects.filter(comment = comment).first()
+
+            if past_reply is not None: # 如果曾经这个org在本评论下发表过回复，那就不能再回复了
+                return Response({
+                    "code":'2',
+                    "message":"You have already give the reply"
+                }, status = 400)
+
+            reply = Reply_org(
+                reply_org = data['reply_org'],
+                reply_time = timezone.now().replace(second=0, microsecond=0),
+                event = comment.event,
+                organization = organizer,
+                comment = comment
+            )
+            reply.save()
+            print(reply)
 
             return Response({
-                'code':'2',
-                'message':'Not a valid organizer for this event'
-            }, status = 400)
+                'code':'1',
+                'message':'Success'
+            }, status = 200)
 
         return Response({
             'code': '4',
-            'message': 'This function only accepts GET data'
+            'message': 'This function only accepts POST data'
         }, status = 405)
 
 
@@ -1619,16 +1642,20 @@ class PayAndCancel:
             if reservation.amount < amount:
                 return Response({
                     "code":"3", 
-                    "message":"You order for too"
+                    "message":"You order to cancel too many"
                 }, status = 404) # 找不到这个订票信息
 
-            
             # print("come here 4")
             customer = reservation.customer
             ticket = reservation.ticket
 
             seat_list = reservation.reserve_seat.split(',')
-            seat_list = seat_list[amount:]
+
+            print(seat_list)
+            popped_elements = []
+            for _ in range(amount):
+                popped_elements.append(seat_list.pop(0))
+            print(seat_list)
             reservation.reserve_seat = ",".join(seat_list)
             reservation.save()
 
@@ -2147,7 +2174,6 @@ class EventPage:
         LikeCheck.objects.create(customer=customer, comment=comment, created_at=timezone.now())
         # 创建新的点赞记录
         return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status=200)
-
 
     
     @api_view(['GET'])
