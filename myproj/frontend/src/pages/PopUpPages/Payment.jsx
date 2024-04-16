@@ -175,7 +175,7 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
         {canPay && (
           <>
         <PayPalScriptProvider options={{ "client-id": "ASQoKgTiwWzGfzaXQEkser7QAVFYnpXvkbtX-QDyuIi2FoQ_haMGX8LWTrHrN563jbyv6pTUoRjk9SRl" }}>
-            <PayPal userEmail={userEmail} eventID={eventID} seatArea={seatArea} seatAmount={seatAmount}/>
+            <PayPal userEmail={userEmail} eventID={eventID} seatArea={seatArea} seatAmount={seatAmount} tkprice={seatAmount * price}/>
         </PayPalScriptProvider>
           {/* <Button type="submit" variant="contained" color="primary" onClick={PaymentProcess}>
             Pay it

@@ -56,7 +56,7 @@ export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkpric
                     purchase_units: [
                         {
                             amount: {
-                                value: "10.00", // 设置支付金额
+                                value: tkprice, // 设置支付金额
                             },
                         },
                     ],

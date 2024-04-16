@@ -271,16 +271,16 @@ class CusAccountFunction:
             user_id = request.query_params.get('user_id', None)  # 使用get避免KeyError异常
             event_id = request.query_params.get('event_id', None)  # 使用get避免KeyError异常
 
-            print("user_id: ", user_id)
-            print("event_id: ", event_id)
-            print("come here 1")
+            # print("user_id: ", user_id)
+            # print("event_id: ", event_id)
+            # print("come here 1")
             customer = Customer.objects.filter(cus_id = user_id).first()
             event = Event_info.objects.filter(event_id = event_id).first()
-            print("come here 2")
+            # print("come here 2")
 
             reservations = Reservation.objects.filter(customer=customer, event=event).all()
-            print(reservations)
-            print("come here 3")
+            # print(reservations)
+            # print("come here 3")
 
             if not reservations.exists():
                 return Response({
@@ -290,7 +290,7 @@ class CusAccountFunction:
 
             # reservations_info = {}
             reservations_info = []
-            print("come here 4")
+            # print("come here 4")
             for reservation in reservations:
                 ticket = reservation.ticket
                 reservations_info.append({
@@ -302,14 +302,14 @@ class CusAccountFunction:
                     'total_price': reservation.amount*ticket.ticket_price,
                     'reserving_time':reservation.reservation_time
             })
-            print("come here 5")
+            # print("come here 5")
             return Response({
                 'code':'1',
                 'message':'successfully finding the data',
                 'token':reservations_info
             }, status = 200)
 
-        print("come here 6")
+        # print("come here 6")
         return Response({
             'code': '4',
             'message': 'You have to use GET method'
@@ -1651,11 +1651,11 @@ class PayAndCancel:
 
             seat_list = reservation.reserve_seat.split(',')
 
-            print(seat_list)
+            # print(seat_list)
             popped_elements = []
             for _ in range(amount):
                 popped_elements.append(seat_list.pop(0))
-            print(seat_list)
+            # print(seat_list)
             reservation.reserve_seat = ",".join(seat_list)
             reservation.save()
 

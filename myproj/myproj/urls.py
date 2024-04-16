@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from event_system_app import views
 from event_system_app import view_test2
-# from event_system_app import view_test3
+from event_system_app import view_test3
 
 router = routers.DefaultRouter()
 
@@ -13,7 +13,7 @@ urlpatterns = [
 
     # #创建测试数据
     path('create_sample_data/', view_test2.create_test_data, name = 'create_sample_data'),#1
-    # path('create_sample_data3/', view_test3.create_test_data, name = 'create_sample_data'),#1
+    path('create_sample_data3/', view_test3.create_test_data, name = 'create_sample_data'),#1
 
 
     # Mainpage的功能
