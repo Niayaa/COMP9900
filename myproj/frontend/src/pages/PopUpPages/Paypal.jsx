@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetTicketNumber } from "./Payment";
 export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkprice}) {
+    console.log("PPPPPP", seatAmount )
     async function Book(){
 
         await fetch(`http://127.0.0.1:8000/booking/?email=${userEmail}&event_id=${parseInt(eventID)}`,{
@@ -15,7 +16,7 @@ export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkpric
         },
         body: JSON.stringify({
           ticket_type: seatArea,
-          ticket_number: parseInt(seatAmount)
+          ticket_number: seatAmount
         }),
     }).then(res => {
         if (res.ok) {

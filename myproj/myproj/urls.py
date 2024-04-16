@@ -144,6 +144,8 @@ urlpatterns = [
     path('payment/check_ticket_number/', views.PayAndCancel.cus_ticket_number_check, name='cus_ticket_stage_checking'), #29
     # http://127.0.0.1:8000/payment/check_ticket_number/?event_id=5&cus_id=5
 
+    path('ticket_info/', views.event_ticket_2, name = 'event_ticket_2'),#1
+
 
     # organizer report的一系列功能
     path('get_event_number/', views.OrganizerReport.get_event_number, name='get_event_number'),#32

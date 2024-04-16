@@ -39,6 +39,43 @@ paypalrestsdk.configure({
     "client_secret": settings.PAYPAL_CLIENT_SECRET
 })
 
+def seat_pool_cal(ticket_type, amount):
+    seat_pool_list = []
+    for single_seat in range(1, 101):
+        row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
+        seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
+        seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
+        seat_pool_list.append(seat_assignment)
+    seat_pool_string = ','.join(seat_pool_list)
+    return seat_pool_string
+
+
+def seat_booking(ticket, amount):
+    all_string = ticket.ticket_seat_pool.split(',')
+    booking_seat = all_string[:amount]
+    remain_seat = all_string[amount:]
+    ticket.ticket_seat_pool = ','.join(remain_seat)
+    ticket.save()
+    return ','.join(booking_seat)
+
+@api_view(['GET'])
+def event_ticket_2(request):
+    event_id = request.query_params.get('event_id', None)
+    print(event_id)
+
+    if event_id is None:
+        return Response({'code':'2', 'message':'wrong data'}, status = 400)
+
+    event = Event_info.objects.filter(event_id = event_id).first()
+    tickets = Ticket_info.objects.filter(event = event).all()
+    result_list = []
+    for ticket in tickets:
+        result_list.append({
+            'ticket_id': ticket.ticket_id,
+            'ticket_remain': ticket.ticket_remain,
+            'ticket_amount': ticket.ticket_amount
+        })
+    return Response({'code':'1','message':'success', 'token':result_list}, status = 200)
 
 def data_match(fields_list, input_data): #这个用于将从数据库查询到的数据，和模型匹配成字典
     return {field: getattr(input_data, field, None) for field in fields_list if hasattr(input_data, field)}
@@ -1564,21 +1601,18 @@ class PayAndCancel:
                 event = Event_info.objects.filter(event_id = event_id).first()
                 ticket = Ticket_info.objects.filter(event = event, ticket_type = ticket_type).first()
 
-                seat_string = ticket.ticket_seat_pool.split(',')
-                seat_string = seat_string[:ticket_number]
-                remain_seat = seat_string[ticket_number:]
-                remain_seat = ",".join(remain_seat)
-                ticket.ticket_seat_pool = remain_seat
-                ticket.save()
 
-                booking_seat = ",".join(seat_string)
-                if ticket.ticket_remain < ticket_number:
-                    # print("come here 8")
+
+                if ticket.ticket_remain >= ticket_number:
+                    # print("come here 9")
+
+                    booking_seat_string = seat_booking(ticket, ticket_number)
+
                     history_booking = Reservation.objects.filter(customer = customer, event = event, ticket = ticket).first()
                     if history_booking:
                         # print("come here 9")
                         history_booking.amount += ticket_number
-                        history_booking.reserve_seat += "," + booking_seat
+                        history_booking.reserve_seat += "," + booking_seat_string
                         history_booking.save()
                     else:
                         # print("come here 10")
@@ -1588,25 +1622,26 @@ class PayAndCancel:
                             customer = customer,
                             ticket = ticket,
                             amount = ticket_number,
-                            reserve_seat = booking_seat
+                            reserve_seat = booking_seat_string
                         )
                         new_reserve.save()
                     # print("come here 11")
                     ticket.ticket_remain -= ticket_number
                     if ticket.ticket_remain < 0:
                         ticket.ticket_remain = 0
-                    # print("come here 12")
+                    print("come here 12")
                     ticket.save()
-                    # print("come here 13")
+                    print("come here 13")
                     return Response({
                         'code': '1',
-                        'message': 'Successfully booking.'
+                        'message': 'Successfully booking.',
+                        'token':ticket.ticket_remain
                     }, status = 200)
                 else:
                     return Response({
                         'code':'3',
                         'message': 'There is no enough remain tickect for this type for this event.'
-                    }, status = 200)
+                    }, status = 400)
             else:
                 # print("come here 14")
                 return Response({
