@@ -973,12 +973,13 @@ class OrganizerFunctionPage:
         :return: code 与 message
         '''
         if request.method == 'POST':
+            user_id = request.query_params.get('user_id',None)
             try:
                 event_data = json.loads(request.body.decode('utf-8'))
             except json.JSONDecodeError:
                 return Response({'code': '3', 'message': 'Invalid json data'}, status = 400)
 
-            organizer = Organizer.objects.filter(org_id = event_data['org_id']).first()
+            organizer = Organizer.objects.filter(org_id = user_id).first()
 
             event = Event_info(
                 event_name = event_data['event_name'],
@@ -1006,10 +1007,10 @@ class OrganizerFunctionPage:
                     event = event  # 这里直接将前面创建的event对象作为外键
                 )
                 ticket.save()  # 保存票务对象
-                return Response({
-                    "code":"1",
-                    "message":"Event successfully created"
-                }, status = 200)
+            return Response({
+                "code":"1",
+                "message":"Event successfully created"
+            }, status = 200)
 
         return Response({
             'code': '4',
