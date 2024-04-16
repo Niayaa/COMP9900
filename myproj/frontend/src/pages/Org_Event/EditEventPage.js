@@ -29,7 +29,8 @@ const EditEventModal = ({ open, onClose, event, onSave, handleTicketChange }) =>
         event_name: event.event_name || '',
         event_date: formatDateForInput(event.event_date) || '',
         event_description: event.event_description || '',
-        event_address: event.event_address || ''
+        event_address: event.event_address || '',
+        event_type: event.event_type || '',
     });
 
   useEffect(() => {
@@ -41,7 +42,8 @@ const EditEventModal = ({ open, onClose, event, onSave, handleTicketChange }) =>
         event_name: event.event_name || '',
         event_date: formatDateForInput(event.event_date) || '',
         event_description: event.event_description || '',
-        event_address: event.event_address || ''
+        event_address: event.event_address || '',
+        event_type: event.event_type || '',
     });
 }, [event]);
     const handleChange = (prop) => (event) => {
@@ -50,15 +52,35 @@ const EditEventModal = ({ open, onClose, event, onSave, handleTicketChange }) =>
 
     const handleSave = () => {
         const updatedEventDate = convertLocalDateTimeToUTC(formData.event_date);
-        // 更新 formData 以包括转换后的日期
         const updatedFormData = {
             ...formData,
             event_date: updatedEventDate
         };
-        // 调用 onSave 传递更新的表单数据
-        onSave(updatedFormData);
-        onClose(); // 关闭模态窗口
+        console.log('Edited',updatedFormData);
+    
+        fetch(`http://127.0.0.1:8000/edit_event/?event_id=${event.event_id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedFormData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to update the event');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('Event updated successfully!');
+            onClose(); // Close the modal after successful update
+        })
+        .catch(error => {
+            console.error('Failed to update event:', error);
+            alert(`Failed to update the event: ${error.message}`);
+        });
     };
+    
   const addTicketType = () => {
     const updatedTickets = [...formData.tickets, { ticket_type: '', ticket_amount: '', ticket_price: '', ticket_remain: '' }];
     setFormData({ ...formData, tickets: updatedTickets });
@@ -128,10 +150,10 @@ const EditEventModal = ({ open, onClose, event, onSave, handleTicketChange }) =>
         <FormControl component="fieldset" sx={{ mb: 2 }}>
           <FormLabel component="legend">Event Type</FormLabel>
           <RadioGroup row value={formData.event_type} onChange={handleChange('event_type')}>
-            <FormControlLabel value="Concert" control={<Radio />} label="Concert" />
-            <FormControlLabel value="Live" control={<Radio />} label="Live" />
-            <FormControlLabel value="Comedy" control={<Radio />} label="Comedy" />
-            <FormControlLabel value="Opera" control={<Radio />} label="Opera" />
+            <FormControlLabel value="concert" control={<Radio />} label="Concert" />
+            <FormControlLabel value="live" control={<Radio />} label="Live" />
+            <FormControlLabel value="comedy" control={<Radio />} label="Comedy" />
+            <FormControlLabel value="opera" control={<Radio />} label="Opera" />
           </RadioGroup>
         </FormControl>
       </DialogContent>

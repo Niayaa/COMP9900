@@ -949,6 +949,7 @@ def seat_booking(ticket, amount):
     return ','.join(booking_seat)
 
 
+
 # 创建演出的功能
 # 修改演出的功能
 # 删除演出的功能
@@ -1017,58 +1018,39 @@ class OrganizerFunctionPage:
         }, status = 405)
 
     @api_view(['PUT'])
-    def edit_event(request): #测试完成
+    def edit_event(request):  # 测试完成
         '''
         修改演出的信息。从前端接收表单信息
-
         :return: code 和 message
         '''
         if request.method == "PUT":
+            event_id = request.query_params.get('event_id', None)
             try:
-                updated_data = json.loads(request.body.decode('utf-8'))
+                data = json.loads(request.body.decode('utf-8'))
             except json.JSONDecodeError:
                 #     # print("event_data)
                 #     # print(type(event_data))
                 #     # print(event_data)
-                return Response({'code': '3', 'message': 'Invalid json data'}, status = 400)
-            event = Event_info.objects.get(event_id = updated_data['event_id'])
+                return Response({'code': '3', 'message': 'Invalid json data'}, status=400)
+            event = Event_info.objects.filter(event_id=event_id).first()
 
-            no_need_check = ['event_description', 'event_image_url',]
+            event.event_date = data['event_date']
+            event.event_description = data['event_description']
+            event.event_type = data['event_type']
+            event.event_name = data['event_name']
+            event.event_address = data['event_address']
+            event.save()
 
-
-            email_fields = ['event_name', 'event_date', 'event_description', 'event_address',
-                        'event_type', 'event_last_selling_date']
-
-            fields_changed = {}
-            field_no_need_changed = []
-            for field in email_fields:
-                if field in updated_data and getattr(event, field) != updated_data[field]:
-                    setattr(event, field, updated_data[field])
-                    fields_changed[field] = updated_data
-
-            for field in no_need_check:
-                if field in updated_data and getattr(event, field) != updated_data[field]:
-                    setattr(event, field, updated_data[field])
-                    field_no_need_changed.append(field)
-
-            if field_no_need_changed:
-                if fields_changed:
-                    event_update_email(event.event_id, fields_changed)
-                event.save()
-                return JsonResponse({
-                    'code':'1',
-                    'message': 'Event updated and email sent'
-                }, status = 200)
-            else:
-                return JsonResponse({
-                    'message': 'No changes detected'
-                }, status = 200)
+            return JsonResponse({
+                'code': '1',
+                'message': 'Event updated and email sent'
+            }, status=200)
 
         return Response({
             'code': '4',
             'message': 'This function only accepts POST data'
-        }, status = 405)
-    
+        }, status=405)
+      
     @api_view(['DELETE'])
     def delete_event(request): 
         '''
@@ -1509,7 +1491,7 @@ class PayAndCancel:
 
 
     @api_view(['POST'])
-    def payment(request): #测试完成
+    def payment(request):  # 测试完成
         '''
         :request ：接收JSON格式数据，数据内包括{ticket_type, ticket_number}。同时从url内获取 event_id 和 user_id
 
@@ -1522,102 +1504,72 @@ class PayAndCancel:
             4:彻底没有余票了
             5:输入的个人信息或者演出信息有问题
             6:数据的输入格式存在问题
-        
         '''
         email = request.query_params.get('email', None)
         event_id = request.query_params.get('event_id', None)
-        # print("come here 1")
 
         if not email or not event_id:
-            # print("come here 2")
-            return Response({
-                'code': '5',
-                'message': 'Missing email or event_id'
-            }, status = 400)
+            return Response({'code': '5', 'message': 'Missing email or event_id'}, status=400)
 
         if request.method == 'POST':
             try:
                 data = json.loads(request.body.decode('utf-8'))
-                # print("come here 3")
             except json.JSONDecodeError:
-                # print("come here 4")
-                return Response({
-                    'code': '6',
-                    'message': 'Invalid json data'
-                }, status = 400)
+                return Response({'code': '6', 'message': 'Invalid json data'}, status=400)
 
-            organizer = Organizer.objects.filter(org_email = email).first()
+            organizer = Organizer.objects.filter(org_email=email).first()
             if organizer:
-                # print("come here 6")
-                return Response({
-                    'code':'2',
-                    "message": "Only customer can book the event"
-                }, status = 200)
+                return Response({'code': '2', "message": "Only customer can book the event"}, status=200)
 
-            # print("come here 7")
-            ticket_type = data['ticket_type']
-            ticket_number = int(data['ticket_number'])
-            
-            if ticket_number and ticket_type:
-                # print("come here 8")
-                customer = Customer.objects.filter(cus_email = email).first()
-                event = Event_info.objects.filter(event_id = event_id).first()
-                ticket = Ticket_info.objects.filter(event = event, ticket_type = ticket_type).first()
+            ticket_type = data.get('ticket_type')
+            ticket_number = int(data.get('ticket_number', 0))
 
-                seat_string = ticket.ticket_seat_pool.split(',')
-                seat_string = seat_string[:ticket_number]
-                remain_seat = seat_string[ticket_number:]
-                remain_seat = ",".join(remain_seat)
-                ticket.ticket_seat_pool = remain_seat
-                ticket.save()
+            if ticket_number > 0 and ticket_type:
+                customer = Customer.objects.filter(cus_email=email).first()
+                event = Event_info.objects.filter(event_id=event_id).first()
+                ticket = Ticket_info.objects.filter(event=event, ticket_type=ticket_type).first()
 
-                booking_seat = ",".join(seat_string)
-                if ticket.ticket_remain < ticket_number:
-                    # print("come here 8")
-                    history_booking = Reservation.objects.filter(customer = customer, event = event, ticket = ticket).first()
+                if ticket.ticket_remain >= ticket_number:
+
+                    booking_seat_string = seat_booking(ticket, ticket_number)
+                    history_booking = Reservation.objects.filter(customer=customer, event=event,
+                                                                 ticket=ticket).first()
                     if history_booking:
-                        # print("come here 9")
                         history_booking.amount += ticket_number
-                        history_booking.reserve_seat += "," + booking_seat
+                        history_booking.reserve_seat += "," + booking_seat_string
                         history_booking.save()
                     else:
-                        # print("come here 10")
                         new_reserve = Reservation(
-                            reservation_time = timezone.now().replace(second=0,microsecond=0),
-                            event = event,
-                            customer = customer,
-                            ticket = ticket,
-                            amount = ticket_number,
-                            reserve_seat = booking_seat
+                            reservation_time=timezone.now().replace(second=0, microsecond=0),
+                            event=event,
+                            customer=customer,
+                            ticket=ticket,
+                            amount=ticket_number,
+                            reserve_seat=booking_seat_string
                         )
                         new_reserve.save()
-                    # print("come here 11")
+
                     ticket.ticket_remain -= ticket_number
-                    if ticket.ticket_remain < 0:
-                        ticket.ticket_remain = 0
-                    # print("come here 12")
                     ticket.save()
-                    # print("come here 13")
-                    return Response({
-                        'code': '1',
-                        'message': 'Successfully booking.'
-                    }, status = 200)
+
+                    # Send email notification
+                    send_mail(
+                        'Booking Confirmation',
+                        f'Your booking for {event.event_name} with {ticket_number} tickets of type {ticket_type} is confirmed.',
+                        settings.EMAIL_HOST_USER,
+                        [email],
+                        fail_silently=False,
+                    )
+
+                    return Response({'code': '1', 'message': 'Successfully booking.'}, status=200)
                 else:
-                    return Response({
-                        'code':'3',
-                        'message': 'There is no enough remain tickect for this type for this event.'
-                    }, status = 200)
+                    return Response(
+                        {'code': '3', 'message': 'There is no enough remain tickect for this type for this event.'},
+                        status=200)
             else:
-                # print("come here 14")
-                return Response({
-                    'code':'6',
-                    'message':'something wrong with the input data'
-                }, status = 400)
+                return Response({'code': '6', 'message': 'something wrong with the input data'}, status=400)
         else:
-            Response({
-                'code': '4',
-                'message': 'This function only accepts POST data'
-            }, status = 405)
+            return Response({'code': '4', 'message': 'This function only accepts POST data'}, status=405)
 
     @api_view(['PUT'])
     def cancel_ticket(request): #测试完成
@@ -1792,7 +1744,7 @@ class OrganizerReport:
     def get_event_number(request):
         if request.method == "GET":
             # 由于是GET请求，我们从查询参数中获取organizer_id
-            org_id = request.query_params.get('org_id', None)
+            org_id = request.query_params.get('user_id', None)
             #当使用query_params.get函数的时候，apifox里用params查询id
             #data.get函数使用的时候则是body->json
 
@@ -1820,7 +1772,7 @@ class OrganizerReport:
     @api_view(['GET'])
     def get_event_types_summary(request):
         if request.method == "GET":
-            org_id = request.query_params.get('org_id', None)
+            org_id = request.query_params.get('user_id', None)
             
             if org_id is not None:
                 events = Event_info.objects.filter(organization_id=org_id)
@@ -1847,21 +1799,21 @@ class OrganizerReport:
 
     @api_view(['GET'])
     def events_by_total_tickets_sold(request):
-        org_id = request.query_params.get('org_id', None)
+        org_id = request.query_params.get('user_id', None)
         if org_id is not None:
             events_sorted_by_tickets_sold = Event_info.objects.filter(organization_id=org_id)\
                 .annotate(sold_tickets=Sum(F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')))\
                 .order_by('-sold_tickets')
             
             # 将QuerySet转换为字典列表
-            events_data = [{'event_id': event.event_id, 'sold_tickets': event.sold_tickets} for event in events_sorted_by_tickets_sold]
+            events_data = [{'event_name':event.event_name,'event_id': event.event_id, 'sold_tickets': event.sold_tickets} for event in events_sorted_by_tickets_sold]
             return Response(events_data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)    
 
     @api_view(['GET'])
     def events_by_total_revenue_and_type(request):
-        org_id = request.query_params.get('org_id', None)
+        org_id = request.query_params.get('user_id', None)
         if org_id is not None:
             events_sorted_by_revenue_and_type = Event_info.objects.filter(organization_id=org_id).values(
                 'ticket_info__ticket_type'
@@ -1880,21 +1832,21 @@ class OrganizerReport:
            
     @api_view(['GET'])
     def events_by_completion_rate(request):
-        org_id = request.query_params.get('org_id', None)
+        org_id = request.query_params.get('user_id', None)
         if org_id is not None:
             events_sorted_by_completion_rate = Event_info.objects.filter(organization_id=org_id)\
                 .annotate(completion_rate=ExpressionWrapper(Sum(F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain')) / Sum('ticket_info__ticket_amount'), output_field=FloatField()))\
                 .order_by('-completion_rate')
             
             # 将QuerySet转换为字典列表
-            events_data = [{'event_id': event.event_id, 'completion_rate': round(event.completion_rate * 100, 2) if event.completion_rate else 0} for event in events_sorted_by_completion_rate]
+            events_data = [{'event_id': event.event_id, 'completion_rate': round(event.completion_rate * 1000, 2) if event.completion_rate else 0} for event in events_sorted_by_completion_rate]
             return Response(events_data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
     @api_view(['GET'])
     def events_by_total_sales(request):
-        org_id = request.query_params.get('org_id', None)
+        org_id = request.query_params.get('user_id', None)
         if org_id is not None:
             # 计算每个活动的总销售额
             events_sorted_by_total_sales = Event_info.objects.filter(organization_id=org_id).annotate(
@@ -1963,7 +1915,7 @@ class OrganizerReport:
 
     @api_view(['GET'])
     def get_customer_loyalty(request):  # 重复购买率:分析购买票务的客户中有多少是重复购买者，识别忠实客户群体。
-        org_id = request.query_params.get('org_id')
+        org_id = request.query_params.get('user_id')
 
         if not org_id:
             return Response({"error": "Organizer ID is required"}, status=400)
@@ -1994,7 +1946,7 @@ class OrganizerReport:
 
     @api_view(['GET'])
     def get_participation_analysis(request):  # 参与度分析:使用平均每场活动的卖出票数来衡量参与度，识别参与度高低的趋势和模式
-        org_id = request.query_params.get('org_id')
+        org_id = request.query_params.get('user_id')
 
         if not org_id:
             return Response({"error": "Organizer ID is required"}, status=400)
@@ -2018,7 +1970,7 @@ class OrganizerReport:
 
     @api_view(['GET'])
     def get_annual_ticket_sales(request):  # 按照时间来获取卖票的总收入
-        org_id = request.query_params.get('org_id', None)
+        org_id = request.query_params.get('user_id', None)
         time_frame = request.query_params.get('time_frame', 'monthly')
 
         if not org_id:
@@ -2045,7 +1997,7 @@ class OrganizerReport:
 
     @api_view(['GET'])
     def get_event_type_distribution(request):  # 展示活动类型分布，并分析哪种类型的活动最受欢迎、卖出票数最多以及收入最高
-        org_id = request.query_params.get('org_id', None)
+        org_id = request.query_params.get('user_id', None)
 
         if not org_id:
             return Response({"error": "Organizer ID is required"}, status=400)
@@ -2080,7 +2032,7 @@ class OrganizerReport:
 
     @api_view(['GET'])
     def get_ticket_price_analysis(request):  # 票价分析:评估不同票价范围的活动表现，识别最受欢迎和最有盈利能力的票价区间。
-        org_id = request.query_params.get('org_id', None)
+        org_id = request.query_params.get('user_id', None)
 
         if not org_id:
             return Response({"error": "Organizer ID is required"}, status=400)
@@ -2128,7 +2080,7 @@ class EventPage:
     @api_view(['POST'])
     def like_Comment(request):
         comment_id = request.query_params.get('comment_id')
-        cus_id = request.query_params.get('cus_id')
+        cus_id = request.query_params.get('user_id')
         if comment_id:
             Comment = get_object_or_404(Comment_cus, pk=comment_id)
             customer = Customer.objects.filter(cus_id = cus_id).first()
@@ -2157,7 +2109,7 @@ class EventPage:
             2：曾经点赞过了，不能再点赞
             3：找不到这个customer或者comment
         '''
-        cus_id = request.query_params.get('cus_id', None)
+        cus_id = request.query_params.get('user_id', None)
         comment_id = request.query_params.get('comment_id', None)
         try:
             customer = Customer.objects.filter(cus_id = cus_id).first()

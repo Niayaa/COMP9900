@@ -195,10 +195,10 @@ const CreateNewEventPage = () => {
       <FormControl component="fieldset">
         <FormLabel component="legend">Event Type</FormLabel>
         <RadioGroup row name="eventType" value={eventDetails.event_type} onChange={handleChange('event_type')}>
-          <FormControlLabel value="Concert" control={<Radio />} label="Concert" />
-          <FormControlLabel value="Live" control={<Radio />} label="Live" />
-          <FormControlLabel value="Comedy" control={<Radio />} label="Comedy" />
-          <FormControlLabel value="Opera" control={<Radio />} label="Opera" />
+          <FormControlLabel value="concert" control={<Radio />} label="Concert" />
+          <FormControlLabel value="live" control={<Radio />} label="Live" />
+          <FormControlLabel value="comedy" control={<Radio />} label="Comedy" />
+          <FormControlLabel value="opera" control={<Radio />} label="Opera" />
         </RadioGroup>
       </FormControl>
       <TextField label="Ticket Selling Last Date" variant="outlined" type="datetime-local" value={eventDetails.event_last_selling_date} onChange={handleChange('event_last_selling_date')} sx={{ mb: 2, width: "300px" }} />

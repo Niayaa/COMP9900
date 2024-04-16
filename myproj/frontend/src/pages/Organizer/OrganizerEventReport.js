@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { CssBaseline, Container, Grid, Typography, Select, MenuItem } from '@mui/material';
-import EventOverview from './Report/EventOverview';
-import TicketAnalysis from './Report/TicketAnalysis';
+import { CssBaseline, Container, Grid, Typography, Select} from '@mui/material';
+import ParticipationAnalysis from './Report/ParticipationAnalysisWindow';
 import EventTypePieChart from './Report/EventTypePieChart';
 import TicketSalesLineChart from './Report/TicketSalesLineChart';
+import TicketPricePerformance from './Report/TicketPricePerformanceWindow';
+import EventsTicketSalesList from './Report/EventsByTicketsSoldChartwindow';
 import { useAuth } from '../AuthContext';
 
 function Reports() {
@@ -48,36 +49,20 @@ function Reports() {
       <Typography variant="h4" gutterBottom>
         Event Analysis
       </Typography>
+      <Grid item xs={12} md={6}>
+        <ParticipationAnalysis userId={userId} />
+      </Grid>
       <Grid container spacing={3}>
       <Grid item xs={12} md={6}>
-                <EventTypePieChart userId={userId} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-                <TicketSalesLineChart userId={userId} />
-            </Grid>
-    </Grid>
-      <Select value={year} onChange={handleYearChange} displayEmpty>
-        <MenuItem value="">
-          <em>Year</em>
-        </MenuItem>
-        <MenuItem value={2021}>2021</MenuItem>
-        <MenuItem value={2022}>2022</MenuItem>
-      </Select>
-      <Select value={eventType} onChange={handleEventTypeChange} displayEmpty>
-        <MenuItem value="">
-          <em>Event Type</em>
-        </MenuItem>
-        <MenuItem value="music">Concert</MenuItem>
-        <MenuItem value="sport">Opera</MenuItem>
-      </Select>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <EventOverview year={year} eventType={eventType} />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TicketAnalysis year={year} eventType={eventType} />
-        </Grid>
+        <EventTypePieChart userId={userId} />
+        <TicketSalesLineChart userId={userId} />
+        <TicketPricePerformance userId={userId} />
       </Grid>
+      </Grid>
+      <Grid item xs={12} md={6}>
+      <EventsTicketSalesList userId={userId} />
+      </Grid>
+    
     </Container>
   );
 }

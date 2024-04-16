@@ -12,15 +12,21 @@ const deleteEvent = async (eventId) => {
     });
     if (res.ok) {
       alert("Event deleted successfully");
-      // 刷新列表或进行其他操作，以反映删除操作的结果
+      // Refresh list or other actions to reflect the deletion
     } else {
-      const errorData = await res.json();
-      throw new Error(errorData.message);
+      // Try to read the JSON first, but handle cases where the response is not JSON
+      try {
+        const errorData = await res.json();
+        throw new Error(errorData.message);
+      } catch (jsonError) {
+        // If there is an error parsing JSON, it's likely an HTML error response
+      }
     }
   } catch (error) {
     alert("Failed to delete the event: " + error.message);
   }
 };
+
 
 
 export const UpcomingEvents = ({ events,userId }) => {
