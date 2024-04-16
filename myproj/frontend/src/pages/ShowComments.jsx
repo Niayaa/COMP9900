@@ -279,7 +279,7 @@ export default function ShowComment(props) {
         {/* <input type="file" accept="image/*" onChange={handleImageChange} /> */}
         <TextField label="Image URL" fullWidth value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} variant="outlined" sx={{ mb: 2 }} />
         <Rating name="rating" value={rate} onChange={handleRating} />
-        <Button variant="contained" onClick={addComment}>
+        <Button variant="contained" onClick={addComment} display="flex" justifyContent="flex-end" width="100%" sx={{ ml: 2, mb: 2 }}>
           Add Comment
         </Button>
       </>
@@ -355,7 +355,7 @@ export default function ShowComment(props) {
       </CardContent>
     </Card>
           { props.isLogin && props.ifOrganization &&(           
-          <CardActions>
+          <CardActions sx={{mr:2}}>
           <TextField
               label="Your Reply"
               size="small"

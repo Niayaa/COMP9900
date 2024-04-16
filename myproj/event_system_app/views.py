@@ -1,30 +1,29 @@
+from django.db.models import Prefetch
+import numpy as np
+from sklearn.metrics import jaccard_score
+import paypalrestsdk
 import random
 import string
 from django.core.cache import cache
 from django.core.mail import send_mail, send_mass_mail
-from django.http import JsonResponse,HttpResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from rest_framework.decorators import api_view
-# from rest_framework.views import APIView
-
-# from .serializer import *
 from django.shortcuts import get_object_or_404
-from django.db.models import Prefetch
 from .models import *
-from django.db import transaction
 import json
-import numpy as np
 from rest_framework import status
-from sklearn.metrics import jaccard_score
-# from django.conf import settings
-from django.db.models import Sum, F, ExpressionWrapper, FloatField
-from django.db.models import Count
-from django.contrib.auth.hashers import make_password, check_password
-
-import paypalrestsdk
 from django.conf import settings
+from django.db.models import Sum, F, ExpressionWrapper, FloatField
+from django.contrib.auth.hashers import make_password, check_password
+from django.db.models import Count
+import requests
+from django.db.models.functions import TruncMonth, TruncQuarter
+from django.db.models import Sum, Count, Case, When, IntegerField, CharField, Value, Avg
+
+
 
 
 organizer_list = ['org_id', 'org_email', 'org_password', 'company_name', 'company_address', 'org_phone']
@@ -94,6 +93,8 @@ def jaccard_sim(customer_tags, event_tags):
     
     # sorted_dict = dict(sorted(jaccard_scores.items(), key=lambda item: item[1], reverse=True))
     return jaccard_scores
+
+
 
 '''
 200: 数据返回成功
@@ -169,7 +170,6 @@ class CusAccountFunction:
             附：Nicole说过，这里传入的user_id一定是customer身份，此处不再做身份判定
         '''
         if request.method == 'GET':
-
             cus_id = request.query_params.get('user_id', None)
             if cus_id is None:
                 return Response({'code':'3','message':'there is something wrong with the input data'}, status = 404)
@@ -270,14 +270,17 @@ class CusAccountFunction:
         if request.method == 'GET':
             user_id = request.query_params.get('user_id', None)  # 使用get避免KeyError异常
             event_id = request.query_params.get('event_id', None)  # 使用get避免KeyError异常
-            
-            # print("come here 1")
+
+            print("user_id: ", user_id)
+            print("event_id: ", event_id)
+            print("come here 1")
             customer = Customer.objects.filter(cus_id = user_id).first()
             event = Event_info.objects.filter(event_id = event_id).first()
-            # print("come here 2")
+            print("come here 2")
 
             reservations = Reservation.objects.filter(customer=customer, event=event).all()
-            # print(reservations)
+            print(reservations)
+            print("come here 3")
 
             if not reservations.exists():
                 return Response({
@@ -287,7 +290,7 @@ class CusAccountFunction:
 
             # reservations_info = {}
             reservations_info = []
-
+            print("come here 4")
             for reservation in reservations:
                 ticket = reservation.ticket
                 reservations_info.append({
@@ -299,13 +302,14 @@ class CusAccountFunction:
                     'total_price': reservation.amount*ticket.ticket_price,
                     'reserving_time':reservation.reservation_time
             })
-                
+            print("come here 5")
             return Response({
                 'code':'1',
                 'message':'successfully finding the data',
                 'token':reservations_info
             }, status = 200)
 
+        print("come here 6")
         return Response({
             'code': '4',
             'message': 'You have to use GET method'
@@ -328,26 +332,33 @@ class CusAccountFunction:
             user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
             # all_events = Event_info.objects.all()
+            print("come here 1")
 
             event_list = []
 
             if customer is None: #找不到人的话
+                print("come here 2")
                 return Response({
                     'code':'2', 
                     'message':'We can not find the customer'
                 },  status = 400)
-            
+            print("come here 3")
             now = timezone.now()
 
             reserved_event_ids = Reservation.objects.filter(customer=customer).values_list('event__event_id', flat=True)
-
+            print("come here 4")
             available_events = Event_info.objects.filter(event_date__gt=now).exclude(event_id__in=reserved_event_ids)
-            
+            if available_events.count() == 0:
+                return Response({'code':'1'})
+            print("come here 5")
             if customer.prefer_tags is None: #如果这个人没有写tag
+                print("come here 6")
                 if customer.prefer_type: #如果这个人写了喜欢什么类型的演出
+                    print("come here 7")
                     special_type_events = available_events.filter(event_type=customer.prefer_type).all()
                     not_special_type_events = available_events.exclude(event_type=customer.prefer_type).all()
 
+                    print("come here 8")
                     for single in special_type_events: #先招呼上
                         event_list.append(
                             {
@@ -359,6 +370,7 @@ class CusAccountFunction:
                                 'event_description':single.event_description
                             }
                         )
+                    print("come here 9")
                     for single in not_special_type_events:
                         event_list.append(
                             {
@@ -370,6 +382,7 @@ class CusAccountFunction:
                                 'event_description':single.event_description
                             }
                         )
+                    print("come here 10")
                 else: # 如果这个人也没有写自己喜欢什么类型的演出，那直接把数据库的演出直接招呼上去
                     for single in available_events:
                         event_list.append(
@@ -381,27 +394,35 @@ class CusAccountFunction:
                                 'event_type':single.event_type,
                                 'event_description':single.event_description
                             }
-                        )    
+                        )
+                    print("come here 11")
             else: # 如果这个人写了tag，那就能去做推荐
                 event_tags_dict = {}
                 empty_list = []
+                print("come here 12")
 
+
+                print(available_events)
                 for event in available_events:
+                    print(event.event_tags)
                     if event.event_tags is None:
                         empty_list.append(event.event_id)
                     else:
                         event_tags_dict[event.event_id] = event.event_tags
-
+                print("come here 13")
+                print(event_tags_dict)
                 if event_tags_dict: # 只有里面有东西，我们才开始用jaccard算法
+                    print("come here 14")
                     result = jaccard_sim(customer.prefer_tags, event_tags_dict)
 
                 for event in empty_list: #把tag是none的演出的得分设置为0，加入其中
+                    print("come here 15")
                     result[event] = 0
-                
+                print("come here 16")
                 sorted_dict = dict(sorted(result.items(), key=lambda item: item[1], reverse=True))
-
+                print("come here 17")
                 keys_in_order = list(sorted_dict.keys())
-
+                print("come here 18")
                 for single_keys in keys_in_order[:10]:
                     event_list.append(Event_info.objects.filter(event_id = single_keys).
                                     values(
@@ -413,12 +434,13 @@ class CusAccountFunction:
                                         'event_type',
                                         'event_description'
                                            ).first())
+                print("come here 19")
             return Response({
                 'code':'1', 
                 'message':'successfully jaccard',
                 'token':event_list
                 }, status = 200)
-        
+        print("come here 20")
         return Response({
             'code':'4', 
             'message':'The function is not right', 
@@ -626,7 +648,11 @@ class LoginPage:
             }, status = 200)
         else:
             # 处理缓存失效的情况
-            print('No cached data available.')
+            return Response({
+                'role': None,
+                'id': None,
+                'email': None
+            }, status=200)
 
 
     @api_view(['POST']) # 测试完成
@@ -670,6 +696,13 @@ class LoginPage:
                         )
                         new_organizer.save()
                         # response的内容都要修改一下，这个函数内的所有response
+
+                    cache.set(new_organizer.org_id, {
+                        'role': 'organizer',
+                        'id': new_organizer.org_id,
+                        'email': new_organizer.org_email
+                    }, timeout=60000)  # 缓存一个小时
+
                     return Response({
                         'code': '1',
                         'message': 'JSON data received and processed successfully',
@@ -696,6 +729,12 @@ class LoginPage:
                         )
                         new_customer.save()
 
+                    cache.set(new_customer.cus_id, {
+                        'role': 'customer',
+                        'id': new_customer.cus_id,
+                        'email': new_customer.cus_email
+                    }, timeout=60000)  # 缓存一个小时
+
                     # 第一种方式
                     return Response({
                         'code': '1', 
@@ -703,6 +742,13 @@ class LoginPage:
                         'token':new_customer.cus_id}, 
                     status = 200)
             except   json.JSONDecodeError:
+
+                cache.set(0, {
+                    'role': None,
+                    'id': None,
+                    'email': None
+                }, timeout=60000)  # 缓存一个小时
+
                 return Response({
                     'code': '3',
                     'message': 'Invalid JSON data'}, 
@@ -804,6 +850,7 @@ class AccountInfoPage:
                 return Response({
                     'code': '3', 'message': 'Invalid json data'
                 }, status = 200)
+
             customer = Customer.objects.filter(cus_id = data['id']).first()
             customer = data_match(customer_list, customer)
             if customer['cus_email'] != data['email']:
@@ -883,6 +930,25 @@ class AccountInfoPage:
             'message': 'This function only accepts POST data'
         }, status = 405)
 
+def seat_pool_cal(ticket_type, amount):
+    seat_pool_list = []
+    for single_seat in range(1, 101):
+        row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
+        seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
+        seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
+        seat_pool_list.append(seat_assignment)
+    seat_pool_string = ','.join(seat_pool_list)
+    return seat_pool_string
+
+
+def seat_booking(ticket, amount):
+    all_string = ticket.ticket_seat_pool.split(',')
+    booking_seat = all_string[:amount]
+    remain_seat = all_string[amount:]
+    ticket.ticket_seat_pool = ','.join(remain_seat)
+    ticket.save()
+    return ','.join(booking_seat)
+
 
 # 创建演出的功能
 # 修改演出的功能
@@ -927,13 +993,8 @@ class OrganizerFunctionPage:
             )
             event.save()  # 保存事件对象，这样它就有了一个ID
             for ticket in event_data['tickets']:
-                seat_pool = []
-                for seat_number in range(1, ticket['ticket_amount'] + 1):
-                    row_number = (seat_number - 1) // 20 + 1  # 确定排数
-                    seat_in_row = (seat_number - 1) % 20 + 1  # 确定在当前排的座位号
-                    seat_id = f"{ticket['ticket_type']}-{row_number}-{seat_in_row}"
-                    seat_pool.append(seat_id)
-                seat_pool_str = ",".join(seat_pool)
+
+                seat_pool_string = seat_pool_cal(ticket['ticket_type'], ticket['ticket_amount'])
 
                 ticket = Ticket_info(
                     ticket_type = ticket['ticket_type'],
@@ -941,7 +1002,7 @@ class OrganizerFunctionPage:
                     ticket_amount = ticket['ticket_amount'],
                     ticket_price = ticket['ticket_price'],
                     ticket_remain = ticket['ticket_amount'],
-                    ticket_seat_pool = seat_pool_str,
+                    ticket_seat_pool = seat_pool_string,
                     event = event  # 这里直接将前面创建的event对象作为外键
                 )
                 ticket.save()  # 保存票务对象
@@ -1103,7 +1164,7 @@ class OrganizerFunctionPage:
 
     @api_view(['GET'])
     def data_showing_check(request):
-        if request.method == 'GcET':
+        if request.method == 'GET':
             event_id = request.query_params.get('event_id', None)
             # user_id = request.query_params.get('user_id', None)
 
@@ -1314,10 +1375,10 @@ class EventDetailPage:
             customer = Customer.objects.filter(cus_id = cus_id).first()
             print("come here 2")
             if event and customer:
-                print("come here 3")
-                comment = Comment_cus.objects.filter(event = event, customer = customer).first()
-                print("come here 4")
-                if comment:
+                # print("come here 3")
+                comment_num = Comment_cus.objects.filter(event = event, customer = customer).count()
+                # print("come here 4")
+                if comment_num != 0:
                     print("come here 5")
                     return Response({
                         'code':'2',
@@ -1417,6 +1478,7 @@ class EventDetailPage:
             'code': '4',
             'message': 'This function only accepts POST data'
         }, status = 405)
+
 
 # 订购和取消功能
 class PayAndCancel:
@@ -1580,17 +1642,20 @@ class PayAndCancel:
             if reservation.amount < amount:
                 return Response({
                     "code":"3", 
-                    "message":"You order for too"
+                    "message":"You order to cancel too many"
                 }, status = 404) # 找不到这个订票信息
 
-            
             # print("come here 4")
             customer = reservation.customer
             ticket = reservation.ticket
 
             seat_list = reservation.reserve_seat.split(',')
+
+            print(seat_list)
+            popped_elements = []
             for _ in range(amount):
-                seat_list.pop()
+                popped_elements.append(seat_list.pop(0))
+            print(seat_list)
             reservation.reserve_seat = ",".join(seat_list)
             reservation.save()
 
@@ -1780,7 +1845,6 @@ class OrganizerReport:
             else:
                 return Response({"code": "3", 'error': 'Organizer ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-
     @api_view(['GET'])
     def events_by_total_tickets_sold(request):
         org_id = request.query_params.get('org_id', None)
@@ -1855,7 +1919,6 @@ class OrganizerReport:
             return Response(events_data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Organizer ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
 
     @api_view(['GET'])
     def event_details_by_id(request):
@@ -1897,6 +1960,165 @@ class OrganizerReport:
                 return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"error": "EventId is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_view(['GET'])
+    def get_customer_loyalty(request):  # 重复购买率:分析购买票务的客户中有多少是重复购买者，识别忠实客户群体。
+        org_id = request.query_params.get('org_id')
+
+        if not org_id:
+            return Response({"error": "Organizer ID is required"}, status=400)
+
+        # 筛选该组织者的所有活动的预订信息
+        reservations = Reservation.objects.filter(event__organization_id=org_id)
+
+        # 对每位客户的预订次数进行计数
+        customer_purchases = reservations.values('customer').annotate(
+            purchase_count=Count('reservation_id')
+        ).order_by('-purchase_count')
+
+        # 计算重复购买者的数量
+        repeat_customers = customer_purchases.filter(purchase_count__gt=1)
+        repeat_customer_count = repeat_customers.count()
+
+        # 总购买客户数
+        total_customers = Customer.objects.filter(reservation__event__organization_id=org_id).distinct().count()
+
+        # 计算重复购买率
+        repeat_purchase_rate = (repeat_customer_count / total_customers) * 100 if total_customers else 0
+
+        return Response({
+            "total_customers": total_customers,
+            "repeat_customer_count": repeat_customer_count,
+            "repeat_purchase_rate": repeat_purchase_rate
+        }, status=200)
+
+    @api_view(['GET'])
+    def get_participation_analysis(request):  # 参与度分析:使用平均每场活动的卖出票数来衡量参与度，识别参与度高低的趋势和模式
+        org_id = request.query_params.get('org_id')
+
+        if not org_id:
+            return Response({"error": "Organizer ID is required"}, status=400)
+
+        # 获取该组织者的所有活动
+        events = Event_info.objects.filter(organization_id=org_id)
+
+        # 对于每个活动，计算总卖出票数（总票数减去剩余票数）
+        participation_data = events.annotate(
+            sold_tickets=Sum(F('ticket_info__ticket_amount') - F('ticket_info__ticket_remain'))
+        )
+
+        # 计算所有活动的平均卖出票数
+        average_participation = participation_data.aggregate(
+            Avg('sold_tickets')
+        )
+
+        return Response({
+            "average_participation": average_participation
+        }, status=200)
+
+    @api_view(['GET'])
+    def get_annual_ticket_sales(request):  # 按照时间来获取卖票的总收入
+        org_id = request.query_params.get('org_id', None)
+        time_frame = request.query_params.get('time_frame', 'monthly')
+
+        if not org_id:
+            return Response({"error": "Organizer ID is required"}, status=400)
+
+        # 筛选该组织者的所有事件
+        events = Event_info.objects.filter(organization_id=org_id)
+
+        # 从这些事件关联到的所有票务信息中，获取销售数据
+        tickets = Ticket_info.objects.filter(event__in=events)
+
+        if time_frame == 'monthly':
+            data = tickets.annotate(month=TruncMonth('event__event_date')) \
+                .values('month') \
+                .annotate(total_tickets=Sum('ticket_amount'), total_income=Sum('ticket_price'))
+        elif time_frame == 'quarterly':
+            data = tickets.annotate(quarter=TruncQuarter('event__event_date')) \
+                .values('quarter') \
+                .annotate(total_tickets=Sum('ticket_amount'), total_income=Sum('ticket_price'))
+        else:
+            return Response({"error": "Invalid timeframe specified"}, status=400)
+
+        return Response(data, status=200)
+
+    @api_view(['GET'])
+    def get_event_type_distribution(request):  # 展示活动类型分布，并分析哪种类型的活动最受欢迎、卖出票数最多以及收入最高
+        org_id = request.query_params.get('org_id', None)
+
+        if not org_id:
+            return Response({"error": "Organizer ID is required"}, status=400)
+
+        # 聚合指定组织者的活动类型数据
+        event_data = Event_info.objects.filter(organization_id=org_id) \
+            .values('event_type') \
+            .annotate(total_events=Count('event_id'),
+                      total_tickets_sold=Sum('ticket_info__ticket_amount'),
+                      total_income=Sum('ticket_info__ticket_price'))
+
+        # 计算每种类型活动的总收入和票数
+        for event_type in event_data:
+            event_type['total_tickets_sold'] = event_type['total_tickets_sold'] or 0
+            event_type['total_income'] = event_type['total_income'] or 0
+
+        # 找出卖出票数最多和收入最高的活动类型
+        if event_data:
+            most_popular_type = max(event_data, key=lambda x: x['total_tickets_sold'])
+            highest_earning_type = max(event_data, key=lambda x: x['total_income'])
+            response_data = {
+                "event_types": list(event_data),
+                "most_popular_type": most_popular_type,
+                "highest_earning_type": highest_earning_type
+            }
+        else:
+            response_data = {
+                "message": "No event data available for the given organizer"
+            }
+
+        return Response(response_data, status=200)
+
+    @api_view(['GET'])
+    def get_ticket_price_analysis(request):  # 票价分析:评估不同票价范围的活动表现，识别最受欢迎和最有盈利能力的票价区间。
+        org_id = request.query_params.get('org_id', None)
+
+        if not org_id:
+            return Response({"error": "Organizer ID is required"}, status=400)
+
+        # 对每个活动类型下的票卷进行分组，并聚合销售和收入
+        ticket_performance_data = Ticket_info.objects.filter(
+            event__organization_id=org_id
+        ).values(
+            'ticket_type', 'event__event_type'
+        ).annotate(
+            total_sold=Sum('ticket_amount') - Sum('ticket_remain'),
+            total_income=Sum('ticket_price', field='(ticket_amount-ticket_remain) * ticket_price')
+        ).order_by('event__event_type', '-total_sold')
+
+        # 构建每个活动类型的票价表现数据
+        event_type_performance = {}
+        for data in ticket_performance_data:
+            event_type = data['event__event_type']
+            if event_type not in event_type_performance:
+                event_type_performance[event_type] = {
+                    'most_popular_ticket_type': data['ticket_type'],
+                    'highest_grossing_ticket_type': data['ticket_type'],
+                    'most_tickets_sold': data['total_sold'],
+                    'highest_gross_income': data['total_income']
+                }
+            else:
+                if data['total_sold'] > event_type_performance[event_type]['most_tickets_sold']:
+                    event_type_performance[event_type]['most_popular_ticket_type'] = data['ticket_type']
+                    event_type_performance[event_type]['most_tickets_sold'] = data['total_sold']
+
+                if data['total_income'] > event_type_performance[event_type]['highest_gross_income']:
+                    event_type_performance[event_type]['highest_grossing_ticket_type'] = data['ticket_type']
+                    event_type_performance[event_type]['highest_gross_income'] = data['total_income']
+
+        return Response({
+            "event_type_performance": event_type_performance
+        }, status=200)
+
 
 
 class EventPage:
@@ -1953,7 +2175,6 @@ class EventPage:
         # 创建新的点赞记录
         return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status=200)
 
-
     
     @api_view(['GET'])
     def like_number_check(request):
@@ -1964,5 +2185,3 @@ class EventPage:
         comment_id = request.query_params.get('comment_id', None)
         comment = get_object_or_404(Comment_cus, comment_id=comment_id)
         return Response({'code':'1','message':'We find the comment and comment like', 'token' : comment.likes}, status = 200)
-
-

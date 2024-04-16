@@ -19,12 +19,19 @@ export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkpric
         }),
     }).then(res => {
         if (res.ok) {
-          alert("success book!")
+        //   alert("success book!")
             return res.json();
           }
         // handle error
     }).then(task => {
-        
+        console.log(task)
+        if(task){
+            alert(`${task.message}`)
+            if(task.code == '3')
+            {
+                alert("Refund will be processed in 1 business days")
+            }
+        }
       }).catch(error => {
         // handle error
         alert(error);

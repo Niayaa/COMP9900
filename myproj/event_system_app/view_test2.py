@@ -133,7 +133,7 @@ def create_test_data(request):
                 event_date=timezone.datetime.strptime(event["event_date"], "%Y-%m-%d"),
                 event_description="This is an amazing event you don't want to miss!",
                 event_address="123 Event Venue St, City, Country",
-                event_image_url='https://img.jzda001.com/image/8431616408138452.jpg',
+                event_image_url='https://www.classictic.com/pictures/12/75/127558/296145-Australia-Sydney-opera-house-NSWSydney-Harbour-Bridge-Tourism-Australia-Jonathon-Marks.jpg',# https://img.jzda001.com/image/8431616408138452.jpg
                 event_type=event["event_type"],
                 event_last_selling_date=timezone.datetime.strptime(event["event_date"],
                                                                    "%Y-%m-%d") - timezone.timedelta(
