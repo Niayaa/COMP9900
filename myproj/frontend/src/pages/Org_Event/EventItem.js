@@ -24,7 +24,7 @@ import { Container,
   Drawer,
   Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-export const EventItem = ({ event,userId}) => {
+export const EventItem = ({ event, userId, showCancelIcon = true }) => {
   const [tickets, setTickets] = useState([]);
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
@@ -112,9 +112,11 @@ const handleCancelClick = (eventid) => {
       />
      
       <ListItemSecondaryAction>
-        <IconButton edge="end" aria-label="cancel" onClick={() => handleCancelClick(event)}>
-          <CancelIcon />
-        </IconButton>
+      {showCancelIcon && (
+            <IconButton edge="end" aria-label="cancel" onClick={() => handleCancelClick(event)}>
+              <CancelIcon />
+            </IconButton>
+          )}
         <IconButton edge="end" aria-label="info" onClick={() => handleEventClick(event)}>
           <InfoIcon />
         </IconButton>

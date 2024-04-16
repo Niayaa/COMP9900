@@ -16,7 +16,7 @@ export const PastEvents = ({ events,userId}) => {
     return (
       <List>
         {events.map(event => (
-          <EventItem key={event.id} event={event} userId={userId}/>
+          <EventItem key={event.id} event={event} userId={userId} showCancelIcon={false}/>
         ))}
       </List>
     );

@@ -26,7 +26,7 @@ import { Container,
 import { useNavigate } from 'react-router-dom';
 import BookInfoPopUp from '../PopUpPages/BookInfo.jsx';
 
-export const EventItem = ({ event,userId}) => {
+export const EventItem = ({ event, userId, showCancelIcon = true }) => {
   const [tickets, setTickets] = useState([]);
   const [openI, setOpenI] = useState(false);
   const [events, setEvents] = useState([]);
@@ -111,9 +111,11 @@ const handleEventClick = (eventid) => {
       />
      
       <ListItemSecondaryAction>
-        <IconButton edge="end" aria-label="cancel" onClick={handleOpenPopup}>
-          <CancelIcon />
-        </IconButton>
+        {showCancelIcon && (
+            <IconButton edge="end" aria-label="cancel" onClick={handleOpenPopup}>
+              <CancelIcon />
+            </IconButton>
+          )}
          {<BookInfoPopUp cus_id={userId} open={openI} eventID={event.event_id} handleClose={handleClosePopup}></BookInfoPopUp>}
         <IconButton edge="end" aria-label="info" onClick={() => handleEventClick(event)}>
           <InfoIcon />

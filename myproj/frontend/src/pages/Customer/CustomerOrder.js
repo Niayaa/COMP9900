@@ -28,6 +28,7 @@ import Divider from '@mui/material/Divider';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import {DrawerListItems} from "../listItems";
 import { UpcomingEvents,PastEvents} from '../Cus_EventList/EventLists';
+import { CancelList } from "../Cus_EventList/CancelList";
 import { useAuth } from "../AuthContext";
 
 
@@ -171,6 +172,7 @@ const CustomerOrderPage = () => {
     </Box>
       {selectedEventType === 'upcoming' && <UpcomingEvents events={upcomingEvents} userId={user.id}/>}
       {selectedEventType === 'past' && <PastEvents events={pastEvents} userId={user.id}/>}
+      {selectedEventType == 'canceled' && <CancelList userId={user.id}/>}
     </main>
   </Box>
   );

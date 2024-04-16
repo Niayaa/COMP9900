@@ -24,7 +24,7 @@ export const DrawerListItems = ({ onItemSelected }) => (
       <ListItemIcon>
         <DashboardIcon />
       </ListItemIcon>
-      <ListItemText primary="Canceled" />
+      <ListItemText primary="Cancelled" />
     </ListItemButton>
   </React.Fragment>
 );
