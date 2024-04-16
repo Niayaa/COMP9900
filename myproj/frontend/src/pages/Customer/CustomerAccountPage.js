@@ -102,6 +102,7 @@ const CustomerAccountPage = () => {
     setIsEditing(!isEditing);
     if (isEditing) {
       saveUpdatedData();
+      console.log('Edit account',formData);
     }
   };
 
