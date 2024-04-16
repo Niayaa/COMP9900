@@ -10,7 +10,7 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
   const [hasLiked, setHasLiked] = useState(false);
 
   const fetchCheckIfLikes = () => {
-    fetch(`http://127.0.0.1:8000/like_check/?comment_id=${parseInt(commentId)}&cus_id=${parseInt(userId)}`, {
+    fetch(`http://127.0.0.1:8000/like_check/?comment_id=${parseInt(commentId)}&cus_id=${userId}`, {
       method: 'GET'
     })
     .then(response => response.json())
@@ -18,7 +18,7 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
       // 1：没有点赞过，允许点赞
       // 2：曾经点赞过了，不能再点赞
       // 3：找不到这个customer或者comment
-      // console.log("checj", data)
+      console.log("checj", data, commentId, userId)
       if (data.code === '1') {
         setHasLiked(false);
       } else if (data.code === '2') {
@@ -40,18 +40,27 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
     })
     .then(response => response.json())
     .then(data => {
-      console.log("uuuuuuuuU",data);
+      console.log("uuuuuuuuU",data, commentId);
       setLikes(data.token);
+      // fetchCheckIfLikes()
+      // console.log("cheeeecj", data, commentId)
+      // if (data.code === '1') {
+      //   setHasLiked(false);
+      // } else if (data.code === '2') {
+      //   setHasLiked(true);
+      // } else {
+      //   console.error('Failed to check if the comment has been liked');
+      // }
     })
     .catch(error => {
-      console.error('Error fetching likes:', error);
+      console.error('Error fetching likes:', error, commentId, userId);
     });
   };
 
   useEffect(() => {
     fetchCheckIfLikes();
     fetchNumberofLikes();
-  }, [commentId, userId]);
+  }, []);
 
   const handleLike = () => {
     // console.log("userIduserIduserIduserId", userId)
@@ -68,9 +77,12 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
         return response.json();
       })
       .then(task => {
-        console.log("After post like", task)
-        setLikes(likes => likes + 1);
-        setHasLiked(true);
+        console.log("After post like", task, commentId)
+        // setLikes(likes => likes + 1);
+        // setHasLiked(true);
+        fetchCheckIfLikes();
+        fetchNumberofLikes();
+
       })
       .catch(error => {
         console.error('Error liking the comment:', error);

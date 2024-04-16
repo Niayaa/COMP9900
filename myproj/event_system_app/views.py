@@ -2206,7 +2206,7 @@ class EventPage:
         if LikeCheck.objects.filter(customer=customer, comment=comment).exists():
             return JsonResponse({'code': '2', 'message': 'You have already liked this comment.'}, status=200)
 
-        LikeCheck.objects.create(customer=customer, comment=comment, created_at=timezone.now())
+        # LikeCheck.objects.create(customer=customer, comment=comment, created_at=timezone.now())
         # 创建新的点赞记录
         return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status=200)
 
