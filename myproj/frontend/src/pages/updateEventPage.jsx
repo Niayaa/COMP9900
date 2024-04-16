@@ -403,12 +403,13 @@ function EventPage(props) {
                     <Grid container direction={'column'} >
                     <Grid sx={{ml: 1}}>Tickets</Grid>
                     <Grid sx={{ml: 1}}>Last selling date: {eventInfo.last_selling_date}</Grid>
-                    <Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
+                    
+                    {/*<Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
                         textTransform: 'none',  
                         minWidth: 250,          
                     }}  onClick={handlePopupBookInfo}>Check My Booking Info</Button>
                     <BookInfoPopUp cus_id={user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp>
-                    </Grid>
+                </Grid>*/}
                     { 
                     // eventInfo.last_selling_date > todaydate 
                     // && 
