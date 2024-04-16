@@ -775,10 +775,20 @@ class AccountInfoPage:
         if request.method == 'GET':
             user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
+            
+            empty_dict = {
+                'cus_name':customer.cus_name,
+                'cus_email':customer.cus_email,
+                'cus_phone':customer.cus_phone,
+                'bill_address':customer.bill_address,
+                'gender':customer.gender,
+                'age_area':customer.age_area,
+                'prefer_tags':customer.prefer_tags,
+                'prefer_type':customer.prefer_type
+            }
+            
             if customer:
-                customer = data_match(customer_list, customer)
-                customer['age_area'] = None
-                return JsonResponse(customer, status = 200)
+                return JsonResponse(empty_dict, status = 200)
                 # 找到数据了，成功返回
             else:
                 # account页面发来请求消费者个人信息，但是查无此人，基本不太可能，但还是写上这个功能

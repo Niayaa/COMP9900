@@ -18,22 +18,15 @@ class Organizer(models.Model):
 
 
 class Customer(models.Model):
-    class AgeArea(models.TextChoices):
-        CHILD = '0-18', '0-18 Years'
-        TEENAGE = '19-40', '19-40 Years'
-        MIDDLEAGE = '41-60', '41-60 Years'
-        ELDER = '61-100', '61-100 Years'
-
 
     cus_id = models.AutoField(primary_key = True)
     cus_name = models.TextField(max_length = 50, null = False)
     cus_email = models.TextField(max_length = 255, null = False)
-    gender = models.CharField(max_length = 20, choices=[('Male', 'Male'), ('Female', 'Female')], null = True)
-    prefer_type = models.CharField(max_length = 20,
-                                   choices = [('live', 'live'),('concert', 'concert'),
-                                              ('opera','opera'), ('show', 'show')], null = True)
+    gender = models.TextField(max_length = 20,  null = True)
+    prefer_type = models.TextField(max_length = 20,
+                                    null = True)
     
-    age_area = models.CharField(max_length = 20, choices = AgeArea.choices, null = True)
+    age_area = models.TextField(max_length = 20, null = True)
 
     prefer_tags = models.TextField(blank=True, null = True)
     cus_password = models.TextField(null = False)
