@@ -320,7 +320,7 @@ export default function ShowComment(props) {
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Avatar alt="User Name" src="/static/images/avatar/1.jpg" />
             <Typography variant="subtitle1" sx={{ ml: 2 }}>
-              {comment.username}
+              {comment.username} {comment.comment_id}
             </Typography>
           </Box>
           <Box sx={{ mt: isMobile ? 2 : 0 }}>
@@ -370,7 +370,7 @@ export default function ShowComment(props) {
                 width: "100%", // 或者使用具体的宽度值，比如 '300px'
                 m: 1,
                 ml: 9,
-                mr: 2,
+                mr: 1,
               }}
               InputProps={{
                 style: {

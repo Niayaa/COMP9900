@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, TextField } from '@mui/material';
+import { Card, Button, CardContent, TextField } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -10,7 +10,17 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from '../AuthContext.js';
 
 export default function BookInfoPopUp(props) {
-
+    function getCurrentDateISOString() {
+        const now = new Date();
+        // 将日期转换为ISO字符串（例如 "2024-03-07T00:00:00.000Z"）
+        const isoString = now.toISOString();
+        // 截取字符串以获取不包含毫秒的部分，并保持Z表示UTC
+        return isoString.substring(0, 19) + 'Z';
+    }
+    
+    const todaydate = getCurrentDateISOString();
+    const [dayDifferece, setDayDifference] = useState(0);
+    
     const eventID = props.eventID;
     const user_id = props.cus_id
     const {user} = useAuth();
@@ -20,50 +30,51 @@ export default function BookInfoPopUp(props) {
     const [openCancelDialog, setOpenCancelDialog] = useState(false);
     const [cancelAmount, setCancelAmount] = useState(1);
     const [selectedReservation, setSelectedReservation] = useState(null);
-
+    
     const handleOpenCancelDialog = (info) => {
         setSelectedReservation(info);
         setOpenCancelDialog(true);
     };
-
+    
     const handleCloseCancelDialog = () => {
-        CancelTicket(cancelAmount, selectedReservation.reservation_id)
         setOpenCancelDialog(false);
     };
-
+    
     const handleCancelSubmit = async () => {
         if (window.confirm(`Are you sure you want to cancel ${cancelAmount} tickets?`)) {
             // Proceed with cancellation logic here...
+            CancelTicket(cancelAmount, selectedReservation.reservation_id)
             handleCloseCancelDialog();  // Close the dialog after action
         }
     };
-
+    
     // useEffect(() => {
     //     // fetchEventInfo and fetchBookInfo logic...
     // }, [InfoArray]);
-
+    
     
     async function fetchEventInfo(){
-      // await fetch("https://660265249d7276a75553232d.mockapi.io/event/"+`${eventID}`,{
-          await fetch("http://127.0.0.1:8000/event_page_detail/?event_id="+`${eventID}`,{
-          method: 'GET',
-          headers: {
-              'content-type':'application/json',
-              
-          },
-      }).then(res => {
+        // await fetch("https://660265249d7276a75553232d.mockapi.io/event/"+`${eventID}`,{
+            await fetch("http://127.0.0.1:8000/event_page_detail/?event_id="+`${eventID}`,{
+                method: 'GET',
+                headers: {
+                    'content-type':'application/json',
+                    
+                },
+            }).then(res => {
           if (res.ok) {
               return res.json();
-          }
-          // handle error
-      }).then(event => {
-          setEventInfo(event.token)
+            }
+            // handle error
+        }).then(event => {
+            setEventInfo(event.token)
+            // Convert date strings to Date objects
 
         }).catch(error => {
-          // handle error
-          alert(error);
+            // handle error
+            alert(error);
         })
-      }
+    }
 
     async function fetchBookInfo(){
         console.log("fetchBookInfofetchBookInfo")
@@ -89,20 +100,23 @@ export default function BookInfoPopUp(props) {
                 setInfoArray([])
     
             }
+        }else{
+            setInfoArray([])
         }
         }).catch(error => {
           // handle error
-          setInfoArray(null)
+          setInfoArray([])
           if(error === "TypeError: Failed to fetch"){
 
           }
           console.log("KKKKKKKKKKKKKKKK",error)
-        //   alert(error);
+          alert(error);
         })
       }
   
   
     async function CancelTicket(amount, reservation_id){
+        await fetchBookInfo(); // Re-fetch tickets info before cancellation (to ensure the latest info is used
         // if (window.confirm("Are you sure you want to cancel this ticket?")) {
             await fetch(`http://127.0.0.1:8000/cus/cancel/event/?amount=${amount}&reservation_id=${reservation_id}`, {
                 method: 'PUT',
@@ -128,12 +142,35 @@ export default function BookInfoPopUp(props) {
             });
         // }
     }
-
-
     useEffect(() => {
-        fetchEventInfo();
-        fetchBookInfo();
-    }, []);
+        const fetchData = async () => {
+            await fetchEventInfo();
+        };
+
+        fetchData();
+        fetchBookInfo(); // Assuming fetchBookInfo is another function you need to call
+        console.log("todaydate", todaydate);
+    }, []); // Empty dependency array to run only once
+
+
+    // Second useEffect to calculate the day difference when eventInfo changes
+    useEffect(() => {
+        if (eventInfo.date) { // Make sure the date exists
+            console.log("eventInfo.date", eventInfo.date);
+
+            const dateTime1 = new Date(todaydate);
+            const dateTime2 = new Date(eventInfo.date);
+
+            // Calculate the difference in milliseconds
+            const differenceInMilliseconds = dateTime2 - dateTime1;
+
+            // Convert the difference from milliseconds to days
+            const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+            setDayDifference(differenceInDays);
+
+            console.log(`The difference is ${differenceInMilliseconds} milliseconds, which is approximately ${differenceInDays} days.`);
+        }
+    }, [eventInfo]); // Dependency on eventInfo
 
 
     return (
@@ -148,16 +185,16 @@ export default function BookInfoPopUp(props) {
                   <Grid2 container >
 
                       <Grid2 item >
-                          <Box  sx={{ outline: '1px solid', marginTop: 2}}>{eventInfo.title}</Box>
-                          <Box  sx={{ outline: '1px solid', padding: 6}}>{eventInfo.description}</Box>
+                          <Card  sx={{ m:1, marginTop: 2, padding: 2}}>{eventInfo.title}</Card>
+                          <Card  sx={{ m:1, padding: 6}}>{eventInfo.description}</Card>
                       </Grid2>
                       <Grid2 item sx={{m : 1, mt: 2}}>
-                          <Box  sx={{ padding: 1}}>Date: {eventInfo.date}</Box>
-                          <Box  sx={{ padding: 1}}>Event Address: {eventInfo.location}</Box>
+                          <Card  sx={{ m:1, padding: 1}}>Date: {eventInfo.date}</Card>
+                          <Card  sx={{ m:1, padding: 1}}>Event Address: {eventInfo.location}</Card>
                       </Grid2>
                   </Grid2>
               
-              { user && (InfoArray !== null ) ? (InfoArray.map((info, index) => (
+              { user && (InfoArray !== null ) && (InfoArray.length > 0)? (InfoArray.map((info, index) => (
                     <Grid key={index}sx={{outline: '1px solid', marginTop: 2}} container justifyContent="space-between" alignItems="center">
                         <Grid item >
                             <p>Ticket type: {info.ticket_type}</p>
@@ -170,7 +207,10 @@ export default function BookInfoPopUp(props) {
                         </Grid>
                         <Grid item>
                             {/* <Button onClick={() => CancelTicket(1, info.reservation_id)}>Cancel</Button> */}
-                            <Button onClick={() => {handleOpenCancelDialog(info)}}>Cancel</Button>
+                            {
+                                todaydate < eventInfo.date || (dayDifferece > 7) ? <Button onClick={() => {handleOpenCancelDialog(info)}}>Cancel</Button> : <Button disabled>Cancel</Button>
+                            // <Button onClick={() => {handleOpenCancelDialog(info)}}>Cancel</Button>
+                            }
                         </Grid>
                     </Grid>
                 ))):(<></>)}
@@ -195,6 +235,7 @@ export default function BookInfoPopUp(props) {
               <DialogTitle>Cancel Tickets</DialogTitle>
               <DialogContent>
                   <TextField
+                      sx={{mt:1}}
                       label="Number of Tickets to Cancel"
                       type="number"
                       InputProps={{ inputProps: { min: 1, max: selectedReservation ? selectedReservation.amount : 1 } }}

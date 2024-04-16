@@ -96,6 +96,8 @@ const OrganizerEventPage = () => {
       setSelectedEventType(eventType);
     };
 
+
+
   const [selectedEventType, setSelectedEventType] = useState('upcoming');
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);

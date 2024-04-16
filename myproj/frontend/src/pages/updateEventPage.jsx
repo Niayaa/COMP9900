@@ -345,7 +345,7 @@ function EventPage(props) {
                                 }}>
                                 <CardMedia
                                     sx={{ height: 200 }}
-                                    image={eventInfo.event_image_url}
+                                    image={eventInfo.image}
                                     title=""
                                 />
                                 <CardHeader
@@ -403,12 +403,12 @@ function EventPage(props) {
                     <Grid container direction={'column'} >
                     <Grid sx={{ml: 1}}>Tickets</Grid>
                     <Grid sx={{ml: 1}}>Last selling date: {eventInfo.last_selling_date}</Grid>
-                    {/* <Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
+                    <Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
                         textTransform: 'none',  
                         minWidth: 250,          
                     }}  onClick={handlePopupBookInfo}>Check My Booking Info</Button>
                     <BookInfoPopUp cus_id={user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp>
-                    </Grid> */}
+                    </Grid>
                     { 
                     // eventInfo.last_selling_date > todaydate 
                     // && 
@@ -453,12 +453,20 @@ function EventPage(props) {
                         <FormHelperText>Select Seat Amount</FormHelperText>
                     </FormControl>
                     <br></br>
-                    {isLoggedIn && isCustomer && ( 
+                    {isLoggedIn && isCustomer && (todaydate <= eventInfo.last_selling_date) &&( 
                         <>
                         <Button sx={{ m: 1, minWidth: 250 }} type='button' variant='contained' onClick={handlePopupPayment}>Book</Button>
                         <PaymentPopUp open={openP} cus_id={user_id} handleClose={handleClosePayment} tkprice={seat.price} seatArea={seat.area} seatAmount={seatamount} userEmail={propss.user_email} eventID={propss.ID}></PaymentPopUp>
                         </>
                     )}
+                    {
+                        (!isLoggedIn || !isCustomer) && (
+                        <Grid sx={{ml:1}}>Only login as customer can book.</Grid>
+                    )}
+                    {
+                        (todaydate > eventInfo.last_selling_date) && (
+                        <Grid sx={{ml:1}}>Over the last selling day</Grid>)
+                    }
                     
                     </form>
                     }

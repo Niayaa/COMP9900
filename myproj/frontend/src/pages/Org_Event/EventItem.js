@@ -24,7 +24,8 @@ import { Container,
   Drawer,
   Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-export const EventItem = ({ event, userId, showCancelIcon = true }) => {
+import { deleteEvent } from './DeletedEvent';
+export const EventItem = ({ event, userId, onDeleteEvent,showCancelIcon = true }) => {
   const [tickets, setTickets] = useState([]);
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
@@ -57,52 +58,6 @@ export const EventItem = ({ event, userId, showCancelIcon = true }) => {
       },
     });
   };
-
- // deleteEvent function that handles the deletion logic
-async function deleteEvent(eventId, onSuccess, onError) {
-  const url = `http://127.0.0.1:8000/delete_event/?event_id=${eventId}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'DELETE', // Assuming DELETE is the correct method
-      headers: {
-        'Content-Type': 'application/json',
-        // Add any required headers, such as Authorization headers
-      },
-    });
-
-    if (response.ok) {
-      // Call onSuccess callback if the deletion was successful
-      onSuccess(eventId);
-    } else {
-      // If the server responds with an error, handle it here
-      const errorData = await response.json();
-      console.error('Failed to delete the event:', errorData);
-      onError('Error deleting event. Please try again.');
-    }
-  } catch (error) {
-    // Handle errors in the fetch operation
-    console.error('Fetch error:', error);
-    onError('Error communicating with the server. Please try again.');
-  }
-}
-
-// Usage in a component or elsewhere
-const handleCancelClick = (eventid) => {
-  deleteEvent(
-    eventid.event_id, 
-    (eventId) => {
-      // Success callback: update the state and navigate
-      setEvents(prevEvents => prevEvents.filter(event => event.event_id !== eventId));
-    },
-    (errorMessage) => {
-      // Error callback: display an error message
-      alert(errorMessage);
-    }
-  );
-};
-
-
   return (
     <Box>
     <ListItem>
@@ -113,7 +68,7 @@ const handleCancelClick = (eventid) => {
      
       <ListItemSecondaryAction>
       {showCancelIcon && (
-            <IconButton edge="end" aria-label="cancel" onClick={() => handleCancelClick(event)}>
+            <IconButton edge="end" aria-label="cancel" onClick={() => onDeleteEvent(event.event_id)}>
               <CancelIcon />
             </IconButton>
           )}

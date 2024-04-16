@@ -1047,7 +1047,7 @@ class OrganizerFunctionPage:
             'code': '4',
             'message': 'This function only accepts POST data'
         }, status = 405)
-    @csrf_exempt 
+    
     @api_view(['DELETE'])
     def delete_event(request): 
         '''
@@ -1057,7 +1057,7 @@ class OrganizerFunctionPage:
         成功显示：删除事件成功。同时删除预定的记录，退款，和群发邮件。
         '''
         if request.method == "DELETE":
-            event_id = request.data.get('event_id', None)  # Accessing the ID from request body
+            event_id = request.query_params.get('event_id', None)  # Accessing the ID from request body
             if event_id is not None:
                 try:
                     # 先收集预订了该事件的所有用户的邮箱地址

@@ -24,7 +24,7 @@ export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkpric
           }
         // handle error
     }).then(task => {
-
+        
       }).catch(error => {
         // handle error
         alert(error);
@@ -36,8 +36,10 @@ export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkpric
 
             console.log('Payment Successful:', details);
             // 实现具体的逻辑
+        }).then(task=>{
+            
             Book()
-        });
+        })
     };
 
     return (
