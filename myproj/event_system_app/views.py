@@ -1546,7 +1546,7 @@ class PayAndCancel:
 
 
     @api_view(['POST'])
-    def payment(request): #测试完成
+    def payment(request):  # 测试完成
         '''
         :request ：接收JSON格式数据，数据内包括{ticket_type, ticket_number}。同时从url内获取 event_id 和 user_id
 
@@ -1559,100 +1559,68 @@ class PayAndCancel:
             4:彻底没有余票了
             5:输入的个人信息或者演出信息有问题
             6:数据的输入格式存在问题
-        
         '''
-        email = request.query_params.get('email', None)
+        user_id = request.query_params.get('user_id', None)
         event_id = request.query_params.get('event_id', None)
-        # print("come here 1")
 
-        if not email or not event_id:
-            # print("come here 2")
-            return Response({
-                'code': '5',
-                'message': 'Missing email or event_id'
-            }, status = 400)
+        if not user_id or not event_id:
+            return Response({'code': '5', 'message': 'Missing email or event_id'}, status=400)
 
         if request.method == 'POST':
             try:
                 data = json.loads(request.body.decode('utf-8'))
-                # print("come here 3")
             except json.JSONDecodeError:
-                # print("come here 4")
-                return Response({
-                    'code': '6',
-                    'message': 'Invalid json data'
-                }, status = 400)
+                return Response({'code': '6', 'message': 'Invalid json data'}, status=400)
 
-            organizer = Organizer.objects.filter(org_email = email).first()
-            if organizer:
-                # print("come here 6")
-                return Response({
-                    'code':'2',
-                    "message": "Only customer can book the event"
-                }, status = 200)
+            ticket_type = data.get('ticket_type')
+            ticket_number = int(data.get('ticket_number', 0))
 
-            # print("come here 7")
-            ticket_type = data['ticket_type']
-            ticket_number = int(data['ticket_number'])
-            
-            if ticket_number and ticket_type:
-                # print("come here 8")
-                customer = Customer.objects.filter(cus_email = email).first()
-                event = Event_info.objects.filter(event_id = event_id).first()
-                ticket = Ticket_info.objects.filter(event = event, ticket_type = ticket_type).first()
-
-
+            if ticket_number > 0 and ticket_type:
+                customer = Customer.objects.filter(cus_id=user_id).first()
+                event = Event_info.objects.filter(event_id=event_id).first()
+                ticket = Ticket_info.objects.filter(event=event, ticket_type=ticket_type).first()
 
                 if ticket.ticket_remain >= ticket_number:
-                    # print("come here 9")
 
                     booking_seat_string = seat_booking(ticket, ticket_number)
-
-                    history_booking = Reservation.objects.filter(customer = customer, event = event, ticket = ticket).first()
+                    history_booking = Reservation.objects.filter(customer=customer, event=event,
+                                                                 ticket=ticket).first()
                     if history_booking:
-                        # print("come here 9")
                         history_booking.amount += ticket_number
                         history_booking.reserve_seat += "," + booking_seat_string
                         history_booking.save()
                     else:
-                        # print("come here 10")
                         new_reserve = Reservation(
-                            reservation_time = timezone.now().replace(second=0,microsecond=0),
-                            event = event,
-                            customer = customer,
-                            ticket = ticket,
-                            amount = ticket_number,
-                            reserve_seat = booking_seat_string
+                            reservation_time=timezone.now().replace(second=0, microsecond=0),
+                            event=event,
+                            customer=customer,
+                            ticket=ticket,
+                            amount=ticket_number,
+                            reserve_seat=booking_seat_string
                         )
                         new_reserve.save()
-                    # print("come here 11")
+
                     ticket.ticket_remain -= ticket_number
-                    if ticket.ticket_remain < 0:
-                        ticket.ticket_remain = 0
-                    print("come here 12")
                     ticket.save()
-                    print("come here 13")
-                    return Response({
-                        'code': '1',
-                        'message': 'Successfully booking.',
-                        'token':ticket.ticket_remain
-                    }, status = 200)
+
+                    # Send email notification
+                    send_mail(
+                        'Booking Confirmation',
+                        f'Your booking for {event.event_name} with {ticket_number} tickets of type {ticket_type} is confirmed.',
+                        settings.EMAIL_HOST_USER,
+                        [customer.cus_email],
+                        fail_silently=False,
+                    )
+
+                    return Response({'code': '1', 'message': 'Successfully booking.'}, status=200)
                 else:
-                    return Response({
-                        'code':'3',
-                        'message': 'There is no enough remain tickect for this type for this event.'
-                    }, status = 400)
+                    return Response(
+                        {'code': '3', 'message': 'There is no enough remain tickect for this type for this event.'},
+                        status=200)
             else:
-                # print("come here 14")
-                return Response({
-                    'code':'6',
-                    'message':'something wrong with the input data'
-                }, status = 400)
+                return Response({'code': '6', 'message': 'something wrong with the input data'}, status=400)
         else:
-            Response({
-                'code': '4',
-                'message': 'This function only accepts POST data'
-            }, status = 405)
+            return Response({'code': '4', 'message': 'This function only accepts POST data'}, status=405)
 
     @api_view(['PUT'])
     def cancel_ticket(request): #测试完成

@@ -86,6 +86,7 @@ function EventPage(props) {
     const isOrganize = !(propss.isCustomer);
     // console.log("isOrganize", isOrganize)
     // console.log("props", propss.isLoggedIn)
+    console.log(propss.user_email)
 
     const user_id = user? user.id: null;
     const [eventInfo, setEventInfo] = useState([])
