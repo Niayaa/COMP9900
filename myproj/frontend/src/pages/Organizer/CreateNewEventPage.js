@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -10,7 +10,8 @@ import {
   FormControlLabel,
   Radio,
   IconButton,
-  Chip,
+  Checkbox,
+  FormGroup,
   Snackbar
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -18,7 +19,53 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../AuthContext";
 
+const TagSelector = ({ category, tags, onChange }) => {
+  return (
+    <FormControl component="fieldset" sx={{ mt: 2 }}>
+      <FormLabel component="legend">{category.charAt(0).toUpperCase() + category.slice(1)} Tags</FormLabel>
+      <FormGroup>
+        {tags.map((tag, index) => (
+          <FormControlLabel
+            key={index}
+            control={<Checkbox checked={tag.checked} onChange={(e) => onChange(index, e.target.checked)} />}
+            label={tag.name}
+          />
+        ))}
+      </FormGroup>
+    </FormControl>
+  );
+};
+
+
 const CreateNewEventPage = () => {
+  const categories = {
+    live: ['rock', 'pop', 'electronic', 'jazz', 'acoustic', 'indie', 'folk', 'blues', 'country', 'reggae'],
+    show: ['magic', 'dance', 'circus', 'drama', 'puppetry', 'illusion', 'mime', 'ballet', 'opera', 'theater'],
+    comedy: ['standup', 'improv', 'satire', 'sketch', 'dark', 'parody', 'slapstick', 'absurdist', 'observational', 'situational'],
+    opera: ['classic', 'modern', 'experimental', 'baroque', 'romantic', 'italian', 'german', 'french', 'russian', 'english']
+  };
+
+  const [selectedTags, setSelectedTags] = useState(() => {
+    const initialTags = {};
+    Object.keys(categories).forEach(category => {
+      initialTags[category] = categories[category].map(tag => ({ name: tag, checked: false }));
+    });
+    return initialTags;
+  });
+
+  useEffect(() => {
+    const selected = {};
+    Object.keys(categories).forEach(category => {
+      selected[category] = selectRandomTags(categories[category]).map(tag => ({ name: tag, checked: false }));
+    });
+    setSelectedTags(selected);
+  }, []);
+
+  const selectRandomTags = (tags) => {
+    const shuffled = [...tags].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
+  };
+
   const [eventDetails, setEventDetails] = useState({
     event_name: '',
     event_date: '',
@@ -36,6 +83,12 @@ const CreateNewEventPage = () => {
 
   const handleChange = (prop) => (event) => {
     setEventDetails({ ...eventDetails, [prop]: event.target.value });
+  };
+
+  const handleCheckboxChange = (category, index) => (event) => {
+    const updatedCategoryTags = [...selectedTags[category]];
+    updatedCategoryTags[index].checked = event.target.checked;
+    setSelectedTags({ ...selectedTags, [category]: updatedCategoryTags });
   };
 
   const handleTicketChange = (index, prop) => (event) => {
@@ -57,22 +110,12 @@ const CreateNewEventPage = () => {
     setEventDetails({ ...eventDetails, tickets: updatedTickets });
   };
 
-  const handleAddTag = (event) => {
-    if (event.key === 'Enter' && event.target.value.trim() !== '') {
-      const newTags = [...eventDetails.event_tags, event.target.value.trim()];
-      setEventDetails({ ...eventDetails, event_tags: newTags });
-      event.target.value = ''; // Clear input after adding
-    }
+  const handleTagChange = (category, index, checked) => {
+    const updatedTags = [...selectedTags[category]];
+    updatedTags[index].checked = checked;
+    setSelectedTags({ ...selectedTags, [category]: updatedTags });
   };
 
-  const removeTag = (tagToRemove) => {
-    const newTags = eventDetails.event_tags.filter(tag => tag !== tagToRemove);
-    setEventDetails({ ...eventDetails, event_tags: newTags });
-  };
-
-  const handleCloseSnackbar = () => {
-    setError('');
-  };
 
   const handleSubmit = async () => {
       // Basic validation
@@ -101,6 +144,13 @@ const CreateNewEventPage = () => {
     return;
   }
 
+  const tags = [];
+    Object.values(selectedTags).forEach(category =>
+      category.forEach(tag => {
+        if (tag.checked) tags.push(tag.name);
+      })
+    );
+  eventDetails.event_tags = tags;
   // Assuming the event_image_url should be the actual URL after image upload
   const formData = new FormData();
   formData.append('event_name', eventDetails.event_name);
@@ -151,12 +201,16 @@ const CreateNewEventPage = () => {
           <FormControlLabel value="Opera" control={<Radio />} label="Opera" />
         </RadioGroup>
       </FormControl>
-      <TextField label="Event Tags" placeholder="Press Enter to add tags" variant="outlined" onKeyUp={handleAddTag} sx={{ mb: 2, width: "300px" }} />
-      {eventDetails.event_tags.map((tag, index) => (
-        <Chip key={index} label={tag} onDelete={() => removeTag(tag)} color="primary" />
-      ))}
       <TextField label="Ticket Selling Last Date" variant="outlined" type="datetime-local" value={eventDetails.event_last_selling_date} onChange={handleChange('event_last_selling_date')} sx={{ mb: 2, width: "300px" }} />
-      {eventDetails.tickets.map((ticket, index) => (
+      {Object.keys(selectedTags).map(category => (
+        <TagSelector
+          key={category}
+          category={category}
+          tags={selectedTags[category]}
+          onChange={(index, checked) => handleTagChange(category, index, checked)}
+        />
+      ))}
+        {eventDetails.tickets.map((ticket, index) => (
         <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <TextField label="Seat Type" value={ticket.ticket_type} onChange={handleTicketChange(index, 'ticket_type')} />
           <TextField label="Amount" type="number" value={ticket.ticket_amount} onChange={handleTicketChange(index, 'ticket_amount')} />

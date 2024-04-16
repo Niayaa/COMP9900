@@ -71,13 +71,14 @@ const OrganizerAccountPage = () => {
     const toggleEdit = () => {
       setIsEditing(!isEditing);
       if (isEditing) {
+        console.log(formData);
         saveUpdatedData();
       }
     };
   
     // Function to send updated data to the Django backend (same as before)
     const saveUpdatedData = async () => {
-        const url = 'http://127.0.0.1:8000/edit/org/'; // 示例API端点，根据你的后端API调整
+        const url = `http://127.0.0.1:8000/edit/org/?user_id=${user.id}`; // 示例API端点，根据你的后端API调整
         try {
           const response = await fetch(url, {
             method: 'PUT', // 或者'POST', 根据后端API的要求

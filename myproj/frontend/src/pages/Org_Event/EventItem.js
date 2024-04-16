@@ -6,6 +6,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import CancelIcon from '@mui/icons-material/Cancel';
 import InfoIcon from '@mui/icons-material/Info';
+import EditIcon from '@mui/icons-material/Edit';
 import { Container, 
   Grid, 
   TextField, 
@@ -25,10 +26,27 @@ import { Container,
   Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { deleteEvent } from './DeletedEvent';
+import EditEventModal from './EditEventPage';
+
 export const EventItem = ({ event, userId, onDeleteEvent,showCancelIcon = true }) => {
   const [tickets, setTickets] = useState([]);
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  const handleEdit = () => {
+    setEditModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditModalOpen(false);
+  };
+  const handleSaveEvent = (id, updatedData) => {
+    console.log('Save event', id, updatedData);
+    // Call API to save the updated event
+    setEditModalOpen(false);
+  };
+
   useEffect(() => {
     // Construct the URL with the user ID and event ID
     const url = `http://127.0.0.1:8000/org/event/ticket/?event_id=${event.event_id}`;
@@ -67,6 +85,15 @@ export const EventItem = ({ event, userId, onDeleteEvent,showCancelIcon = true }
       />
      
       <ListItemSecondaryAction>
+        <IconButton onClick={handleEdit}>
+          <EditIcon />
+        </IconButton>
+        <EditEventModal
+          open={editModalOpen}
+          onClose={handleCloseModal}
+          event={event}
+          onSave={handleSaveEvent}
+        />
       {showCancelIcon && (
             <IconButton edge="end" aria-label="cancel" onClick={() => onDeleteEvent(event.event_id)}>
               <CancelIcon />

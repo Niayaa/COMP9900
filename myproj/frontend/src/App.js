@@ -20,6 +20,7 @@ import OrganzierAccountPage from "./pages/Organizer/OrganizerAccountPage";
 import OrganizerEventPage from "./pages/Organizer/OrganizerEventPage";
 import CreateNewEventPage from "./pages/Organizer/CreateNewEventPage";
 import OrganizerEventReport from "./pages/Organizer/OrganizerEventReport";
+import EditEventPage from "./pages/Org_Event/EditEventPage";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 function App() {
@@ -45,7 +46,7 @@ function App() {
         <Route path="/Org_Event" element={<OrganizerEventPage/>}/>
         <Route path="/Org_Account" element={<OrganzierAccountPage/>}/>
         <Route path="/CreateNew" element={<CreateNewEventPage/>}/>
-        <Route path="/CreateNew" element={<CreateNewEventPage/>}/>
+        <Route path="/Edit-Event" element={<EditEventPage/>}/>
         <Route path="/Org_Report" element={<OrganizerEventReport/>}/>
         <Route path="/Contact" element={<ContactPage/>}/>
         {/* 默认重定向到登录页 */}

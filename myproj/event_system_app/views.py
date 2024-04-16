@@ -843,7 +843,8 @@ class AccountInfoPage:
             customer['prefer_tags'] = data['prefer_tags']
         :return: code 和 message
         '''
-        if request.method == 'POST':
+        if request.method == 'PUT':
+            user_id = request.query_params.get('user_id', None)
             try:
                 data = json.loads(request.body)
             except Exception as e:
@@ -851,25 +852,25 @@ class AccountInfoPage:
                     'code': '3', 'message': 'Invalid json data'
                 }, status = 200)
 
-            customer = Customer.objects.filter(cus_id = data['id']).first()
-            customer = data_match(customer_list, customer)
-            if customer['cus_email'] != data['email']:
-                organizer = Organizer.objects.filter(org_email = data['email']).first()
-                new_customer = Customer.objects.filter(cus_email = data['email']).first()
-                if new_customer or organizer:
+            customer = Customer.objects.filter(cus_id = user_id).first()
+
+            if customer.cus_email != data['cus_email']:
+                organizer = Organizer.objects.filter(org_email = data['email']).count()
+                new_customer = Customer.objects.filter(cus_email = data['email']).count()
+                if new_customer != 0 or organizer != 0:
                     return Response({
                         'code':'2',
                         "message":'The email is already exist'
                     }, status = 200)
-
-            customer['cus_name'] = data['name']
-            customer['cus_email'] = data['email']
-            customer['gender'] = data['gender']
-            customer['bill_address'] = data['bill_address']
-            customer['cus_phone'] = data['phone']
-            customer['age_area'] = data['age_area']
-            customer['prefer_tags'] = data['prefer_tags']
-            Customer(**customer).save()
+            
+            customer.cus_name = data['cus_name']
+            customer.cus_email = data['cus_email']
+            customer.gender = data['gender']
+            customer.bill_address = data['bill_address']
+            customer.cus_phone = data['cus_phone']
+            customer.age_area = data['age_area']
+            customer.prefer_tags = data['prefer_tags']
+            customer.save()
             return Response({
                 'code': '1',
                 'message':'Successful from saving data'
@@ -880,21 +881,19 @@ class AccountInfoPage:
             'message': 'This function only accepts POST data'
         }, status = 405)
 
-
     @api_view(['PUT']) # 测验完成
     def edit_org_info(request):
         '''
         修改org账户的账户信息。从发送的表单当中接收数据
                       json的字典数据
-
             organizer['company_name'] = data['name']
             organizer['org_email'] = data['email']
             organizer['company_address'] = data['address']
             organizer['org_phone'] = data['phone']
-
         :return:
         '''
-        if request.method == 'POST':
+        if request.method == 'PUT':
+            user_id = request.query_params.get('user_id', None)
             try:
                 data = json.loads(request.body)
             except Exception as e:
@@ -903,23 +902,23 @@ class AccountInfoPage:
                     'message': 'Invalid json data'
                 }, status = 400)
 
-            organizer = Organizer.objects.filter(org_id = data['id']).first()
-            organizer = data_match(organizer_list, organizer)
+            organizer = Organizer.objects.filter(org_id = user_id).first()
+            
 
-            if organizer['org_email'] != data['email']:
-                customer = Customer.objects.filter(cus_email = data['email']).first()
-                new_organizer = Organizer.objects.filter(org_email = data['email']).first()
-                if new_organizer or customer:
+            if organizer.org_email != data['email']:
+                customer = Customer.objects.filter(cus_email = data['email']).count()
+                new_organizer = Organizer.objects.filter(org_email = data['email']).count()
+                if new_organizer != 0 or customer !=0 :
                     return Response({
                         'code':'2',
                         "message":'The email is already exist'
                     }, status = 200)
 
-            organizer['company_name'] = data['name']
-            organizer['org_email'] = data['email']
-            organizer['company_address'] = data['address']
-            organizer['org_phone'] = data['phone']
-            Organizer(**organizer).save()
+            organizer.company_name = data['name']
+            organizer.org_email = data['email']
+            organizer.company_address = data['billAddress']
+            organizer.org_phone = data['phoneNumber']
+            organizer.save()
             return Response({
                 'code': '1',
                 'message':'Successful from saving data'
@@ -1079,7 +1078,7 @@ class OrganizerFunctionPage:
         成功显示：删除事件成功。同时删除预定的记录，退款，和群发邮件。
         '''
         if request.method == "DELETE":
-            event_id = request.data.get('event_id', None)  # Accessing the ID from request body
+            event_id = request.query_params.get('event_id', None)  # Accessing the ID from request body
             if event_id is not None:
                 try:
                     # 先收集预订了该事件的所有用户的邮箱地址
