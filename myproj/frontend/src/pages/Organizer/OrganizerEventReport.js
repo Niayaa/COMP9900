@@ -4,11 +4,13 @@ import EventOverview from './Report/EventOverview';
 import TicketAnalysis from './Report/TicketAnalysis';
 import EventTypePieChart from './Report/EventTypePieChart';
 import TicketSalesLineChart from './Report/TicketSalesLineChart';
+import { useAuth } from '../AuthContext';
 
 function Reports() {
   const [year, setYear] = useState('');
   const [eventType, setEventType] = useState('');
-
+  const {user} = useAuth();
+  const userId = user.id;
   const handleYearChange = (event) => {
     setYear(event.target.value);
   };
@@ -48,23 +50,10 @@ function Reports() {
       </Typography>
       <Grid container spacing={3}>
       <Grid item xs={12} md={6}>
-                <EventTypePieChart events={[{ name: 'Concert', value: 400 }, { name: 'Opera', value: 300 }]} />
+                <EventTypePieChart userId={userId} />
             </Grid>
             <Grid item xs={12} md={6}>
-                <TicketSalesLineChart salesData={[
-                    { month: 'Jan', tickets: 400 },
-                    { month: 'Feb', tickets: 300 },
-                    { month: 'Mar', tickets: 500 },
-                    { month: 'Apr', tickets: 200 },
-                    { month: 'May', tickets: 600 },
-                    { month: 'Jun', tickets: 700 },
-                    { month: 'Jul', tickets: 500 },
-                    { month: 'Aug', tickets: 600 },
-                    { month: 'Sep', tickets: 800 },
-                    { month: 'Oct', tickets: 700 },
-                    { month: 'Nov', tickets: 500 },
-                    { month: 'Dec', tickets: 650 },
-                ]} />
+                <TicketSalesLineChart userId={userId} />
             </Grid>
     </Grid>
       <Select value={year} onChange={handleYearChange} displayEmpty>
