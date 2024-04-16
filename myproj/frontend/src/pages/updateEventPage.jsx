@@ -203,7 +203,23 @@ function EventPage(props) {
             // console.log("fetchEventInfo", event)
             setEventInfo(event.token)
             // console.log("Hei HHH",event.token.type )
-            setTags([event.token.type, ""])
+            if(event.token.event_tags===null || event.token.event_tags===undefined || event.token.event_tags===""){
+                setTags(["No tag"])
+            }else{
+
+                setTags([event.token.event_tags, ""])
+                let jsonStr = event.token.event_tags.replace(/'/g, '"');
+    
+                // 使用JSON.parse()将字符串转换为数组
+                let arr = JSON.parse(jsonStr);
+                setTags(arr|| [])
+                if (Array.isArray(tags)) {
+                    console.log("Hei hei hei", tags);
+                }else{
+                    console.log("Hei hei hei", "not an array");
+                }
+                console.log("Hei hei heii", tags)
+            }
             setTicketType(Object.keys(event.token.tickets))
             setTicketPrice(Object.values(event.token.tickets))
             // console.log(Object.values(event.token.tickets)[1])
@@ -216,20 +232,10 @@ function EventPage(props) {
             //     console.log("Hei hei hei", "not an array");
             // }
             
-            let jsonStr = event.token.event_tags.replace(/'/g, '"');
-
-            // 使用JSON.parse()将字符串转换为数组
-            let arr = JSON.parse(jsonStr);
-            setTags(arr|| [])
-            if (Array.isArray(tags)) {
-                console.log("Hei hei hei", tags);
-            }else{
-                console.log("Hei hei hei", "not an array");
-            }
-            console.log("Hei hei heii", tags)
 
           }).catch(error => {
             // handle error
+            alert("OOOP")
             alert(error);
           })
     }
@@ -250,7 +256,12 @@ function EventPage(props) {
         };
         
         fetchData();
-        setTags(eventInfo.event_tags|| [])
+        if(eventInfo){
+            setTags(eventInfo.event_tags|| [])
+
+        }else{
+            setTags([])
+        }
         
         // if(propss.isCustomer === 'true' || propss.isCustomer === true){
         //     setIsCustomer(true);
@@ -403,13 +414,12 @@ function EventPage(props) {
                     <Grid container direction={'column'} >
                     <Grid sx={{ml: 1}}>Tickets</Grid>
                     <Grid sx={{ml: 1}}>Last selling date: {eventInfo.last_selling_date}</Grid>
-                    
-                    {/*<Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
+                    {/* <Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
                         textTransform: 'none',  
                         minWidth: 250,          
                     }}  onClick={handlePopupBookInfo}>Check My Booking Info</Button>
                     <BookInfoPopUp cus_id={user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp>
-                </Grid>*/}
+                    </Grid> */}
                     { 
                     // eventInfo.last_selling_date > todaydate 
                     // && 
