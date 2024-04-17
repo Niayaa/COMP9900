@@ -4,11 +4,14 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetTicketNumber } from "./Payment";
+import { useAuth } from "../AuthContext";
+
 export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkprice}) {
+    const { user } = useAuth();
     console.log("PPPPPP", seatAmount )
     async function Book(){
 
-        await fetch(`http://127.0.0.1:8000/booking/?email=${userEmail}&event_id=${parseInt(eventID)}`,{
+        await fetch(`http://127.0.0.1:8000/booking/?user_id=${user.id}&event_id=${parseInt(eventID)}`,{
         method: 'POST',
         headers: {
             'content-type':'application/json',

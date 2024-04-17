@@ -941,7 +941,7 @@ class AccountInfoPage:
 
 def seat_pool_cal(ticket_type, amount):
     seat_pool_list = []
-    for single_seat in range(1, 100):
+    for single_seat in range(1, amount):
         row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
         seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
         seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
@@ -2086,24 +2086,28 @@ class EventPage:
     @api_view(['POST'])
     def like_Comment(request):
         comment_id = request.query_params.get('comment_id')
-        cus_id = request.query_params.get('user_id')
+        cus_id = request.query_params.get('cus_id')
 
         print(cus_id)
         print(comment_id)
         if comment_id:
             Comment = get_object_or_404(Comment_cus, pk=comment_id)
             customer = Customer.objects.filter(cus_id = cus_id).first()
+
+
+
             Comment.likes += 1  # 增加点赞数
             Comment.save()  # 保存更改
             # LikeCheck.objects.create(customer=customer, comment=Comment)
 
-            # likecheck = LikeCheck(
-            #     customer = customer,
-            #     comment = Comment,
-            #     created_at = timezone.now().replace(second=0, microsecond=0),
-            # )
+            likecheck = LikeCheck(
+                customer = customer,
+                comment = Comment,
+                created_at = timezone.now().replace(second=0, microsecond=0),
+            )
+            likecheck.save()
 
-            LikeCheck.objects.create(customer=customer, comment=Comment, created_at=timezone.now())
+            # LikeCheck.objects.create(customer=customer, comment=Comment, created_at=timezone.now())
 
             # likecheck.save()
             return Response({'message': 'Comment liked successfully', 'total_likes': Comment.likes})
@@ -2121,7 +2125,7 @@ class EventPage:
             2：曾经点赞过了，不能再点赞
             3：找不到这个customer或者comment
         '''
-        cus_id = request.query_params.get('user_id', None)
+        cus_id = request.query_params.get('cus_id', None)
         comment_id = request.query_params.get('comment_id', None)
         try:
             customer = Customer.objects.filter(cus_id = cus_id).first()
