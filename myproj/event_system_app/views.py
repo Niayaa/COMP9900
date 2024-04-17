@@ -271,16 +271,16 @@ class CusAccountFunction:
             user_id = request.query_params.get('user_id', None)  # 使用get避免KeyError异常
             event_id = request.query_params.get('event_id', None)  # 使用get避免KeyError异常
 
-            print("user_id: ", user_id)
-            print("event_id: ", event_id)
-            print("come here 1")
+            # print("user_id: ", user_id)
+            # print("event_id: ", event_id)
+            # print("come here 1")
             customer = Customer.objects.filter(cus_id = user_id).first()
             event = Event_info.objects.filter(event_id = event_id).first()
-            print("come here 2")
+            # print("come here 2")
 
             reservations = Reservation.objects.filter(customer=customer, event=event).all()
-            print(reservations)
-            print("come here 3")
+            # print(reservations)
+            # print("come here 3")
 
             if not reservations.exists():
                 return Response({
@@ -290,7 +290,7 @@ class CusAccountFunction:
 
             # reservations_info = {}
             reservations_info = []
-            print("come here 4")
+            # print("come here 4")
             for reservation in reservations:
                 ticket = reservation.ticket
                 reservations_info.append({
@@ -302,14 +302,14 @@ class CusAccountFunction:
                     'total_price': reservation.amount*ticket.ticket_price,
                     'reserving_time':reservation.reservation_time
             })
-            print("come here 5")
+            # print("come here 5")
             return Response({
                 'code':'1',
                 'message':'successfully finding the data',
                 'token':reservations_info
             }, status = 200)
 
-        print("come here 6")
+        # print("come here 6")
         return Response({
             'code': '4',
             'message': 'You have to use GET method'
@@ -332,33 +332,33 @@ class CusAccountFunction:
             user_id = request.query_params.get('user_id', None)
             customer = Customer.objects.filter(cus_id = user_id).first()
             # all_events = Event_info.objects.all()
-            print("come here 1")
+            # print("come here 1")
 
             event_list = []
 
             if customer is None: #找不到人的话
-                print("come here 2")
+                # print("come here 2")
                 return Response({
                     'code':'2', 
                     'message':'We can not find the customer'
                 },  status = 400)
-            print("come here 3")
+            # print("come here 3")
             now = timezone.now()
 
             reserved_event_ids = Reservation.objects.filter(customer=customer).values_list('event__event_id', flat=True)
-            print("come here 4")
+            # print("come here 4")
             available_events = Event_info.objects.filter(event_date__gt=now).exclude(event_id__in=reserved_event_ids)
             if available_events.count() == 0:
                 return Response({'code':'1'})
-            print("come here 5")
+            # print("come here 5")
             if customer.prefer_tags is None: #如果这个人没有写tag
-                print("come here 6")
+                # print("come here 6")
                 if customer.prefer_type: #如果这个人写了喜欢什么类型的演出
-                    print("come here 7")
+                    # print("come here 7")
                     special_type_events = available_events.filter(event_type=customer.prefer_type).all()
                     not_special_type_events = available_events.exclude(event_type=customer.prefer_type).all()
 
-                    print("come here 8")
+                    # print("come here 8")
                     for single in special_type_events: #先招呼上
                         event_list.append(
                             {
@@ -370,7 +370,7 @@ class CusAccountFunction:
                                 'event_description':single.event_description
                             }
                         )
-                    print("come here 9")
+                    # print("come here 9")
                     for single in not_special_type_events:
                         event_list.append(
                             {
@@ -382,7 +382,7 @@ class CusAccountFunction:
                                 'event_description':single.event_description
                             }
                         )
-                    print("come here 10")
+                    # print("come here 10")
                 else: # 如果这个人也没有写自己喜欢什么类型的演出，那直接把数据库的演出直接招呼上去
                     for single in available_events:
                         event_list.append(
@@ -543,7 +543,7 @@ class LoginPage:
         code:1代表成功, 2代表失败, 3代表非法数据, 4代表调用失败
         user_id:只有在登录成功的时候才有，失败的时候没有。成功的时候返回的事这个人在数据库的id
         '''
-        print(request.method == 'POST')
+        # print(request.method == 'POST')
         if request.method == 'POST':
 
             try:
@@ -941,7 +941,7 @@ class AccountInfoPage:
 
 def seat_pool_cal(ticket_type, amount):
     seat_pool_list = []
-    for single_seat in range(1, 101):
+    for single_seat in range(1, 100):
         row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
         seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
         seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
@@ -1515,10 +1515,10 @@ class PayAndCancel:
             5:输入的个人信息或者演出信息有问题
             6:数据的输入格式存在问题
         '''
-        email = request.query_params.get('email', None)
+        user_id = request.query_params.get('user_id', None)
         event_id = request.query_params.get('event_id', None)
 
-        if not email or not event_id:
+        if not user_id or not event_id:
             return Response({'code': '5', 'message': 'Missing email or event_id'}, status=400)
 
         if request.method == 'POST':
@@ -1527,15 +1527,11 @@ class PayAndCancel:
             except json.JSONDecodeError:
                 return Response({'code': '6', 'message': 'Invalid json data'}, status=400)
 
-            organizer = Organizer.objects.filter(org_email=email).first()
-            if organizer:
-                return Response({'code': '2', "message": "Only customer can book the event"}, status=200)
-
             ticket_type = data.get('ticket_type')
             ticket_number = int(data.get('ticket_number', 0))
 
             if ticket_number > 0 and ticket_type:
-                customer = Customer.objects.filter(cus_email=email).first()
+                customer = Customer.objects.filter(cus_id=user_id).first()
                 event = Event_info.objects.filter(event_id=event_id).first()
                 ticket = Ticket_info.objects.filter(event=event, ticket_type=ticket_type).first()
 
@@ -1567,7 +1563,7 @@ class PayAndCancel:
                         'Booking Confirmation',
                         f'Your booking for {event.event_name} with {ticket_number} tickets of type {ticket_type} is confirmed.',
                         settings.EMAIL_HOST_USER,
-                        [email],
+                        [customer.cus_email],
                         fail_silently=False,
                     )
 
@@ -2091,6 +2087,9 @@ class EventPage:
     def like_Comment(request):
         comment_id = request.query_params.get('comment_id')
         cus_id = request.query_params.get('user_id')
+
+        print(cus_id)
+        print(comment_id)
         if comment_id:
             Comment = get_object_or_404(Comment_cus, pk=comment_id)
             customer = Customer.objects.filter(cus_id = cus_id).first()
@@ -2098,12 +2097,15 @@ class EventPage:
             Comment.save()  # 保存更改
             # LikeCheck.objects.create(customer=customer, comment=Comment)
 
-            likecheck = LikeCheck(
-                customer = customer,
-                comment = Comment,
-                created_at = timezone.now().replace(second=0, microsecond=0),
-            )
-            likecheck.save()
+            # likecheck = LikeCheck(
+            #     customer = customer,
+            #     comment = Comment,
+            #     created_at = timezone.now().replace(second=0, microsecond=0),
+            # )
+
+            LikeCheck.objects.create(customer=customer, comment=Comment, created_at=timezone.now())
+
+            # likecheck.save()
             return Response({'message': 'Comment liked successfully', 'total_likes': Comment.likes})
         else:
             return Response({'error': 'Comment ID is required'}, status=400)
@@ -2130,12 +2132,12 @@ class EventPage:
         except Comment_cus.DoesNotExist:
             return JsonResponse({'code': '3', 'message': 'Comment not found.'}, status = 200)
 
-        if LikeCheck.objects.filter(customer=customer, comment=comment).exists():
+        if LikeCheck.objects.filter(customer=customer, comment=comment).count() != 0:
             return JsonResponse({'code': '2', 'message': 'You have already liked this comment.'}, status=200)
 
-        LikeCheck.objects.create(customer=customer, comment=comment, created_at=timezone.now())
+        # LikeCheck.objects.create(customer=customer, comment=comment, created_at=timezone.now())
         # 创建新的点赞记录
-        return JsonResponse({'code': '1', 'message': 'Comment liked successfully.'}, status=200)
+        return JsonResponse({'code': '1', 'message': 'There is no like.'}, status=200)
 
     
     @api_view(['GET'])
