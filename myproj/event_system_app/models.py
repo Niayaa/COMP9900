@@ -23,9 +23,9 @@ class Customer(models.Model):
     cus_name = models.TextField(max_length = 50, null = False)
     cus_email = models.TextField(max_length = 255, null = False)
     gender = models.TextField(max_length = 20,  null = True)
-    prefer_type = models.TextField(max_length = 20,
-                                    null = True)
-    
+    prefer_type = models.TextField(max_length = 20,null = True)
+
+
     age_area = models.TextField(max_length = 20, null = True)
 
     prefer_tags = models.TextField(blank=True, null = True)
@@ -167,7 +167,6 @@ class LikeCheck(models.Model):
 
     class Meta:
         db_table = 'Like'
-        unique_together = ('customer', 'comment')  # 确保每个用户对每条评论只能点赞一次
 
     def __str__(self):
         return f"{self.customer.cus_id} likes {self.comment.comment_id}"

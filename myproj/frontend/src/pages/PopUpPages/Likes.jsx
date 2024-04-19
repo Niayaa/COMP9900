@@ -26,7 +26,7 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
       } else {
         console.error('Failed to check if the comment has been liked');
       }
-      
+
     })
     .catch(error => {
       console.error('Error fetching likes:', error);

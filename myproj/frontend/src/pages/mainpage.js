@@ -156,7 +156,7 @@ export default function MainPage() {
         }}
       >
         <Typography variant="h4" gutterBottom>
-          Discovery events with us!
+          Event slogan sentence
         </Typography>
         <TextField
           label="Search area"

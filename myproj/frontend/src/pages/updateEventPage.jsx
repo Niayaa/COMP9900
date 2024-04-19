@@ -209,7 +209,7 @@ function EventPage(props) {
 
                 setTags([event.token.event_tags, ""])
                 let jsonStr = event.token.event_tags.replace(/'/g, '"');
-    
+
                 // 使用JSON.parse()将字符串转换为数组
                 let arr = JSON.parse(jsonStr);
                 setTags(arr|| [])
@@ -231,7 +231,7 @@ function EventPage(props) {
             // }else{
             //     console.log("Hei hei hei", "not an array");
             // }
-            
+
 
           }).catch(error => {
             // handle error
@@ -246,15 +246,15 @@ function EventPage(props) {
             console.log("Reload EventPage");
             await fetchEventInfo(propss.ID);
             console.log("useEff event", eventInfo); // 在这里可以看到 eventInfo 的值
-            
+
             if (eventInfo && eventInfo.comments && eventInfo.comments.length > 0) {
                 const averageRating = eventInfo.total_ratings / eventInfo.comments.length;
                 setAverageRating(averageRating);
                 setCommentLength(eventInfo.comments.length)
-                
+
             }
         };
-        
+
         fetchData();
         if(eventInfo){
             setTags(eventInfo.event_tags|| [])
@@ -262,7 +262,7 @@ function EventPage(props) {
         }else{
             setTags([])
         }
-        
+
         // if(propss.isCustomer === 'true' || propss.isCustomer === true){
         //     setIsCustomer(true);
         //     setisOrganizer(false);
@@ -275,7 +275,7 @@ function EventPage(props) {
 
     useEffect(() => {
         console.log("Tags updated:", tags); // 当 tags 更新时执行
-    }, [tags]); // 
+    }, [tags]); //
 
     const [openI, setOpenI] = useState(false);
 
@@ -288,7 +288,7 @@ function EventPage(props) {
     };
 
     return (
-    <div 
+    <div
     // className={classes.root}
         className='my-component-background'
     >
@@ -296,7 +296,7 @@ function EventPage(props) {
         <></>
         <Button variant="none" disabled={true}></Button>
        {/* <BookInfoPopUp cus_id={user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp> */}
-        <Grid container spacing={2} direction={'column'} 
+        <Grid container spacing={2} direction={'column'}
             sx={{
                 // bgcolor: 'lightblue',
                 backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -304,7 +304,7 @@ function EventPage(props) {
                 borderRadius: 2,
                 mx: 'auto', my: 4, width: '90%', height: 'auto',
             }}
-        > 
+        >
          <Grid container spacing={2} sx={{padding: 4}}>
             {/* left */}
             <Grid item xs={12} md={8}>
@@ -335,24 +335,24 @@ function EventPage(props) {
         )}
       </Grid>
     </Box>
-                <Grid> 
+                <Grid>
                     <Box
-                        
+
                         sx={{
 
                             p: { xs: 1, md: 2 }, // 在小屏幕上padding为1，在中等及以上屏幕上为2
-                            width: 'auto', 
+                            width: 'auto',
                             height: 'auto',
-                            
+
                             boxShadow: 5, // 应用阴影
                             borderRadius: 1, // 圆角
                         }}
                     >
                         <Paper elevation={0} square> {/* Paper组件用于展示内容 */}
                             {/* Your content here */}
-                            <Card style={{ 
-                                backgroundColor: 'rgba(255, 255, 255, 0.)', 
-                                backdropFilter: 'blur(10px)' 
+                            <Card style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.)',
+                                backdropFilter: 'blur(10px)'
                                 }}>
                                 <CardMedia
                                     sx={{ height: 200 }}
@@ -375,7 +375,7 @@ function EventPage(props) {
                         </Paper>
                     </Box>
                     <Grid>
-                    <Box       
+                    <Box
                         sx={{
                             width: {
                                 xs: '100%', // 小于600px宽时，Box占满容器
@@ -391,7 +391,7 @@ function EventPage(props) {
                             transition: 'all 0.5s ease',
                         }}
                     >
-                        </Box> 
+                        </Box>
                     </Grid>
             </Grid>
             </Grid>
@@ -415,8 +415,8 @@ function EventPage(props) {
                     <Grid sx={{ml: 1}}>Tickets</Grid>
                     <Grid sx={{ml: 1}}>Last selling date: {eventInfo.last_selling_date}</Grid>
                     {/* <Grid sx={{mb: 1, ml:1, mr: 1, }}><Button variant="outlined" sx={{
-                        textTransform: 'none',  
-                        minWidth: 250,          
+                        textTransform: 'none',
+                        minWidth: 250,
                     }}  onClick={handlePopupBookInfo}>Check My Booking Info</Button>
                     <BookInfoPopUp cus_id={user_id} open={openI} eventID={propss.ID} handleClose={handleCloseBookInfo}></BookInfoPopUp>
                     </Grid> */}

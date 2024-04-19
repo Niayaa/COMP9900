@@ -30,18 +30,16 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     if (!email.trim() || !password.trim()) {
       setError("Email and Password cannot be empty");
       return;
     }
 
     try {
-      // Use the login function from your AuthContext
       await login({ email, password });
-      // No need to handle navigation here, useEffect will take care of it based on user state change
+      // 成功登录后的代码（如果有必要）
     } catch (error) {
-      setError(error.message || "An error occurred during login.");
+      setError(error.message); // 设置错误信息以显示
     }
   };
 

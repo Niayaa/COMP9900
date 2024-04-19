@@ -6,10 +6,9 @@ import random
 from rest_framework.decorators import api_view
 from django.http import JsonResponse, HttpResponse
 
-
 def seat_pool_cal(ticket_type, amount):
     seat_pool_list = []
-    for single_seat in range(0, amount):
+    for single_seat in range(0, 100):
         row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
         seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
         seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
@@ -21,9 +20,7 @@ def seat_pool_cal(ticket_type, amount):
 def seat_booking(ticket, amount):
     all_string = ticket.ticket_seat_pool.split(',')
     booking_seat = all_string[:amount]
-    # print(booking_seat)
     remain_seat = all_string[amount:]
-    # print(remain_seat)
     ticket.ticket_seat_pool = ','.join(remain_seat)
     ticket.save()
 
@@ -50,7 +47,7 @@ def create_test_data(request):
             company_address="cc",
             org_phone="111"
         ).save()
-        # print("come here 2")
+
         Organizer.objects.create(  # 第二个org账户
             org_email="org@bbb.com",
             org_password=make_password("p123"),
@@ -58,11 +55,7 @@ def create_test_data(request):
             company_address="cc",
             org_phone="111"
         ).save()
-        # print("come here 3")
-    # else:
-    #     return HttpResponse("organizer is already exist")
 
-    # 创建 Customer 样例数据
     if not Customer.objects.exists():
         Customer.objects.create(  # 第一个cus账户，设置随机tag为6个, 设置喜欢演出类型
             cus_name="11",
@@ -78,7 +71,7 @@ def create_test_data(request):
         # print("come here 4")
         Customer.objects.create(  # 第一个cus账户，设置随机tag为6个，不设置喜欢演出类型
             cus_name="11",
-            cus_email="2545322339@qq.com",
+            cus_email="aa@qq.com",
             gender="Male",
             prefer_type="concert",
             cus_password=make_password("p123"),
@@ -109,21 +102,25 @@ def create_test_data(request):
                 "event_name": "TAYLOR SWIFT | THE ERAS TOUR",
                 "event_date": "2024-03-07",
                 "event_type": "concert",
+                'event_description': "Swift amazing live in sydney"
             },
             {
                 "event_name": "ED SHEERAN | + - = ÷ x TOUR",
                 "event_date": "2024-04-10",
                 "event_type": "live",
+                'event_description': None
             },
             {
                 "event_name": "BILLIE EILISH | HAPPIER THAN EVER TOUR",
                 "event_date": "2024-05-15",
                 "event_type": "concert",
+                'event_description':None
             },
             {
                 "event_name": "OPERA EVENT",
                 "event_date": "2024-05-20",
                 "event_type": "concert",
+                'event_description':None
             },
         ]
         i = 0
@@ -133,7 +130,7 @@ def create_test_data(request):
             event_instance = Event_info(
                 event_name=event["event_name"],
                 event_date=timezone.datetime.strptime(event["event_date"], "%Y-%m-%d"),
-                event_description="This is an amazing event you don't want to miss!",
+                event_description=event["event_description"] if event["event_description"] is not None else "This is an amazing event you don't want to miss!",
                 event_address="123 Event Venue St, City, Country",
                 event_image_url='static/event_default.jpg',
                 event_type=event["event_type"],
@@ -157,11 +154,8 @@ def create_test_data(request):
                     ticket_amount=100,
                     ticket_remain=100,
                     ticket_seat_pool=seat_pool_string
-                    # reservation_time = event_date - timezone.timedelta(days=8)
                 )
                 ticket.save()
-        # print("come here 10")
-        # print(ticket)
 
         event_type = ['concert', 'live', 'comedy', 'opera']
         event_date = [-700, -650 , -720, -365, -250, -90, -180, -7, 0, 6, 25, 45, 55, 65, 75, 85, 95, 105]
@@ -235,32 +229,13 @@ def create_test_data(request):
                 ticket_seat_pool=seat_pool_string
             )
             ticket.save()
-
     events = Event_info.objects.all()
-    # print(events)
-    # customers = Customer.objects.all()
     customers = Customer.objects.filter(cus_id__in=[1, 2])
-    # # print(customers)
-    # # 两个customer都订购了每场演出的各类票各张
     for event in events:
-        # print(event)
-        # if random.randint(0, 1):
         ticket = Ticket_info.objects.filter(event=event, ticket_type='A').first()
-        # print(a_type_ticket)
         for customer in customers:
-            # for ticket in tickets:
             amount = 2
-            # if amount == 0:
-            #     continue
-            # for _ in range(amount):
-            #     past_reserving = Reservation.objects.filter(customer=customer, event=event, ticket=ticket).first()
             booking_seat_string = seat_booking(ticket, amount)
-            print(booking_seat_string)
-                # if past_reserving:
-                #     past_reserving.amount += 1
-                #     past_reserving.reserve_seat += ',' + booking_seat_sting
-                #     past_reserving.save()
-                # else:
             reserve = Reservation(
                 customer=customer,
                 event=event,

@@ -15,13 +15,11 @@ urlpatterns = [
     path('create_sample_data/', view_test2.create_test_data, name = 'create_sample_data'),#1
     path('create_sample_data3/', view_test3.create_test_data, name = 'create_sample_data'),#1
 
-
     # Mainpage的功能
     # '''测试通过，搜索框功能还没编写''',
     #       1)按照演出种类和时间来进行筛选                
     #       2)搜索框搜索功能
     path('mainpage/events/filter', views.MainPage.mainpage_filter_events, name='mainpage_filter_events'),#2
-
 
     # customer_order_page 给用户推荐活动的界面
     #   测试完成
@@ -86,9 +84,6 @@ urlpatterns = [
     path('org/event/ticket/', views.OrganizerFunctionPage.data_showing_check, name = 'data_showing_check'), #31
     # 传入url的时候要按照这样传入 http://127.0.0.1:8000/org/event/ticket/?event_id=1
 
-
-
-
     # PayAndCancel（针对用户来说）
     #   测试完成
     #       1)订票功能
@@ -135,15 +130,9 @@ urlpatterns = [
 
     path('get_cache/', views.LoginPage.get_cache_data, name='get_cache'), #26
 
-
     # 检查该用户订购了在该演出订购了多少场票了
     path('payment/check_ticket_number/', views.PayAndCancel.cus_ticket_number_check, name='cus_ticket_stage_checking'), #29
     # http://127.0.0.1:8000/payment/check_ticket_number/?event_id=5&cus_id=5
-
-
-
-
-
 
     # organizer report的一系列功能
     #按照季度来获取创建过的事件的数量
@@ -166,7 +155,6 @@ urlpatterns = [
 
     #事件详细信息
     path('event_details_by_id/', views.OrganizerReport.event_details_by_id, name='event_details_by_id'),
-
 
     #按照时间来获取卖票的总收入
     path('get_annual_ticket_sales/', views.OrganizerReport.get_annual_ticket_sales, name='get_annual_ticket_sales'),
