@@ -93,12 +93,12 @@ const EditEventModal = ({ open, onClose, event, onSave, handleTicketChange }) =>
   };
 
   function convertLocalDateTimeToUTC(dateTimeLocal) {
-    // 创建一个新的日期对象，它在本地时区中解析 dateTimeLocal
+
     const localDate = new Date(dateTimeLocal);
-    // 获取从 UTC 到本地时间的偏移量，并调整到 UTC
-    const timeOffset = localDate.getTimezoneOffset() * 60000; // 转换为毫秒
+
+    const timeOffset = localDate.getTimezoneOffset() * 60000;
     const utcDate = new Date(localDate.getTime() - timeOffset);
-    return utcDate.toISOString(); // 转换回 ISO 格式
+    return utcDate.toISOString();
     }
 
 

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 function Navbar() {
-  const { user, logout } = useAuth(); // 假设useAuth()返回的user对象包含一个role属性
+  const { user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const navigate = useNavigate(); 
   
@@ -20,9 +20,9 @@ function Navbar() {
     setAnchorEl(null);
   };
 
-  // 根据用户角色显示不同的菜单项
+
   const renderMenuItems = () => {
-    // 如果用户是组织者
+
     console.log(user.role);
     if (user && user.role === 'customer') {
       return (
@@ -38,7 +38,7 @@ function Navbar() {
           }}>Logout</MenuItem>
         </>
       );
-    } else if (user) { // 如果用户是普通用户
+    } else if (user) {
       return (
         <>
 
@@ -51,20 +51,20 @@ function Navbar() {
           <MenuItem onClick={() => {
             handleClose();
             logout();
-            navigate('/MainPage'); // Navigate to MainPage after logout
+            navigate('/MainPage');
           }}>Logout</MenuItem>  
         </>
       );
     }
 
-    // 如果没有用户登录，不显示任何菜单项
+
     return null;
   };
 
   return (
     <AppBar position="static" sx={{ backgroundColor: '#16A085' }}>  
       <Toolbar>
-        {/* Logo图像和链接 */}
+        {/*  */}
         <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
           <Button color="inherit" component={Link} to="/MainPage">Home</Button>
           <Button color="inherit" component={Link} to="/MainPage">Events</Button>

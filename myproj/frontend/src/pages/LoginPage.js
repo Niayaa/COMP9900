@@ -3,7 +3,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Box, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext"; // 确保这里的路径是正确的
+import { useAuth } from "./AuthContext";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -16,12 +16,12 @@ const LoginPage = () => {
   useEffect(() => {
     // Once the user is logged in, check the user's role to decide where to redirect
     if (user && user.role) {
-      // 传递额外的用户信息到主页
+
       navigate(user.role === "customer" ? "/Cus_Account" : "/Org_Account", {
         state: {
-          user_id: user.id, // 假设用户信息中包含id
-          user_email: user.email, // 用户邮箱
-          isCustomer: user.role === "customer", // 是否为顾客
+          user_id: user.id,
+          user_email: user.email,
+          isCustomer: user.role === "customer",
           isLoggedIn: true,
         },
       });
@@ -37,9 +37,9 @@ const LoginPage = () => {
 
     try {
       await login({ email, password });
-      // 成功登录后的代码（如果有必要）
+
     } catch (error) {
-      setError(error.message); // 设置错误信息以显示
+      setError(error.message);
     }
   };
 

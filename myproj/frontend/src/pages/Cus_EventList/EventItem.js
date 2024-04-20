@@ -31,14 +31,14 @@ export const EventItem = ({ event, userId, showCancelIcon = true }) => {
   const [openI, setOpenI] = useState(false);
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
-  // 弹窗的可见状态，初始为 false，即默认不显示
 
-  // 打开弹窗的函数
+
+
   const handleOpenPopup = () => {
     setOpenI(true);
   };
 
-  // 关闭弹窗的函数
+
   const handleClosePopup = () => {
     setOpenI(false);
     fetchTickets();
@@ -58,7 +58,7 @@ export const EventItem = ({ event, userId, showCancelIcon = true }) => {
         const validTickets = data.token.filter(ticket => ticket.ticket_amount !== undefined);
         setTickets(validTickets);
         
-        // 如果票的数量是undefined，也不显示event
+
         if (validTickets.length === 0) {
           setEvents(prevEvents => prevEvents.filter(e => e.event_id !== event.event_id));
         }

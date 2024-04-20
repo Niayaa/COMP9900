@@ -36,8 +36,7 @@ function EventInfoGrid() {
     );
 };
 
-// 改成滚动
-// 发送reply和comment到后端，可以不用删这一部分
+
 
 function ShowComment(props) {
 
@@ -55,8 +54,7 @@ function ShowComment(props) {
 
 
     const fetchComments = (eventID) => {
-        // 获取event id
-        // 读取对应event的comment
+
         console.log("if id",eventID)
         fetch('https://660265249d7276a75553232d.mockapi.io/event/'+`${eventID}`+'/comments', {
             method: 'GET',
@@ -111,22 +109,20 @@ function ShowComment(props) {
             alert(error);
           })
     }
-    //当下加了comment直接显示在界面上
-    //同时发送到后端
-    // 在下一次更新的时候再
+
     const addComment = () => {
         if (newComment === '') return;
         if (imageFile)
         {
             const reader = new FileReader();
             reader.onload = function(e) {
-                // 文件读取完成后，e.target.result包含图片的Base64
+
                 const newCommentObj = {
                     id: comments.length + 1,
                     rating: 4,
                     content: newComment,
                     replies: [],
-                    imageUrl: e.target.result // 将图片Base64保存为评论的一部分
+                    imageUrl: e.target.result
                 };
                 setComments([...comments, newCommentObj]);
                 postComments(props.eventID, newCommentObj)
@@ -226,8 +222,7 @@ function ShowComment(props) {
         setComments(updatedComments);
         console.log("comments", comments)
         console.log("comments[commentId].replies", comments[commentId])
-        // post到后端 或者选择 update/put comments 倾向前一种
-        // postReplies(props.eventID, commentId, newReply[commentId])
+
         setNewReply({ ...newReply, [commentId]: '' }); // Reset reply input for this comment
     };
 
@@ -248,8 +243,8 @@ function ShowComment(props) {
                 <Rating
                     name="read-only"
                     value={averageRating}
-                    precision={0.1} // 允许显示半星以提高精确度
-                    readOnly // 将评分组件设置为只读，用户不能更改
+                    precision={0.1}
+                    readOnly
                 />
                 <Typography component="p">total {ratings.length} tatings</Typography>
             </Box>
@@ -272,16 +267,16 @@ function ShowComment(props) {
                         sx={{
                             
                             width: {
-                                xs: '50%', // 小于600px宽时，Box占满容器
-                                sm: '100%', // 小于960px宽时，Box宽度为容器的75%
-                                md: '100%', // 小于1280px宽时，Box宽度为容器的50%
-                                lg: '100%', // 小于1920px宽时，Box宽度为容器的25%
+                                xs: '50%',
+                                sm: '100%',
+                                md: '100%',
+                                lg: '100%',
                             },
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'column' }, // 在小屏设备上使用列布局，在中等及以上设备上使用行布局
+                            flexDirection: { xs: 'column', md: 'column' },
                             // justifyContent: 'space-between',
                             // alignItems: 'center',
-                            // gap: 1, // 添加间距
+                            // gap: 1,
                             transition: 'all 0.5s ease',
                         
                         }}
@@ -309,7 +304,7 @@ function ShowComment(props) {
                                 sx={{ ml: 10, mr: 4, mt: 1, 
                                     bgcolor: 'background.paper', 
                                     p: 3, 
-                                    boxShadow: 5, // 应用阴影
+                                    boxShadow: 5,
                                     borderRadius: 1, 
                                     }}>
                                 <Typography variant="body2">{reply}</Typography>
@@ -377,9 +372,9 @@ function EventPage(props) {
 
     const handleSeatFormSubmit = (e) => {
 
-        // 发送到后端
+
         if (seatarea === '' || seatamount === '' ) return;
-        e.preventDefault(); // 阻止表单默认的提交行为
+        e.preventDefault();
         console.log(seatarea,seatamount);
 
 
@@ -407,7 +402,7 @@ function EventPage(props) {
     //         backgroundImage: `url('https://www.pexels.com/photo/concert-at-night-258804/')`,
     //         backgroundSize: 'cover',
     //         backgroundPosition: 'center',
-    //         minHeight: '100vh', // 设置容器高度为视口高度，以填充整个屏幕
+    //         minHeight: '100vh',
     //         display: 'flex',
     //         justifyContent: 'center',
     //         alignItems: 'center',
@@ -428,24 +423,24 @@ function EventPage(props) {
          <Grid container spacing={2} sx={{padding: 4}}>
             {/* left */}
             <Grid item xs={12} md={8}>
-                {/* <Paper elevation={3} style={{ padding: 2 }}>左侧内容</Paper> */}
+                {/* <Paper elevation={3} style={{ padding: 2 }}>left</Paper> */}
                 <Grid> 
                     <Box
                         
                         sx={{
 
-                            p: { xs: 1, md: 2 }, // 在小屏幕上padding为1，在中等及以上屏幕上为2
+                            p: { xs: 1, md: 2 },
                             width: 'auto', 
                             height: 'auto',
                             
-                            boxShadow: 5, // 应用阴影
-                            borderRadius: 1, // 圆角
+                            boxShadow: 5,
+                            borderRadius: 1,
                         }}
                     >
-                        <Paper elevation={0} square> {/* Paper组件用于展示内容 */}
+                        <Paper elevation={0} square> {/*  */}
                             {/* Your content here */}
                             <Card style={{ 
-                                backgroundColor: 'rgba(255, 255, 255, 0.)', 
+                                backgroundColor: 'rgba(255, 255, 255, 0)',
                                 backdropFilter: 'blur(10px)' 
                                 }}>
                                 <CardMedia
@@ -470,16 +465,16 @@ function EventPage(props) {
                     <Box       
                         sx={{
                             width: {
-                                xs: '100%', // 小于600px宽时，Box占满容器
-                                sm: '100%', // 小于960px宽时，Box宽度为容器的75%
-                                md: '100%', // 小于1280px宽时，Box宽度为容器的50%
-                                lg: '100%', // 小于1920px宽时，Box宽度为容器的25%
+                                xs: '100%',
+                                sm: '100%',
+                                md: '100%',
+                                lg: '100%',
                             },
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' }, // 在小屏设备上使用列布局，在中等及以上设备上使用行布局
+                            flexDirection: { xs: 'column', md: 'row' },
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            gap: 1, // 添加间距
+                            gap: 1,
                             transition: 'all 0.5s ease',
                         }}
                     >
@@ -574,7 +569,7 @@ function EventPage(props) {
             </Box>
             </Grid>
             </Grid>
-        {/* <Button onClick={handleClickOpen}>Click to Comment</Button> *点击然后弹出评论窗口 */}
+        {/* <Button onClick={handleClickOpen}>Click to Comment</Button> * */}
         {/* <CommentPopUp open={open} handleClose={handleClose}/> */}
             <ScrollableFrame children={<ShowComment eventID={propss[0].ID}/>}></ScrollableFrame>
             

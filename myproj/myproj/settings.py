@@ -98,7 +98,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "myproj.wsgi.application"
 
 
-# 配置 REST framework 的默认权限
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
     'rest_framework.permissions.AllowAny',
@@ -179,9 +179,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 使用SMTP后端
-EMAIL_HOST = 'smtp.gmail.com'  # SMTP服务器地址
-EMAIL_PORT = 587  # SMTP服务器端口
-EMAIL_USE_TLS = True  # 是否使用TLS安全连接
-EMAIL_HOST_USER = 'lzy2545322339@gmail.com'  # 记得替换邮箱
-EMAIL_HOST_PASSWORD = 'kqhcuvzidmwivpsj'  # 记得替换邮箱密码
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'lzy2545322339@gmail.com'
+EMAIL_HOST_PASSWORD = 'kqhcuvzidmwivpsj'

@@ -12,11 +12,11 @@ const SignUpPage = () => {
   const [username, setUsername] = useState("");
   const [organizationName, setOrganizationName] = useState("");
   const [organizationAddress, setOrganizationAddress] = useState("");
-  // 用于检测username是否为空
+
   const [usernameError, setUsernameError] = useState("");
   // email
   const [email, setEmail] = useState("");
-  // 用于检测email是否符合格式
+
   const [emailError, setEmailError] = useState("");
   const [userAddress, setUserAddress] = useState("");
   // password
@@ -24,33 +24,33 @@ const SignUpPage = () => {
   //phone number
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
-  // 用于检测password是否为空
+
   const [passwordError, setPasswordError] = useState("");
   // confirm password
   const [pwdCon, setpwdCon] = useState("");
-  // 用于检测confirm password是否为空
+
   const [pwdConError, setPwdConError] = useState("");
-  // username变动时检测是否符合要求
+
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);
     if (!event.target.value.trim()) {
-      // 不符合要求则报错
+
       setUsernameError("Username cannot be empty");
     } else {
       setUsernameError("");
     }
   };
 
-  // 邮件正则
+
   const validateEmail = (email) => {
     const regexPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regexPattern.test(email);
   };
-  // email变动时检测是否符合要求
+
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
     if (!validateEmail(event.target.value)) {
-      // 不符合格式报错
+
       setEmailError("Please enter a valid email address");
     } else {
       setEmailError("");
@@ -70,7 +70,7 @@ const SignUpPage = () => {
   const handlePasswordChange = (event) => {
     setPassword(event.target.value);
     if (!event.target.value.trim()) {
-      // 不符合要求则报错
+
       setPasswordError("Password cannot be empty");
     } else {
       setPasswordError("");
@@ -84,17 +84,17 @@ const SignUpPage = () => {
       setPhoneError("");
     }
   };
-  // cofirm password变动时检测是否符合要求
+
   const handlePwdConChange = (event) => {
     setpwdCon(event.target.value);
     if (!event.target.value.trim()) {
-      // 不符合要求则报错
+
       setPwdConError("Confirm Password cannot be empty");
     } else {
       setPwdConError("");
     }
     if (password !== event.target.value) {
-      // 与password不相同报错
+
       setPwdConError("Confirm Password must be the same as password");
     } else {
       setPwdConError("");
@@ -103,14 +103,14 @@ const SignUpPage = () => {
 
   const handleRegisterAsOrganizer = () => {
     setIsOrganizer(true);
-    // 重置表单字段
+
     resetFormFields();
   };
 
-  // 当点击注册为顾客时
+
   const handleRegisterAsCustomer = () => {
     setIsOrganizer(false);
-    // 重置表单字段
+
     resetFormFields();
   };
 
@@ -124,7 +124,7 @@ const SignUpPage = () => {
     setPassword("");
     setPhone("");
     setpwdCon("");
-    // 重置所有的错误信息
+
     setUsernameError("");
     setEmailError("");
     setPasswordError("");
@@ -132,7 +132,7 @@ const SignUpPage = () => {
     setPwdConError("");
   };
 
-  // 假设注册API的URL如下
+
   const registerApiUrl = " http://127.0.0.1:8000/register/";
   const [signUpError, setSignUpError] = useState("");
   const handleSignUp = async () => {
@@ -163,10 +163,10 @@ const SignUpPage = () => {
       });
 
       if (response.ok) {
-        // 假设成功的HTTP状态码范围为200-299
-        const data = await response.json(); // 解析JSON响应
+
+        const data = await response.json();
         localStorage.setItem("userToken", data.token);
-        // 调用 login 方法更新全局用户状态
+
         console.log("Before login call", {
           name: data.name,
           email: data.email,
@@ -174,7 +174,7 @@ const SignUpPage = () => {
         });
         login({ email: email, password: password });
         console.log("After login call");
-        // 根据用户类型导航到不同页面
+
         navigate("/mainpage", {
           state: {
             isCustomer: role === "customer",
@@ -184,14 +184,14 @@ const SignUpPage = () => {
           },
         });
       } else {
-        // 处理失败的情况
-        const errorData = await response.json(); // 尝试解析错误消息
+
+        const errorData = await response.json();
         setSignUpError(
           errorData.message || "Registration failed. Please try again."
         );
       }
     } catch (error) {
-      // 请求失败
+
       setSignUpError("An unexpected error occurred. Please try again.");
     }
   };
@@ -267,8 +267,8 @@ const SignUpPage = () => {
             {usernameError && (
               <Typography
                 sx={{
-                  color: "error.main", // 使用主题中的错误颜色
-                  fontSize: "0.75rem", // 相当于12px
+                  color: "error.main",
+                  fontSize: "0.75rem",
                 }}
               >
                 {usernameError}
@@ -287,8 +287,8 @@ const SignUpPage = () => {
         {emailError && (
           <Typography
             sx={{
-              color: "error.main", // 使用主题中的错误颜色
-              fontSize: "0.75rem", // 相当于12px
+              color: "error.main",
+              fontSize: "0.75rem",
             }}
           >
             {emailError}
@@ -305,8 +305,8 @@ const SignUpPage = () => {
         {passwordError && (
           <Typography
             sx={{
-              color: "error.main", // 使用主题中的错误颜色
-              fontSize: "0.75rem", // 相当于12px
+              color: "error.main",
+              fontSize: "0.75rem",
             }}
           >
             {passwordError}
@@ -323,8 +323,8 @@ const SignUpPage = () => {
         {pwdConError && (
           <Typography
             sx={{
-              color: "error.main", // 使用主题中的错误颜色
-              fontSize: "0.75rem", // 相当于12px
+              color: "error.main",
+              fontSize: "0.75rem",
             }}
           >
             {pwdConError}
@@ -340,8 +340,8 @@ const SignUpPage = () => {
         {phoneError && (
           <Typography
             sx={{
-              color: "error.main", // 使用主题中的错误颜色
-              fontSize: "0.75rem", // 相当于12px
+              color: "error.main",
+              fontSize: "0.75rem",
             }}
           >
             {phoneError}

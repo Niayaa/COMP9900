@@ -19,7 +19,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
-import CardMedia from '@mui/material/CardMedia'; // 引入CardMedia组件用于展示图片
+import CardMedia from '@mui/material/CardMedia';
 
 import { TextField } from '@mui/material';
 
@@ -34,16 +34,15 @@ import ShowComment from './ShowComments.jsx';
 
 const useStyles = makeStyles((theme) => ({
     root: {
-      // 添加背景图片
-    //   backgroundImage: `url(${Image})`,
+
       backgroundImage: `url('${Image}')`,
-      backgroundSize: 'cover', // 背景图片铺满容器
-      backgroundPosition: 'center', // 将背景图片居中
-      minHeight: '100vh', // 确保容器高度与视口高度相等
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      minHeight: '100vh',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: -1, // 将背景置于底层
+      zIndex: -1,
     },
   }));
 
@@ -99,9 +98,9 @@ function EventPage(props) {
 
     const handleSeatFormSubmit = (e) => {
 
-        // 发送到后端
+
         if (seatarea === '' || seatamount === '' ) return;
-        e.preventDefault(); // 阻止表单默认的提交行为
+        e.preventDefault();
         console.log(seatarea,seatamount);
 
 
@@ -145,7 +144,7 @@ function EventPage(props) {
         const fetchData = async () => {
             console.log("Reload EventPage");
             await fetchEventInfo(propss.ID);
-            console.log("useEff event", eventInfo); // 在这里可以看到 eventInfo 的值
+            console.log("useEff event", eventInfo);
             if (eventInfo && eventInfo.comments && eventInfo.comments.length > 0) {
                 const averageRating = eventInfo.total_ratings / eventInfo.comments.length;
                 setAverageRating(averageRating);
@@ -163,7 +162,7 @@ function EventPage(props) {
             sx={{
                 // bgcolor: 'lightblue',
                 backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                // filter: 'blur(10px)', // 高斯模糊效果
+
                 borderRadius: 2,
                 mx: 'auto', my: 4, width: '90%',
             }}
@@ -171,21 +170,21 @@ function EventPage(props) {
          <Grid container spacing={2} sx={{padding: 4}}>
             {/* left */}
             <Grid item xs={12} md={8}>
-                {/* <Paper elevation={3} style={{ padding: 2 }}>左侧内容</Paper> */}
+                {/* <Paper elevation={3} style={{ padding: 2 }}>/Paper> */}
                 <Grid> 
                     <Box
                         
                         sx={{
 
-                            p: { xs: 1, md: 2 }, // 在小屏幕上padding为1，在中等及以上屏幕上为2
+                            p: { xs: 1, md: 2 },
                             width: 'auto', 
                             height: 'auto',
                             
-                            boxShadow: 5, // 应用阴影
-                            borderRadius: 1, // 圆角
+                            boxShadow: 5,
+                            borderRadius: 1,
                         }}
                     >
-                        <Paper elevation={0} square> {/* Paper组件用于展示内容 */}
+                        <Paper elevation={0} square> {/*  */}
                             {/* Your content here */}
                             <Card style={{ 
                                 backgroundColor: 'rgba(255, 255, 255, 0.)', 
@@ -215,16 +214,16 @@ function EventPage(props) {
                     <Box       
                         sx={{
                             width: {
-                                xs: '100%', // 小于600px宽时，Box占满容器
-                                sm: '100%', // 小于960px宽时，Box宽度为容器的75%
-                                md: '100%', // 小于1280px宽时，Box宽度为容器的50%
-                                lg: '100%', // 小于1920px宽时，Box宽度为容器的25%
+                                xs: '100%',
+                                sm: '100%',
+                                md: '100%',
+                                lg: '100%',
                             },
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' }, // 在小屏设备上使用列布局，在中等及以上设备上使用行布局
+                            flexDirection: { xs: 'column', md: 'row' },
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            gap: 1, // 添加间距
+                            gap: 1,
                             transition: 'all 0.5s ease',
                         }}
                     >
@@ -319,15 +318,15 @@ function EventPage(props) {
             </Box>
             </Grid>
             </Grid>
-        {/* <Button onClick={handleClickOpen}>Click to Comment</Button> *点击然后弹出评论窗口 */}
+        {/* <Button onClick={handleClickOpen}>Click to Comment</Button> * */}
         {/* <CommentPopUp open={open} handleClose={handleClose}/> */}
             <Box sx={{direction: 'row'}}>
                 <Typography component="legend">Rating the event</Typography>
                 <Rating
                     name="read-only"
                     value={averageRating}
-                    precision={0.1} // 允许显示半星以提高精确度
-                    readOnly // 将评分组件设置为只读，用户不能更改
+                    precision={0.1}
+                    readOnly
                 />
                 <Typography component="p">total {commentLength} ratings</Typography>
             </Box>

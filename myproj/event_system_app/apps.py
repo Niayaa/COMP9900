@@ -6,10 +6,10 @@ class EventSystemApp(AppConfig):
     name = "event_system_app"
 
     def ready(self):
-        from . import tasks  # 导入模型防止循环引用
-        # 连接到post_migrate信号，确保在数据库准备好后执行
+        from . import tasks
+
         post_migrate.connect(self.initiate_auto_comments, sender=self)
 
     def initiate_auto_comments(self, **kwargs):
-        from . import tasks  # 导入模型防止循环引用
+        from . import tasks
         tasks.auto_create_comments()

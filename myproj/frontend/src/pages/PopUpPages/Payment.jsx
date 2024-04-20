@@ -85,7 +85,7 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
               //   // handle error
               //   alert(error);
               // })
-              window.open(data.approval_url, '_blank', 'noopener,noreferrer');// 重定向到 PayPal 批准页面
+              window.open(data.approval_url, '_blank', 'noopener,noreferrer');
             } else {
               console.error('Failed to create payment');
             }
@@ -158,9 +158,9 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
       <DialogActions>
         <Grid container sx={{
           display: 'flex',
-          justifyContent: 'center',  // 水平居中
-          alignItems: 'center',      // 垂直居中
-          direction: 'column',       // 垂直布局
+          justifyContent: 'center',
+          alignItems: 'center',
+          direction: 'column',
         }}>
           <Grid item>
         {!canPay && (
@@ -188,12 +188,12 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
           variant="outlined"
           style={{
             m:1,
-            width: '200px',          // 设置宽度
-            borderRadius: '20px',    // 使按钮边缘变圆润
-            color: 'black',          // 设置文字颜色
-            borderColor: 'blue',    // 设置边框颜色
-            backgroundColor: 'transparent', // 设置背景为透明
-            textTransform: 'none',   // 取消大写字母
+            width: '200px',
+            borderRadius: '20px',
+            color: 'black',
+            borderColor: 'blue',
+            backgroundColor: 'transparent',
+            textTransform: 'none',
           }}
           onClick={handleClose}
         >Return</Button>

@@ -16,9 +16,7 @@ export default function UseEventPage(){
         
         // }, [concertInfoArray])
         
-    async function handleEventPage() { 
-        //对于每个event标签卡 button或者card 点击跳转 会传concert信息给eventpage
-        //（应该是每个event标签卡的json数组里也会存着id和Info，然后读取对应的信息传递）
+    async function handleEventPage() {
         
         console.log(concertInfoArray)
         navigate('/eventpage', {state:  concertInfoArray })

@@ -15,9 +15,7 @@ const LikeButton = ({ commentId, userId, isCustomer }) => {
     })
     .then(response => response.json())
     .then(data => {
-      // 1：没有点赞过，允许点赞
-      // 2：曾经点赞过了，不能再点赞
-      // 3：找不到这个customer或者comment
+
       console.log("checj", data, commentId, userId)
       if (data.code === '1') {
         setHasLiked(false);

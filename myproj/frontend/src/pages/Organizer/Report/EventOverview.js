@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, Typography } from '@mui/material';
 
 function EventOverview({ year, eventType }) {
-  // 这里应该从API获取数据
+
   const data = {
     totalEvents: year === '2022' && eventType === 'music' ? 150 : 120,
     fluctuation: year === '2022' && eventType === 'music' ? '15%' : '10%'

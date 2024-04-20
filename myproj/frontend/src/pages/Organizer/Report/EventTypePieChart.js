@@ -15,7 +15,7 @@ function EventTypePieChart({ userId }) {
         }
         const data = await response.json();
         console.log('report',data);
-        setEventTypeData(data.event_types_summary); // 更新状态变量
+        setEventTypeData(data.event_types_summary);
       } catch (error) {
         console.error('Failed to fetch event type data:', error);
       }

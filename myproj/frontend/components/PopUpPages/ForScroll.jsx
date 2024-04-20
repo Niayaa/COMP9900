@@ -24,7 +24,7 @@ const ScrollableFrame = ({ children }) => {
     const temp = ref.current;
     temp.addEventListener("scroll", handleScroll);
     return () => temp.removeEventListener("scroll", handleScroll);
-  }); // 添加 ref.current 到依赖项数组中
+  });
 
   const frameStyle = {
     // border: '1px solid #ccc',
@@ -46,11 +46,11 @@ const ScrollableFrame = ({ children }) => {
               position: 'absolute',
               bottom: '50%', 
               right: '50%', 
-              transform: 'translate(-100%, -30%)', // 使用transform属性将图标水平和垂直居中
+              transform: 'translate(-100%, -30%)',
               color: 'common.white',
               bgcolor: 'green',
-              width: 40, // 设置图标的宽度
-              height: 40, // 设置图标的高度
+              width: 40,
+              height: 40,
               borderRadius: '50%',
               '&:hover': {
                 bgcolor: 'darkgreen',

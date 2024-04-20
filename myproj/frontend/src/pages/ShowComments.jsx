@@ -33,9 +33,9 @@ export default function ShowComment(props) {
 
   function getCurrentDateISOString() {
     const now = new Date();
-    // 将日期转换为ISO字符串（例如 "2024-03-07T00:00:00.000Z"）
+
     const isoString = now.toISOString();
-    // 截取字符串以获取不包含毫秒的部分，并保持Z表示UTC
+
     return isoString.substring(0, 19) + 'Z';
     }
     
@@ -70,14 +70,13 @@ export default function ShowComment(props) {
   };
 
   function generateUniqueId() {
-    const timestamp = new Date().getTime(); // 获取当前时间戳
-    const random = Math.random().toString(36).substring(2, 10); // 生成随机数
-    return `${timestamp}-${random}`; // 结合时间戳和随机数生成唯一 ID
+    const timestamp = new Date().getTime();
+    const random = Math.random().toString(36).substring(2, 10);
+    return `${timestamp}-${random}`;
   }
 
   const fetchComments = async (eventID) => {
-    // 获取event id
-    // 读取对应event的comment
+
     // console.log("if id",eventID)
     await fetch(
       "http://127.0.0.1:8000/event_page_comment/?event_id=" +
@@ -111,7 +110,7 @@ export default function ShowComment(props) {
 
   useEffect(() => {
     fetchComments(props.eventID);
-  }, [1000]); //加不加comments
+  }, [1000]);
 
   async function postComments(eventID, newComment) {
 
@@ -165,9 +164,7 @@ export default function ShowComment(props) {
         return;
       });
   }
-  //当下加了comment直接显示在界面上
-  //同时发送到后端
-  // 在下一次更新的时候再
+
   const addComment = () => {
     if (newComment === "") return;
     if (imageUrl !== "") {
@@ -194,7 +191,7 @@ export default function ShowComment(props) {
         replies: [],
         comment_image_url: "",
       };
-      // post到后端
+
       postComments(props.eventID, newCommentObj);
       // setComments([...comments, newCommentObj]);
       setNewComment(""); // Reset new comment input
@@ -367,17 +364,17 @@ export default function ShowComment(props) {
                 // radius: 3,
                 borderRadius: 3,
                 // marginLeft: "auto",
-                width: "100%", // 或者使用具体的宽度值，比如 '300px'
+                width: "100%",
                 m: 1,
                 ml: 9,
                 mr: 1,
               }}
               InputProps={{
                 style: {
-                  borderRadius: '20px'  // 设置更大的圆角
+                  borderRadius: '20px'
                 }
               }}
-              // 如果是多行文本，还需要对textarea进行样式调整
+
               InputLabelProps={{
                 shrink: true,
               }}
@@ -402,7 +399,7 @@ export default function ShowComment(props) {
                 marginBottom: 1,
                 bgcolor: "background.paper",
                 p: 3,
-                boxShadow: 5, // 应用阴影
+                boxShadow: 5,
                 borderRadius: 1,
               }}
             >

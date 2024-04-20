@@ -20,7 +20,7 @@ function Reports() {
     setEventType(event.target.value);
   };
 
-  // 静态示例数据
+
   const eventsData = [
     { name: 'Concert', value: 400 },
     { name: 'Opera', value: 300 },

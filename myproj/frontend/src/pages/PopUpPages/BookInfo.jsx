@@ -12,9 +12,9 @@ import backgroundimg from '../image/BlackBeigeModernMusicFestivalEventTicket2.jp
 export default function BookInfoPopUp(props) {
     function getCurrentDateISOString() {
         const now = new Date();
-        // 将日期转换为ISO字符串（例如 "2024-03-07T00:00:00.000Z"）
+
         const isoString = now.toISOString();
-        // 截取字符串以获取不包含毫秒的部分，并保持Z表示UTC
+
         return isoString.substring(0, 19) + 'Z';
     }
     

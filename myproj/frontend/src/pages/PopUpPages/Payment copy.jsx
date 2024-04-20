@@ -82,7 +82,7 @@ export default function PaymentPopUp({ open, handleClose, seatArea, seatAmount, 
               //   // handle error
               //   alert(error);
               // })
-              window.open(data.approval_url, '_blank', 'noopener,noreferrer');// 重定向到 PayPal 批准页面
+              window.open(data.approval_url, '_blank', 'noopener,noreferrer');
             } else {
               console.error('Failed to create payment');
             }

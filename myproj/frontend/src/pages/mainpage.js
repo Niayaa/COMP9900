@@ -26,12 +26,12 @@ export default function MainPage() {
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOd6xvWVOZX6wxp35Y19YuhbxRbyVk_JukPjfismu02A&s",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWqAJMmp6GGGW4SLr_5EjAT4gAe5sTtijMtYdsH16H-g&s",
     "https://img95.699pic.com/photo/50074/8646.jpg_wh300.jpg",
-    // 添加更多的图片URL
+
   ];
   useEffect(() => {
     const fetchEvents = async () => {
-      // 假设这是后端提供的获取所有事件的URL
-      const url = "http://127.0.0.1:8000/mainpage/events/filter"; // 更换为你的实际后端URL
+
+      const url = "http://127.0.0.1:8000/mainpage/events/filter";
 
       try {
         const response = await fetch(url);
@@ -41,7 +41,7 @@ export default function MainPage() {
         const data = await response.json();
         console.log("Event", data);
         setEvents(data);
-        setFilteredEvents(data); // 初始时显示所有事件，后续可以根据前端逻辑进行筛选
+        setFilteredEvents(data);
       } catch (error) {
         console.error(
           "There has been a problem with your fetch operation:",
@@ -50,19 +50,19 @@ export default function MainPage() {
       }
     };
     fetchEvents();
-  }, []); // 依赖数组为空，表示此effect仅在组件加载时运行一次
+  }, []);
 
   const applyFilters = useCallback(() => {
     let result = events;
 
-    // 根据事件类型过滤
+
     if (eventType !== "All") {
       result = result.filter(
         (event) => event.event_type.toLowerCase() === eventType.toLowerCase()
       );
     }
 
-    // 根据搜索词过滤
+
     if (searchTerm) {
       result = result.filter(
         (event) =>
@@ -73,7 +73,7 @@ export default function MainPage() {
       );
     }
 
-    // 根据时间过滤
+
     const now = new Date();
     switch (timeFilter) {
       case "Today":
@@ -107,7 +107,6 @@ export default function MainPage() {
         });
         break;
       default:
-        // 没有匹配到任何情况时执行的代码
         break;
     }
 
@@ -124,7 +123,7 @@ export default function MainPage() {
   };
 
   const handleEventTypeClick = (type) => {
-    setEventType(type); // 这里更新了eventType状态
+    setEventType(type);
 
     applyFilters();
   };
@@ -218,13 +217,13 @@ export default function MainPage() {
         >
           {filteredEvents.map(
             (
-              event // 遍历filteredEvents来渲染每个事件的按钮
+              event
             ) => (
               <Button
                 key={event.event_id}
                 variant="outlined"
                 sx={{ height: 150, width: 200 }}
-                onClick={() => handleEventClick(event)} // 传递当前事件对象给handleEventClick
+                onClick={() => handleEventClick(event)}
               >
                 <Card
                   sx={{
@@ -240,14 +239,14 @@ export default function MainPage() {
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     color: "white",
-                    textShadow: "1px 1px 3px rgba(0,0,0,0.9)", // Text shadow for better readability
+                    textShadow: "1px 1px 3px rgba(0,0,0,0.9)",
                   }}
                 >
                   <CardContent>{event.event_name}</CardContent>
                   <CardContent>
                     {new Date(event.event_date).toLocaleDateString()}
                   </CardContent>
-                  {/* 使用事件标题 */}
+                  {/*  */}
                 </Card>
               </Button>
             )

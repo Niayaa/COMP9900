@@ -50,9 +50,9 @@ const CustomerEventPage = () => {
   useEffect(() => {
     fetchPreferredEvents().then(data => {
       const newdata = data.token;
-      setInterests(newdata); // 设置感兴趣的事件
+      setInterests(newdata);
       console.log(newdata);
-     // 根据事件类型动态创建 collections
+
      const eventsByType = newdata.reduce((acc, event) => {
       const type = event.event_type; // 'event_type' is a string
       acc[type] = acc[type] ? [...acc[type], event] : [event];

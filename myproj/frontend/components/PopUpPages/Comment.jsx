@@ -30,9 +30,9 @@ export default function CommentPopUp({eventID, description,  open, handleClose})
   }
 
   function generateUniqueId() {
-    const timestamp = new Date().getTime(); // 获取当前时间戳
-    const random = Math.random().toString(36).substring(2, 10); // 生成随机数
-    return `${timestamp}-${random}`; // 结合时间戳和随机数生成唯一 ID
+    const timestamp = new Date().getTime();
+    const random = Math.random().toString(36).substring(2, 10);
+    return `${timestamp}-${random}`;
   }
 
   async function handleSubmit(){
@@ -41,8 +41,8 @@ export default function CommentPopUp({eventID, description,  open, handleClose})
     {
         const reader = new FileReader();
         reader.onload = function(e) {
-            // 文件读取完成后，e.target.result包含图片的Base64
-            imgData = e.target.result // 将图片Base64保存为评论的一部分
+
+            imgData = e.target.result
         };
         reader.readAsDataURL(imageFile);
     }
@@ -103,7 +103,7 @@ export default function CommentPopUp({eventID, description,  open, handleClose})
           <Grid2 container sx={{width: 'auto', height: 'auto'}} direction={'row'}>
           <Grid2 item>
             <Box sx={{width: 200}}>
-              {/* 到时候读取event ID 获取description */}
+
                 {description}
             </Box>
           </Grid2>

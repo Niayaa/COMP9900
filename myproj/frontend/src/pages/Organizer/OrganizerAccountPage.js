@@ -78,29 +78,27 @@ const OrganizerAccountPage = () => {
   
     // Function to send updated data to the Django backend (same as before)
     const saveUpdatedData = async () => {
-        const url = `http://127.0.0.1:8000/edit/org/?user_id=${user.id}`; // 示例API端点，根据你的后端API调整
+        const url = `http://127.0.0.1:8000/edit/org/?user_id=${user.id}`;
         try {
           const response = await fetch(url, {
-            method: 'PUT', // 或者'POST', 根据后端API的要求
+            method: 'PUT', //
             headers: {
               'Content-Type': 'application/json',
-              // 如果你的API需要身份验证，可能还需要添加Authorization头
-              // 'Authorization': 'Bearer YOUR_TOKEN_HERE',
+
             },
-            body: JSON.stringify(formData), // 将formData对象转换为JSON字符串
+            body: JSON.stringify(formData),
           });
           
           if (!response.ok) {
-            throw new Error(`Error: ${response.status}`); // 处理响应失败的情况
+            throw new Error(`Error: ${response.status}`);
           }
           
-          // 处理成功的响应
-          // 这里可以是更新UI、显示成功消息、重定向等
+
           alert('Data saved successfully');
-          setIsEditing(false); // 关闭编辑模式
+          setIsEditing(false);
         } catch (error) {
           console.error('Failed to save data:', error);
-          // 在这里处理错误，如显示错误消息
+
         }
       };
       

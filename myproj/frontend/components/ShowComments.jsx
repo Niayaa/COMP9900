@@ -31,14 +31,13 @@ export default function ShowComment(props) {
     };
     
     function generateUniqueId() {
-        const timestamp = new Date().getTime(); // 获取当前时间戳
-        const random = Math.random().toString(36).substring(2, 10); // 生成随机数
-        return `${timestamp}-${random}`; // 结合时间戳和随机数生成唯一 ID
+        const timestamp = new Date().getTime();
+        const random = Math.random().toString(36).substring(2, 10);
+        return `${timestamp}-${random}`;
     }
 
     const fetchComments = (eventID) => {
-        // 获取event id
-        // 读取对应event的comment
+
         // console.log("if id",eventID)
         fetch('https://660265249d7276a75553232d.mockapi.io/event/'+`${eventID}`+'/comments', {
             method: 'GET',
@@ -60,7 +59,7 @@ export default function ShowComment(props) {
     
     useEffect(()=>{
         fetchComments(props.eventID)
-    },[]); //加不加comments
+    },[]);
     
     async function postComments(eventID, newComment) {
         // console.log("pc",eventID)
@@ -92,22 +91,20 @@ export default function ShowComment(props) {
             alert(error);
           })
     }
-    //当下加了comment直接显示在界面上
-    //同时发送到后端
-    // 在下一次更新的时候再
+
     const addComment = () => {
         if (newComment === '') return;
         if (imageFile)
         {
             const reader = new FileReader();
             reader.onload = function(e) {
-                // 文件读取完成后，e.target.result包含图片的Base64
+
                 const newCommentObj = {
                     id: generateUniqueId(),
                     rating: rate,
                     content: newComment,
                     replies: [],
-                    imageUrl: e.target.result // 将图片Base64保存为评论的一部分
+                    imageUrl: e.target.result
                 };
                 setComments([...comments, newCommentObj]);
                 // post to backend
@@ -207,7 +204,6 @@ export default function ShowComment(props) {
         setComments(updatedComments);
         // console.log("comments", comments)
         // console.log("comments[commentId].replies", comments[commentId])
-        // post到后端 或者选择 update/put comments 倾向前一种
         // postReplies(props.eventID, commentId, newReply[commentId])
         setNewReply({ ...newReply, [commentId]: '' }); // Reset reply input for this comment
     };
@@ -248,16 +244,16 @@ export default function ShowComment(props) {
                         sx={{
                             
                             width: {
-                                xs: '50%', // 小于600px宽时，Box占满容器
-                                sm: '100%', // 小于960px宽时，Box宽度为容器的75%
-                                md: '100%', // 小于1280px宽时，Box宽度为容器的50%
-                                lg: '100%', // 小于1920px宽时，Box宽度为容器的25%
+                                xs: '50%',
+                                sm: '100%',
+                                md: '100%',
+                                lg: '100%',
                             },
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'column' }, // 在小屏设备上使用列布局，在中等及以上设备上使用行布局
+                            flexDirection: { xs: 'column', md: 'column' },
                             // justifyContent: 'space-between',
                             // alignItems: 'center',
-                            // gap: 1, // 添加间距
+                            // gap: 1,
                             transition: 'all 0.5s ease',
                             
                         }}
@@ -289,7 +285,7 @@ export default function ShowComment(props) {
                             variant="outlined"
                             sx={{ 
                                 marginLeft: 'auto',
-                                width: '40%', // 或者使用具体的宽度值，比如 '300px'
+                                width: '40%',
                                 m: 1,
                             }}
                         />
@@ -301,7 +297,7 @@ export default function ShowComment(props) {
                             sx={{ ml: 10, mr: 2, mt: 1, 
                                 bgcolor: 'background.paper', 
                                 p: 3, 
-                                boxShadow: 5, // 应用阴影
+                                boxShadow: 5,
                                 borderRadius: 1, 
                             }}>
                                 <Typography variant="body2">{reply}</Typography>

@@ -26,7 +26,7 @@ import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 
-import CardMedia from "@mui/material/CardMedia"; // 引入CardMedia组件用于展示图片
+import CardMedia from "@mui/material/CardMedia";
 
 import { TextField } from "@mui/material";
 
@@ -59,13 +59,13 @@ function ShowComment() {
     if (imageFile) {
       const reader = new FileReader();
       reader.onload = function (e) {
-        // 文件读取完成后，e.target.result包含图片的Base64
+
         const newCommentObj = {
           id: comments.length + 1,
           rating: 4,
           text: newComment,
           replies: [],
-          imageUrl: e.target.result, // 将图片Base64保存为评论的一部分
+          imageUrl: e.target.result,
         };
         setComments([...comments, newCommentObj]);
         setNewComment("");
@@ -117,8 +117,8 @@ function ShowComment() {
         <Rating
           name="read-only"
           value={averageRating}
-          precision={0.1} // 允许显示半星以提高精确度
-          readOnly // 将评分组件设置为只读，用户不能更改
+          precision={0.1}
+          readOnly
         />
         <Typography component="p">total {ratings.length} tatings</Typography>
       </Box>
@@ -156,7 +156,7 @@ function ShowComment() {
                   mt: 1,
                   bgcolor: "background.paper",
                   p: 3,
-                  boxShadow: 5, // 应用阴影
+                  boxShadow: 5,
                   borderRadius: 1,
                 }}
               >
@@ -240,9 +240,9 @@ function EventPage(props) {
   };
 
   const handleSubmit = (e) => {
-    // 发送到后端
+
     if (seatarea === "" || seatamount === "") return;
-    e.preventDefault(); // 阻止表单默认的提交行为
+    e.preventDefault();
     console.log(seatarea, seatamount);
 
     setSeatamount("");
@@ -273,17 +273,17 @@ function EventPage(props) {
           <Grid2>
             <Box
               sx={{
-                p: { xs: 1, md: 2 }, // 在小屏幕上padding为1，在中等及以上屏幕上为2
+                p: { xs: 1, md: 2 },
                 width: "auto",
                 height: "auto",
 
-                boxShadow: 5, // 应用阴影
-                borderRadius: 1, // 圆角
+                boxShadow: 5,
+                borderRadius: 1,
               }}
             >
               <Paper elevation={0} square>
                 {" "}
-                {/* Paper组件用于展示内容 */}
+                {/*  */}
                 {/* Your content here */}
                 <Card
                   style={{
@@ -308,16 +308,16 @@ function EventPage(props) {
               <Box
                 sx={{
                   width: {
-                    xs: "100%", // 小于600px宽时，Box占满容器
-                    sm: "100%", // 小于960px宽时，Box宽度为容器的75%
-                    md: "100%", // 小于1280px宽时，Box宽度为容器的50%
-                    lg: "100%", // 小于1920px宽时，Box宽度为容器的25%
+                    xs: "100%",
+                    sm: "100%",
+                    md: "100%",
+                    lg: "100%",
                   },
                   display: "flex",
-                  flexDirection: { xs: "column", md: "row" }, // 在小屏设备上使用列布局，在中等及以上设备上使用行布局
+                  flexDirection: { xs: "column", md: "row" },
                   justifyContent: "space-between",
                   alignItems: "center",
-                  gap: 1, // 添加间距
+                  gap: 1,
                   transition: "all 0.5s ease",
                 }}
               >
@@ -440,7 +440,7 @@ function EventPage(props) {
           </Box>
         </Grid2>
       </Grid2>
-      {/* <Button onClick={handleClickOpen}>Click to Comment</Button> *点击然后弹出评论窗口 */}
+      {/* <Button onClick={handleClickOpen}>Click to Comment</Button> * */}
       {/* <CommentPopUp open={open} handleClose={handleClose}/> */}
       <ShowComment />
     </Grid2>

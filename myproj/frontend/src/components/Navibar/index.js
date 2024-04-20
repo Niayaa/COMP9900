@@ -15,7 +15,7 @@ const Navbar = () => {
       <Nav>
         <Bars />
         <NavLogo to="/MainPage">
-          <h1>Event Management</h1> {/* 你可以用图片或SVG代替 */}
+          <h1>Event Management</h1> {/* replacereplace */}
         </NavLogo>
         <NavMenu>
           <NavLink to="/events" activeStyle>

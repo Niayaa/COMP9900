@@ -21,7 +21,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
-import CardMedia from '@mui/material/CardMedia'; // 引入CardMedia组件用于展示图片
+import CardMedia from '@mui/material/CardMedia'; //
 
 // import { TextField } from '@mui/material';
 
@@ -93,7 +93,7 @@ function EventPage(props) {
     const [seat, setSeat] = useState({ area: '', price: 0 });
     const handleSeatarea = (event) => {
         const selectedArea = event.target.value;
-        const selectedPrice = ticketPrice[ticketType.indexOf(selectedArea)][1]; // 假设 ticketPrice 根据区域索引存储价格
+        const selectedPrice = ticketPrice[ticketType.indexOf(selectedArea)][1]; //
         setSeat({ area: selectedArea, price: selectedPrice });
     };
     
@@ -110,9 +110,9 @@ function EventPage(props) {
 
     function getCurrentDateISOString() {
         const now = new Date();
-        // 将日期转换为ISO字符串（例如 "2024-03-07T00:00:00.000Z"）
+
         const isoString = now.toISOString();
-        // 截取字符串以获取不包含毫秒的部分，并保持Z表示UTC
+
         return isoString.substring(0, 19) + 'Z';
         }
         
@@ -168,9 +168,9 @@ function EventPage(props) {
 
     const handleSeatFormSubmit = (e) => {
 
-        // 发送到后端
+
         if (seatarea === '' || seatamount === '' ) return;
-        e.preventDefault(); // 阻止表单默认的提交行为
+        e.preventDefault();
         console.log(seatarea,seatamount);
 
 
@@ -210,7 +210,7 @@ function EventPage(props) {
                 setTags([event.token.event_tags, ""])
                 let jsonStr = event.token.event_tags.replace(/'/g, '"');
 
-                // 使用JSON.parse()将字符串转换为数组
+
                 let arr = JSON.parse(jsonStr);
                 setTags(arr|| [])
                 if (Array.isArray(tags)) {
@@ -245,7 +245,7 @@ function EventPage(props) {
         const fetchData = async () => {
             console.log("Reload EventPage");
             await fetchEventInfo(propss.ID);
-            console.log("useEff event", eventInfo); // 在这里可以看到 eventInfo 的值
+            console.log("useEff event", eventInfo);
 
             if (eventInfo && eventInfo.comments && eventInfo.comments.length > 0) {
                 const averageRating = eventInfo.total_ratings / eventInfo.comments.length;
@@ -274,7 +274,7 @@ function EventPage(props) {
     }, []);
 
     useEffect(() => {
-        console.log("Tags updated:", tags); // 当 tags 更新时执行
+        console.log("Tags updated:", tags); //
     }, [tags]); //
 
     const [openI, setOpenI] = useState(false);
@@ -300,7 +300,7 @@ function EventPage(props) {
             sx={{
                 // bgcolor: 'lightblue',
                 backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                // filter: 'blur(10px)', // 高斯模糊效果
+                // filter: 'blur(10px)',
                 borderRadius: 2,
                 mx: 'auto', my: 4, width: '90%', height: 'auto',
             }}
@@ -308,7 +308,7 @@ function EventPage(props) {
          <Grid container spacing={2} sx={{padding: 4}}>
             {/* left */}
             <Grid item xs={12} md={8}>
-                {/* <Paper elevation={3} style={{ padding: 2 }}>左侧内容</Paper> */}
+                {/* <Paper elevation={3} style={{ padding: 2 }}></Paper> */}
     <Box sx={{backgroundColor: 'rgba(255, 255, 255, 0.0)', width: '100%', mt: 3, mr:3, p: 2, textAlign: 'center',  borderRadius: '4px' }}>
       <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{mr: 10}}>
         {todaydate <= eventInfo.date ? (
@@ -326,7 +326,7 @@ function EventPage(props) {
               value={totalRating}
               precision={0.1}
               readOnly
-              sx={{ verticalAlign: 'middle' }}  // Adjust alignment here
+              sx={{ verticalAlign: 'middle' }}
             />
             <Typography variant="subtitle1" sx={{ ml: 2, verticalAlign: 'middle' }}>
               {totalRating}
@@ -340,15 +340,15 @@ function EventPage(props) {
 
                         sx={{
 
-                            p: { xs: 1, md: 2 }, // 在小屏幕上padding为1，在中等及以上屏幕上为2
+                            p: { xs: 1, md: 2 },
                             width: 'auto',
                             height: 'auto',
 
-                            boxShadow: 5, // 应用阴影
-                            borderRadius: 1, // 圆角
+                            boxShadow: 5,
+                            borderRadius: 1,
                         }}
                     >
-                        <Paper elevation={0} square> {/* Paper组件用于展示内容 */}
+                        <Paper elevation={0} square> {/*  */}
                             {/* Your content here */}
                             <Card style={{
                                 backgroundColor: 'rgba(255, 255, 255, 0.)',
@@ -378,13 +378,13 @@ function EventPage(props) {
                     <Box
                         sx={{
                             width: {
-                                xs: '100%', // 小于600px宽时，Box占满容器
-                                sm: '100%', // 小于960px宽时，Box宽度为容器的75%
-                                md: '100%', // 小于1280px宽时，Box宽度为容器的50%
-                                lg: '100%', // 小于1920px宽时，Box宽度为容器的25%
+                                xs: '100%',
+                                sm: '100%',
+                                md: '100%',
+                                lg: '100%',
                             },
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' }, // 在小屏设备上使用列布局，在中等及以上设备上使用行布局
+                            flexDirection: { xs: 'column', md: 'row' },
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             gap: 1, // 添加间距
@@ -486,7 +486,7 @@ function EventPage(props) {
             </Box>
             </Grid>
             </Grid>
-        {/* <Button onClick={handleClickOpen}>Click to Comment</Button> *点击然后弹出评论窗口 */}
+        {/* <Button onClick={handleClickOpen}>Click to Comment</Button> * */}
         {/* <CommentPopUp open={open} handleClose={handleClose}/> */}
             <ScrollableFrame children={<ShowComment isLogin={isLoggedIn} cus_id={user_id} ifCustomer={isCustomer} ifOrganization={isOrganizer} event_date = {eventInfo.date} eventID={propss.ID}/>}></ScrollableFrame>
             

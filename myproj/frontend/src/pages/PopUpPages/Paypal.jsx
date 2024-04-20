@@ -43,10 +43,10 @@ export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkpric
     }
     const handleApprove = (data, actions) => {
         return actions.order.capture().then(details => {
-            // 这里使用 fetch 或者 axios 发送数据到你的后端服务器
+
 
             console.log('Payment Successful:', details);
-            // 实现具体的逻辑
+
         }).then(task=>{
             
             Book()
@@ -60,7 +60,7 @@ export default function PayPal({userEmail, eventID, seatArea, seatAmount, tkpric
                     purchase_units: [
                         {
                             amount: {
-                                value: tkprice, // 设置支付金额
+                                value: tkprice,
                             },
                         },
                     ],

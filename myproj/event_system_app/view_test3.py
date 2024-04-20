@@ -9,8 +9,8 @@ from django.http import JsonResponse, HttpResponse
 def seat_pool_cal(ticket_type, amount):
     seat_pool_list = []
     for single_seat in range(0, 100):
-        row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
-        seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
+        row_number = single_seat // 20 + 1
+        seat_number = single_seat % 20 + 1
         seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
         seat_pool_list.append(seat_assignment)
     seat_pool_string = ','.join(seat_pool_list)
@@ -40,7 +40,7 @@ def create_test_data(request):
     all_tags = live_tags + concert_tags + comedy_tags + opera_tags
 
     if not Organizer.objects.exists():
-        Organizer.objects.create(  # 第一个org账户
+        Organizer.objects.create(
             org_email="org@qq.com",
             org_password=make_password("p123"),
             company_name="cc",
@@ -48,7 +48,7 @@ def create_test_data(request):
             org_phone="111"
         ).save()
 
-        Organizer.objects.create(  # 第二个org账户
+        Organizer.objects.create(
             org_email="org@bbb.com",
             org_password=make_password("p123"),
             company_name="cc",
@@ -57,7 +57,7 @@ def create_test_data(request):
         ).save()
 
     if not Customer.objects.exists():
-        Customer.objects.create(  # 第一个cus账户，设置随机tag为6个, 设置喜欢演出类型
+        Customer.objects.create(
             cus_name="11",
             cus_email="lzy2545322339@gmail.com",
             gender="Male",
@@ -69,7 +69,7 @@ def create_test_data(request):
             prefer_tags=random.sample(all_tags, 6)
         ).save()
         # print("come here 4")
-        Customer.objects.create(  # 第一个cus账户，设置随机tag为6个，不设置喜欢演出类型
+        Customer.objects.create(
             cus_name="11",
             cus_email="aa@qq.com",
             gender="Male",
@@ -81,7 +81,7 @@ def create_test_data(request):
             prefer_tags=random.sample(all_tags, 6)
         ).save()
         # print("come here 5")
-        Customer.objects.create(  # 第3个cus账户，不设置tag，不设置喜欢演出类型
+        Customer.objects.create(
             cus_name="11",
             cus_email="11@qq.com",
             gender="Male",
@@ -93,9 +93,9 @@ def create_test_data(request):
             prefer_tags=random.sample(all_tags, 6)
         ).save()
 
-    # 创建事件
+
     if not Event_info.objects.exists():
-        organizer = Organizer.objects.filter(org_id = 1).first()  # 获取已创建的 Organizer 实例
+        organizer = Organizer.objects.filter(org_id = 1).first()
         # print("come here 7")
         events = [
             {
@@ -125,7 +125,7 @@ def create_test_data(request):
         ]
         i = 0
         # print("come here 8")
-        # 遍历并插入活动到数据库
+
         for event in events:
             event_instance = Event_info(
                 event_name=event["event_name"],
@@ -136,9 +136,9 @@ def create_test_data(request):
                 event_type=event["event_type"],
                 event_last_selling_date=timezone.datetime.strptime(event["event_date"],
                                                                    "%Y-%m-%d") - timezone.timedelta(
-                    days=1),  # 售票截止日期假设为活动前1天
+                    days=1),
                 event_tags=random.sample(all_tags, 5),
-                organization=organizer,  # 假设的组织者ID
+                organization=organizer,
             )
 
             event_instance.save()
@@ -179,7 +179,7 @@ def create_test_data(request):
                 event_date=event_date,
                 event_description=f"This is a {event_detail['type']} event.",
                 event_address="1234 Event St.",
-                event_image_url="static/default.jpg",  # 确保这个路径下有一个名为 default.jpg 的图片
+                event_image_url="static/default.jpg",
                 event_type=event_detail['type'],
                 event_last_selling_date=last_selling_date,
                 event_tags=random.sample(all_tags, 5),
@@ -202,12 +202,12 @@ def create_test_data(request):
                 )
                 ticket.save()
 
-        no_tag_event = Event_info(  # 这个设置为没有tag的演出
+        no_tag_event = Event_info(
             event_name="No tag Event",
             event_date=(timezone.now() + timedelta(days=13)).replace(second=0, microsecond=0),
             event_description=f"This is a great event.",
             event_address="1234 Event St.",
-            event_image_url="static/default.jpg",  # 确保这个路径下有一个名为 default.jpg 的图片
+            event_image_url="static/default.jpg",
             event_type='concert',
             event_last_selling_date=event_date - timedelta(days=1),
             event_tags=None,
@@ -249,10 +249,10 @@ def create_test_data(request):
                 ticket.ticket_remain -= reserve.amount
                 ticket.save()
 
-    # 两个customer都在订购并且已结束超过一天的活动中，留下了评论，并给出了5分的评分，评论内容不能相同
+
     i = 0
     comment_customer = Customer.objects.filter(cus_id__in=[1, 2])
-    for event in events:  # 假设前两个事件已结束
+    for event in events:
         if event.event_date < timezone.now():
             for customer in comment_customer:
                 reservation = Reservation.objects.filter(event=event, customer=customer).first()

@@ -63,14 +63,7 @@ def tags_to_vector(tags, all_tags):
 
 
 def jaccard_sim(customer_tags, event_tags):
-    '''
-    customer_tags: 消费者喜欢的tags,
-    event_tags: 数据库内所有event的tags列表集合
 
-    :param customer_tags: 消费者喜欢的tags, 列表烈性
-    :param event_tags: 各个event的tag，字典类型，id:tags
-    :return: 评分字典，字典格式为 id:score
-    '''
 
     live_tags = ['rock', 'pop', 'electronic', 'jazz', 'acoustic', 'indie', 'folk', 'blues', 'country', 'reggae']
     show_tags = ['magic', 'dance', 'circus', 'drama', 'puppetry', 'illusion', 'mime', 'ballet', 'opera', 'theater']
@@ -297,7 +290,7 @@ class CusAccountFunction:
         }, status = 405)
     
     @api_view(['GET'])
-    def event_recommend(request): #测试完成
+    def event_recommend(request):
         '''
          Recommended performance function, using jaccard similarity
          Receive parameters: user_id, which must be the customer's id. Get from url
@@ -572,7 +565,7 @@ class LoginPage:
                                 'role': 'organizer',
                                 'id': organizer['org_id'],
                                 'email': organizer['org_email']
-                            }, timeout = 60000)  # 缓存一个小时
+                            }, timeout = 60000)
 
 
                             return Response({'code': '1', 'message': 'login success', "user_type": "organizer",
@@ -593,7 +586,7 @@ class LoginPage:
                 # print("comer here 11")
 
                 cache.set(0, {'role': None, 'id': None,
-                                                 'email': None}, timeout=60000)  # 缓存一个小时
+                                                 'email': None}, timeout=60000)
 
                 return Response({'code': '1', 'message': 'Invalid json data'}, status = 400)
 
@@ -604,16 +597,7 @@ class LoginPage:
 
     @api_view(['GET'])
     def get_cache_data(request):
-        '''
-        读取cache，从url当中读取user_id, 如果没读取到就自动设置为0,如下为字典格式
-        {'role': None, 'id': None,'email': None}
-        :return:
-            {
-                'role': user_info['role'],
-                'id': user_info['if'],
-                'email': user_info['email']
-            }
-        '''
+
         user_id = request.query_params.get('user_id', 0)
         if user_id != 0:
             # Use cached user information
@@ -710,7 +694,7 @@ class LoginPage:
                         'role': 'customer',
                         'id': new_customer.cus_id,
                         'email': new_customer.cus_email
-                    }, timeout=60000)  # 缓存一个小时
+                    }, timeout=60000)
 
 
                     return Response({
@@ -743,7 +727,6 @@ class AccountInfoPage:
     @api_view(['GET'])
     def cus_info_show(request):
         '''
-        展示这个人的个人信息，
 
         :param user_id:
         :return:
@@ -868,7 +851,7 @@ class AccountInfoPage:
             'message': 'This function only accepts POST data'
         }, status = 405)
 
-    @api_view(['PUT']) # 测验完成
+    @api_view(['PUT'])
     def edit_org_info(request):
         '''
          Modify the account information of the org account. Receive data from sent form
@@ -919,8 +902,8 @@ class AccountInfoPage:
 def seat_pool_cal(ticket_type, amount):
     seat_pool_list = []
     for single_seat in range(1, amount):
-        row_number = single_seat // 20 + 1  # 确定排数，每排20个座位
-        seat_number = single_seat % 20 + 1  # 确定在当前排的座位号
+        row_number = single_seat // 20 + 1
+        seat_number = single_seat % 20 + 1
         seat_assignment = f"{ticket_type}-{row_number}-{seat_number}"
         seat_pool_list.append(seat_assignment)
     seat_pool_string = ','.join(seat_pool_list)
@@ -991,7 +974,7 @@ class OrganizerFunctionPage:
                     ticket_price = ticket['ticket_price'],
                     ticket_remain = ticket['ticket_amount'],
                     ticket_seat_pool = seat_pool_string,
-                    event = event  # 这里直接将前面创建的event对象作为外键
+                    event = event
                 )
                 ticket.save()  #Save ticket object
             return Response({
@@ -1006,10 +989,7 @@ class OrganizerFunctionPage:
 
     @api_view(['PUT'])
     def edit_event(request):
-        '''
-        修改演出的信息。从前端接收表单信息
-        :return: code 和 message
-        '''
+
         if request.method == "PUT":
             event_id = request.query_params.get('event_id', None)
             try:
@@ -1178,20 +1158,7 @@ class OrganizerFunctionPage:
 class EventDetailPage:
     @api_view(['GET'])
     def get_event_detail(request):
-        '''
-        获取演出详细信息的第一部分，获取演出详细信息，和评分
-        :return: 返回一个字典，内含
-            'id':
-            'title'
-            'date'
-            'location'
-            'description'
-            'last_selling_date'
-            'image': 这是个string类型
-            'type':
-            'total_rating':总评分,是个浮点数，范围是 0-5
-            'tickets': 是个本场演出各类型剩余票量的字典
-        '''
+
         print(request.method)
         if request.method == 'GET':
             # print("come here 1")
@@ -1390,7 +1357,7 @@ class EventDetailPage:
         }, status = 405)
 
     @api_view(['POST'])
-    def org_make_reply(request): #测试完成
+    def org_make_reply(request):
         '''
          The organizer implements the function of replying to comments.
          Receive parameters: user_id and comment_id. Get from url

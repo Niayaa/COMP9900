@@ -10,7 +10,7 @@ export default function UseEventPage(){
     async function handleEventPage() { 
         
         console.log(concertInfoArray)
-        //只传递ID~
+
         navigate('/eventpage', {state:  {ID: "1"} })
         
     }
