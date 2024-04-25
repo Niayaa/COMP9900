@@ -28,7 +28,7 @@ of the project, to build the total system’s backend . Apart from django, we
 also applied to some other public libraries like Numpy and Sklearn. The
 python environment is 3.8. After installing the correct version of python,
 put the files under a certain root. After that, run the following commend.
-###  `pip install -r requirement.txt `
+###  `pip install -r requirements.txt `
 Before activating the front end part, make sure the backend part is activated
 and working. To activate the backend, run the command in the python
 terminal:
@@ -47,7 +47,7 @@ Step 2: Enter the npm install to install the needed packages
 Step 3: Enter the following command, to make sure the frontend is working
 successfully.
 
-### `set NODE OPTIONS=--openssl-legacy-provider`
+### `set NODE_OPTIONS=--openssl-legacy-provider`
 
 Step 4: Enter npm start to start the frontend part.
 
